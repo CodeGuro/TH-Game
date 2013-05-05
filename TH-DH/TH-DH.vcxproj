@@ -82,6 +82,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="trunk\sources\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="trunk\headers\bytecode.hpp" />
+    <ClInclude Include="trunk\headers\defstypedefs.hpp" />
+    <ClInclude Include="trunk\headers\parser.hpp" />
+    <ClInclude Include="trunk\headers\scriptengine.hpp" />
+    <ClInclude Include="trunk\headers\scriptmachine.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
