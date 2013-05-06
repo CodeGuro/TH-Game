@@ -82,7 +82,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="trunk\sources\bytecode.cpp" />
     <ClCompile Include="trunk\sources\main.cpp" />
+    <ClCompile Include="trunk\sources\parser.cpp" />
+    <ClCompile Include="trunk\sources\scriptengine.cpp" />
+    <ClCompile Include="trunk\sources\scriptmachine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="trunk\headers\bytecode.hpp" />

@@ -1,13 +1,18 @@
 #pragma once
 #include <vector>
-#include <map>
 #include "defstypedefs.hpp"
-#include "scriptengine.hpp"
 
+class script_engine;
+
+/*executes the bytecode*/
 class script_machine
 {
 private:
-	script_engine * engine;
+	vector< size_t > threads;
+	size_t current_thread_index;
+
 public:
-	void advance();
+	void advance( script_engine & engine );
+	void initialize( script_engine & engine );
+	void clean( script_engine & engine );
 };

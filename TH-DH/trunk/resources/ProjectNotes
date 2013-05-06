@@ -1,0 +1,5 @@
+A document used for part of this project's build strategies.
+
+CreateEnemyFromScript(....) A script function used to spawn an entity
+	Arguments: [string]name of the presubroutine,[real4] position, speed, direction, [val]argument
+	The engine will use an associative array with a string as the key to the index of the subroutine

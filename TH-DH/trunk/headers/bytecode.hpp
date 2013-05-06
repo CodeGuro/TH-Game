@@ -5,24 +5,25 @@
 
 enum instruction
 {
+	something
 };
 
 struct type_data
 {
 	enum type_kind
 	{
-		tk_real, tk_boolean, tk_char, tk_array
+		tk_real, tk_boolean, tk_char, tk_array, tk_object, tk_invalid
 	};
 	type_kind kind;
-	const type_data * element;
-	type_data( type_kind k, type_data * e ) : kind(k), element(e)
+	size_t element; //offset to the type
+	type_data( type_kind k, size_t e ) : kind(k), element(e)
 	{
 	}
 	type_kind get_kind() const
 	{
 		return kind;
 	}
-	const type_data * get_elementType() const
+	size_t get_element() const
 	{
 		return element;
 	}
@@ -35,20 +36,23 @@ struct script_data
 	union
 	{
 		char character;
-		float real; //also used as a boolean
+		float real; // boolean evaluated by checking if it's a nonzero value
 		size_t objIndex;
 	};
 	vector< size_t > array;
-	script_data() : refCount(0)
+	script_data() : refCount(0), type(type_data::tk_invalid, invalidIndex)
 	{
 	}
-	script_data( float real ) : real(real)
+	script_data( float real, size_t elementIndex ) : real(real), type(type_data::tk_real, elementIndex)
 	{
 	}
-	script_data( char character ) : character(character)
+	script_data( char character, size_t elementIndex ) : character(character), type(type_data::tk_char, elementIndex)
 	{
 	}
-	script_data( size_t objIndex ) : objIndex(objIndex)
+	script_data( bool boolean, size_t elementIndex ) : real( boolean? 1.f:0.f ), type(type_data::tk_boolean, elementIndex)
+	{
+	}
+	script_data( size_t objIndex, size_t elementIndex ) : objIndex(objIndex), type(type_data::tk_object, elementIndex)
 	{
 	}
 };
@@ -80,23 +84,28 @@ struct code
 			};
 		};
 	};
+	static code varLev( instruction c, size_t varIndex, size_t varLevel );
+	static code subArg( instruction c, size_t subIndex, size_t subArgc );
+	static code loop( instruction c, size_t loopBackIndex );
+	static code dat( instruction c, size_t scriptDataIdx );
 };
 
 struct block
 {
 	enum block_kind
 	{
-		bk_normal, bk_loop, bk_function, bk_task,
+		bk_normal, bk_loop, bk_function, bk_task
 	};
 	vector< code > vecCodes;
 	std::string name;
 	size_t argc;
-	size_t level;
 	block_kind kind;
-	bool hasResult;
+	bool has_result;
 };
 
 struct script_environment
 {
 	vector< size_t > stack;
+	size_t blockIndex;
+	size_t codeIndex;
 };

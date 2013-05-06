@@ -1,6 +1,7 @@
 #pragma once
 #include "scriptengine.hpp"
 
+/*To parse the script into bytecode*/
 class parser
 {
 private:
