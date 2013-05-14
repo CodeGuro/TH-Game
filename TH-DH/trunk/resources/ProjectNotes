@@ -1,5 +1,19 @@
 A document used for part of this project's build strategies.
 
+bytecode consists of a vector of instructions for the script machine to execute
+the lexicon scans the script to construct a vector of tokens from a string of characters
+the parser parses the vector of tokens to construct bytecode
+the script machine will execute the vector of bytecode
+the script engine manages all script-related things
+the script environment is the frame for which a script machine can use to execute code
+a stack is mandatory for the script environment
+function calls can have a return value that will be pushed onto the stack
+function calls push a return value to the stack when parsed as expressions
+task calls start a separate coroutine
+
+let bar = foo(32, 22); //function called, return value pushed to stack, said value assigned to another value on the stack
+foo(32, 22); //same function called but does not push a return value to the stack
+
 CreateEnemyFromScript(....) A script function used to spawn an entity
 	Arguments: [string]name of the presubroutine,[real4] position, speed, direction, [val]argument
 	The engine will use an associative array with a string as the key to the index of the subroutine

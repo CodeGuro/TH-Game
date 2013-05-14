@@ -1,5 +1,5 @@
 *.sdf
 *.opensdf
-*ipch
-*Release
-*Debug
+ipch/
+Release/
+Debug/

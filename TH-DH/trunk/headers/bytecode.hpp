@@ -39,7 +39,7 @@ struct script_data
 		float real; // boolean evaluated by checking if it's a nonzero value
 		size_t objIndex;
 	};
-	vector< size_t > array;
+	vector< size_t > vec;
 	script_data() : refCount(0), type(type_data::tk_invalid, invalidIndex)
 	{
 	}
@@ -106,6 +106,6 @@ struct block
 struct script_environment
 {
 	vector< size_t > stack;
-	size_t blockIndex;
 	size_t codeIndex;
+	size_t blockIndex;
 };

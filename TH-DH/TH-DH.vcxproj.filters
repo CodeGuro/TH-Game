@@ -38,13 +38,13 @@
     <ClInclude Include="trunk\headers\defstypedefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="trunk\headers\scriptengine.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="trunk\headers\parser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="trunk\headers\scriptmachine.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trunk\headers\scriptengine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

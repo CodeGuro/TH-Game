@@ -34,7 +34,7 @@ private:
 		type_data getCharacterType() const;
 		type_data getStringType() const;
 		type_data getObjectType() const;
-		type_data getArrayType( type_data ) const; //an array of some type
+		type_data getArrayType( size_t element ); //an array of some type
 	};
 
 	inventory battery;
