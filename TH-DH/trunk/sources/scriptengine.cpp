@@ -1,5 +1,6 @@
 #include <scriptengine.hpp>
-
+#include <assert.h>
+//script type manager
 script_engine::script_type_manager::script_type_manager()
 {
 	types.push_back( type_data( type_data::tk_real, invalidIndex ) );
@@ -39,9 +40,7 @@ type_data script_engine::script_type_manager::getArrayType( size_t element )
 	return *(types.insert( types.end(), type_data( type_data::tk_array, element ) ));
 }
 
-script_engine::script_engine() : currentRunningMachine( invalidIndex )
-{
-}
+//script engine block-related functions
 size_t script_engine::fetchBlock()
 {
 	return battery.vecBlocks.insert( battery.vecBlocks.end(), block() ) - battery.vecBlocks.begin();
@@ -51,6 +50,7 @@ block & script_engine::getBlock( size_t index )
 	return battery.vecBlocks[index];
 }
 
+//script engine - script data - related functions
 size_t script_engine::fetchScriptData()
 {
 	size_t index;
@@ -203,7 +203,8 @@ void script_engine::disposeScriptData( size_t index )
 	battery.vecScriptDataGarbage.push_back( index );
 }
 
-size_t script_engine::fetchScriptEnvironment( size_t blockIndex)
+//script engine - script environment - related functions
+size_t script_engine::fetchScriptEnvironment( size_t blockIndex )
 {
 	size_t index;
 	if( battery.vecRoutinesGabage.size() )
@@ -229,6 +230,7 @@ void script_engine::disposeScriptEnvironment( size_t index )
 	battery.vecRoutinesGabage.push_back( index );
 }
 
+//script engine - script machine - related functions
 size_t script_engine::fetchScriptMachine()
 {
 	size_t index;
@@ -251,4 +253,26 @@ script_machine & script_engine::getScriptMachine( size_t index )
 void script_engine::disposeScriptMachine( size_t index )
 {
 	battery.vecMachinesGarbage.push_back( index );
+}
+
+//script engine - public functions, called from the outside
+script_engine::script_engine() : currentRunningMachine( invalidIndex )
+{
+}
+void script_engine::cleanEngine()
+{
+	currentRunningMachine = invalidIndex;
+	for( vector< script_machine >::iterator it = battery.vecMachines.begin(); it != battery.vecMachines.end(); ++it )
+		it->clean( *this );
+	assert( battery.vecMachines.size() == battery.vecMachinesGarbage.size() );
+	assert( battery.vecRoutines.size() == battery.vecRoutinesGabage.size() );
+	for( vector< block >::iterator it = battery.vecBlocks.begin(); it != battery.vecBlocks.end(); ++it )
+		for( vector< code >::iterator it2= it->vecCodes.begin(); it2 != it->vecCodes.end(); ++it2 )
+			if( it2->scriptDataIndex != invalidIndex )
+				releaseScriptData( it2->scriptDataIndex );
+	assert( battery.vecScriptData.size() == battery.vecScriptDataGarbage.size() );
+	battery = inventory();
+}
+void script_engine::start()
+{
 }

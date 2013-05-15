@@ -84,7 +84,8 @@ struct code
 			};
 		};
 	};
-	static code varLev( instruction c, size_t varIndex, size_t varLevel );
+	code( instruction c );
+	static code varLev( instruction c, size_t varIndex, size_t routineIndex );
 	static code subArg( instruction c, size_t subIndex, size_t subArgc );
 	static code loop( instruction c, size_t loopBackIndex );
 	static code dat( instruction c, size_t scriptDataIdx );
