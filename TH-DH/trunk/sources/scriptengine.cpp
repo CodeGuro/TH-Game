@@ -103,12 +103,12 @@ script_data & script_engine::getScriptData( size_t index )
 {
 	return battery.vecScriptData[ index ];
 }
-void script_engine::addRefScriptData( size_t & index )
+void script_engine::addRefScriptData( size_t & index ) //interface function
 {
 	if( index != invalidIndex )
 		++getScriptData( index ).refCount;
 }
-void script_engine::releaseScriptData( size_t & index )
+void script_engine::releaseScriptData( size_t & index ) //interface function
 {
 	if( index != invalidIndex )
 	{
@@ -118,8 +118,8 @@ void script_engine::releaseScriptData( size_t & index )
 			for( unsigned i = 0; i < dat.vec.size(); ++i )
 				releaseScriptData( dat.vec[i] );
 			disposeScriptData( index );
-			index = invalidIndex;
 		}
+		index = invalidIndex;
 	}
 }
 void script_engine::scriptDataAssign( size_t & dst, size_t & src ) //index copy
@@ -128,17 +128,38 @@ void script_engine::scriptDataAssign( size_t & dst, size_t & src ) //index copy
 	releaseScriptData( dst );
 	dst = src;
 }
-void script_engine::copyScriptData( size_t & dst, size_t & src ) //contents copy
+void script_engine::copyScriptData( size_t & dst, size_t & src ) //contents copy, including vector
 {
-	if( dst != invalidIndex )
+	if( dst == invalidIndex )
+		dst = fetchScriptData();
+	script_data destDat = getScriptData( dst );
+
+	for( unsigned i = 0; i < destDat.vec.size(); ++i )
+		releaseScriptData( destDat.vec[i] );
+	destDat.vec.resize( 0 );
+
+	if( src != invalidIndex )
 	{
-		script_data destDat = getScriptData( dst );
-		if( destDat.vec.size() )
+		script_data & sourDat = getScriptData( src );
+		switch( ( destDat.type = sourDat.type ).get_kind() )
 		{
-			for( unsigned i = 0; i < destDat.vec.size(); ++i )
+		case type_data::tk_real:
+		case type_data::tk_boolean:
+			destDat.real = sourDat.real;
+			break;
+		case type_data::tk_char:
+			destDat.character = sourDat.character;
+			break;
+		case type_data::tk_object:
+			destDat.objIndex = sourDat.objIndex;
+			break;
+		case type_data::tk_array:
 			{
-				
+				destDat.vec.resize( sourDat.vec.size() );
+				for( unsigned i = 0; i < sourDat.vec.size(); ++i )
+					(sourDat.vec[i] == invalidIndex) ? (destDat.vec[i] = invalidIndex) : (copyScriptData( ( destDat.vec[i] = fetchScriptData() ), sourDat.vec[i] ));
 			}
+			break;
 		}
 	}
 }
@@ -174,6 +195,8 @@ void script_engine::uniqueize( size_t & dst )
 			}
 		}
 	}
+	else
+		getScriptData( dst = fetchScriptData() ).type.kind = type_data::tk_invalid;
 }
 void script_engine::disposeScriptData( size_t index )
 {
