@@ -217,13 +217,34 @@ size_t script_engine::fetchScriptEnvironment( size_t blockIndex )
 		index = battery.vecScriptData.size();
 		battery.vecScriptData.reserve( 1 );
 	}
-	getScriptEnvironment( index ).blockIndex = blockIndex;
-	getScriptEnvironment( index ).codeIndex = 0;
+	script_environment & env = getScriptEnvironment( index );
+	env.blockIndex = blockIndex;
+	env.codeIndex = 0;
+	env.refCount = 1;
 	return index;
 }
 script_environment & script_engine::getScriptEnvironment( size_t index )
 {
 	return battery.vecRoutines[ index ];
+}
+void script_engine::addRefScriptEnvironment( size_t & index )
+{
+	if( index != invalidIndex )
+		++getScriptEnvironment( index ).refCount;
+}
+void script_engine::releaseScriptEnvironment( size_t & index )
+{
+	if( index != invalidIndex )
+	{
+		script_environment & env = getScriptEnvironment( index );
+		if( !(--env.refCount) )
+		{
+			for( unsigned i = 0; i < env.stack.size(); ++i )
+				releaseScriptData( env.stack[i] );
+			disposeScriptEnvironment( index );
+		}
+		index = invalidIndex;
+	}
 }
 void script_engine::disposeScriptEnvironment( size_t index )
 {

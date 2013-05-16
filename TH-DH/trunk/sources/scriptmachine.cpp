@@ -8,10 +8,7 @@ void script_machine::clean( script_engine & eng )
 	{
 		script_environment & env = eng.getScriptEnvironment( threads[i] );
 		for( unsigned j = 0; j < env.stack.size(); ++j )
-			if( env.stack[j] != invalidIndex )
-				eng.releaseScriptData( env.stack[j] );
-
-		eng.disposeScriptEnvironment( threads[i] );
-		threads[i] = invalidIndex;
+			eng.releaseScriptData( env.stack[j] );
+		eng.releaseScriptEnvironment( threads[i] );
 	}
 }

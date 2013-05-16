@@ -62,10 +62,10 @@ struct code
 	instruction command;
 	union
 	{
-		struct //for assigning data on the virtual stack
+		struct //for assigning data on a virtual stack
 		{
-			size_t variableIndex;
-			size_t variableLevel;
+			size_t variableIndex; //in the stack
+			size_t variableLevel; // # of routines up from the callee
 		};
 		struct //for calling routines
 		{
@@ -80,15 +80,17 @@ struct code
 			};
 			struct //for immediate assignment (like push)
 			{
-				size_t scriptDataIndex;
+				size_t scriptDataIndex; //in the engine
 			};
 		};
 	};
+	code();
 	code( instruction c );
-	static code varLev( instruction c, size_t varIndex, size_t routineIndex );
-	static code subArg( instruction c, size_t subIndex, size_t subArgc );
-	static code loop( instruction c, size_t loopBackIndex );
-	static code dat( instruction c, size_t scriptDataIdx );
+	//named constructor idom
+	code varLev( instruction c, size_t varIndex, size_t levelUp );
+	code subArg( instruction c, size_t subIndex, size_t subArgc );
+	code loop( instruction c, size_t loopBackIndex );
+	code dat( instruction c, size_t scriptDataIdx );
 };
 
 struct block
@@ -109,4 +111,6 @@ struct script_environment
 	vector< size_t > stack;
 	size_t codeIndex;
 	size_t blockIndex;
+	size_t parentIndex;
+	size_t refCount;
 };

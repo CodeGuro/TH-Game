@@ -58,6 +58,8 @@ private:
 	void disposeScriptData( size_t index );
 	size_t fetchScriptEnvironment( size_t blockIndex );
 	script_environment & getScriptEnvironment( size_t index );
+	void addRefScriptEnvironment( size_t & index );
+	void releaseScriptEnvironment( size_t & index );
 	void disposeScriptEnvironment( size_t index );
 	size_t fetchScriptMachine();
 	script_machine & getScriptMachine( size_t index );
