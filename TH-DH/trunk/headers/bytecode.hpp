@@ -5,7 +5,8 @@
 
 enum instruction
 {
-	something
+	//virtual commands
+	vc_assign
 };
 
 struct type_data

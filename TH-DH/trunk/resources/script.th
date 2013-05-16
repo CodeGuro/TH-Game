@@ -1,6 +1,6 @@
 //A TH_DH sample script, early project
 #TouhouDanmaku //preprocessor to let the parser know this script is intended for TH-DH
-
+#include "functions" //preprocessor for including external scripts
 
 script_stage_main //main routine
 {
