@@ -62,7 +62,7 @@ size_t script_engine::fetchScriptData()
 	else
 	{
 		index = battery.vecScriptData.size();
-		battery.vecScriptData.reserve( 1 );
+		battery.vecScriptData.resize( 1 + index );
 	}
 	getScriptData( index ).refCount = 1;
 	return index;
@@ -215,7 +215,7 @@ size_t script_engine::fetchScriptEnvironment( size_t blockIndex )
 	else
 	{
 		index = battery.vecScriptData.size();
-		battery.vecScriptData.reserve( 1 );
+		battery.vecScriptData.resize( 1 + index );
 	}
 	script_environment & env = getScriptEnvironment( index );
 	env.blockIndex = blockIndex;
@@ -263,7 +263,7 @@ size_t script_engine::fetchScriptMachine()
 	else
 	{
 		index = battery.vecMachines.size();
-		battery.vecMachines.reserve( 1 );
+		battery.vecMachines.resize( 1 + index );
 	}
 	return index;
 }
@@ -283,15 +283,7 @@ script_engine::script_engine() : currentRunningMachine( invalidIndex )
 void script_engine::cleanEngine()
 {
 	currentRunningMachine = invalidIndex;
-	for( vector< script_machine >::iterator it = battery.vecMachines.begin(); it != battery.vecMachines.end(); ++it )
-		it->clean( *this );
-	assert( battery.vecMachines.size() == battery.vecMachinesGarbage.size() );
-	assert( battery.vecRoutines.size() == battery.vecRoutinesGabage.size() );
-	for( vector< block >::iterator it = battery.vecBlocks.begin(); it != battery.vecBlocks.end(); ++it )
-		for( vector< code >::iterator it2= it->vecCodes.begin(); it2 != it->vecCodes.end(); ++it2 )
-			if( it2->scriptDataIndex != invalidIndex )
-				releaseScriptData( it2->scriptDataIndex );
-	assert( battery.vecScriptData.size() == battery.vecScriptDataGarbage.size() );
+	typeManager = script_type_manager();
 	battery = inventory();
 }
 void script_engine::start()
