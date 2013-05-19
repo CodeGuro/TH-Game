@@ -36,12 +36,13 @@ private:
 		float getReal() const;
 		char getCharacter() const;
 	};
-	struct identifier
+	struct symbol
 	{
 		size_t id;
+		size_t level; //for script environment runtime
 		size_t blockIndex;
 	};
-	struct scope : std::map< std::string, identifier >
+	struct scope : std::map< std::string, symbol >
 	{
 		block::block_kind blockKind;
 	};
@@ -51,11 +52,34 @@ private:
 		std::string currentDoc;
 		std::string docString;
 	};
+	struct blockMetaData
+	{
+		size_t blockIndex;
+		vector< std::string > args;
+		bool hasResult;
+	};
 
 	script_engine & engine;
 	docHandler handler;
+	vector< scope > vecScope;
 
+	symbol * search( std::string const & str );
+	symbol * searchResult();
 	void findDocument( std::string const & pathDoc );
+	void parseParentheses( size_t blockIndex );
+	void parseClause( size_t blockIndex );
+	void parsePrefix( size_t blockIndex );
+	void parseSuffix( size_t blockIndex );
+	void parseProduct( size_t blockIndex );
+	void parseSum( size_t blockIndex );
+	void parseComparison( size_t blockIndex );
+	void parseLogic( size_t blockIndex );
+	void parseExpression( size_t blockIndex );
+	unsigned parseArguments( size_t blockIndex );
+	void parseStatements( size_t blockIndex );
+	void parseInline_block( size_t blockIndex );
+	void parseBlock( blockMetaData const & properties );
+	void scanCurrentScope( blockMetaData const & properties );
 public:
 	parser( script_engine & eng ); 
 
