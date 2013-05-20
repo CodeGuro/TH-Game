@@ -1,5 +1,4 @@
 #pragma once
-#include <vector>
 #include "defstypedefs.hpp"
 
 class script_engine;

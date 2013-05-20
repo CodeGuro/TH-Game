@@ -1,5 +1,11 @@
 #include <bytecode.hpp>
 
+type_data::type_data() : kind( tk_invalid ), element( invalidIndex )
+{
+}
+code::code() : command( vc_invalid )
+{
+}
 code::code( instruction c ) : command( c )
 {
 }

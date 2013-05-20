@@ -47,5 +47,8 @@
     <ClInclude Include="trunk\headers\scriptengine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="trunk\headers\lightweight_vector.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

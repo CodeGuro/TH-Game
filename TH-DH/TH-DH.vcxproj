@@ -91,6 +91,7 @@
   <ItemGroup>
     <ClInclude Include="trunk\headers\bytecode.hpp" />
     <ClInclude Include="trunk\headers\defstypedefs.hpp" />
+    <ClInclude Include="trunk\headers\lightweight_vector.hpp" />
     <ClInclude Include="trunk\headers\parser.hpp" />
     <ClInclude Include="trunk\headers\scriptengine.hpp" />
     <ClInclude Include="trunk\headers\scriptmachine.hpp" />

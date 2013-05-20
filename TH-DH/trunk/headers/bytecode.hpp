@@ -1,12 +1,11 @@
 #pragma once
-#include <vector>
 #include <string>
 #include "defstypedefs.hpp"
 
 enum instruction
 {
 	//virtual commands
-	vc_assign
+	vc_assign, vc_invalid
 };
 
 struct type_data
@@ -17,6 +16,7 @@ struct type_data
 	};
 	type_kind kind;
 	size_t element; //offset to the type
+	type_data();
 	type_data( type_kind k, size_t e ) : kind(k), element(e)
 	{
 	}
