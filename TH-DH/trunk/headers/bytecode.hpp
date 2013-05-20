@@ -15,19 +15,11 @@ struct type_data
 		tk_real, tk_boolean, tk_char, tk_array, tk_object, tk_invalid
 	};
 	type_kind kind;
-	size_t element; //offset to the type
+	size_t element; //vector index
 	type_data();
-	type_data( type_kind k, size_t e ) : kind(k), element(e)
-	{
-	}
-	type_kind get_kind() const
-	{
-		return kind;
-	}
-	size_t get_element() const
-	{
-		return element;
-	}
+	type_data( type_kind k, size_t e );
+	type_kind get_kind() const;
+	size_t get_element() const;
 };
 
 struct script_data
@@ -41,21 +33,11 @@ struct script_data
 		size_t objIndex;
 	};
 	vector< size_t > vec;
-	script_data() : refCount(0), type(type_data::tk_invalid, invalidIndex)
-	{
-	}
-	script_data( float real, size_t elementIndex ) : real(real), type(type_data::tk_real, elementIndex)
-	{
-	}
-	script_data( char character, size_t elementIndex ) : character(character), type(type_data::tk_char, elementIndex)
-	{
-	}
-	script_data( bool boolean, size_t elementIndex ) : real( boolean? 1.f:0.f ), type(type_data::tk_boolean, elementIndex)
-	{
-	}
-	script_data( size_t objIndex, size_t elementIndex ) : objIndex(objIndex), type(type_data::tk_object, elementIndex)
-	{
-	}
+	script_data();
+	script_data( float real, size_t elementIndex );
+	script_data( char character, size_t elementIndex );
+	script_data( bool boolean, size_t elementIndex );
+	script_data( size_t objIndex, size_t elementIndex );
 };
 
 struct code
@@ -104,7 +86,7 @@ struct block
 	std::string name;
 	size_t argc;
 	block_kind kind;
-	bool has_result;
+	bool hasResult;
 };
 
 struct script_environment

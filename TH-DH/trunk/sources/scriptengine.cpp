@@ -1,4 +1,5 @@
 #include <scriptengine.hpp>
+#include <parser.hpp>
 #include <assert.h>
 //script type manager
 script_engine::script_type_manager::script_type_manager()
@@ -117,7 +118,7 @@ void script_engine::releaseScriptData( size_t & index ) //interface function
 		{
 			for( unsigned i = 0; i < dat.vec.size(); ++i )
 				releaseScriptData( dat.vec[i] );
-			disposeScriptData( index );
+			battery.vecScriptDataGarbage.push_back( index );
 		}
 		index = invalidIndex;
 	}
@@ -163,7 +164,7 @@ void script_engine::copyScriptData( size_t & dst, size_t & src ) //contents copy
 		}
 	}
 }
-void script_engine::uniqueize( size_t & dst )
+void script_engine::uniqueizeScriptData( size_t & dst )
 {
 	if( dst != invalidIndex )
 	{
@@ -189,7 +190,7 @@ void script_engine::uniqueize( size_t & dst )
 			case type_data::tk_array:
 				{
 					for( unsigned i = 0; i < destDat.vec.size(); ++i )
-						uniqueize( destDat.vec[i] );
+						uniqueizeScriptData( destDat.vec[i] );
 				}
 				break;
 			}
@@ -198,10 +199,7 @@ void script_engine::uniqueize( size_t & dst )
 	else
 		getScriptData( dst = fetchScriptData() ).type.kind = type_data::tk_invalid;
 }
-void script_engine::disposeScriptData( size_t index )
-{
-	battery.vecScriptDataGarbage.push_back( index );
-}
+
 
 //script engine - script environment - related functions
 size_t script_engine::fetchScriptEnvironment( size_t blockIndex )
@@ -241,14 +239,10 @@ void script_engine::releaseScriptEnvironment( size_t & index )
 		{
 			for( unsigned i = 0; i < env.stack.size(); ++i )
 				releaseScriptData( env.stack[i] );
-			disposeScriptEnvironment( index );
+			battery.vecRoutinesGabage.push_back( index );
 		}
 		index = invalidIndex;
 	}
-}
-void script_engine::disposeScriptEnvironment( size_t index )
-{
-	battery.vecRoutinesGabage.push_back( index );
 }
 
 //script engine - script machine - related functions
@@ -271,9 +265,11 @@ script_machine & script_engine::getScriptMachine( size_t index )
 {
 	return battery.vecMachines[ index ];
 }
-void script_engine::disposeScriptMachine( size_t index )
+void script_engine::releaseScriptMachine( size_t & index )
 {
-	battery.vecMachinesGarbage.push_back( index );
+	if( index != invalidIndex )
+		battery.vecMachinesGarbage.push_back( index );
+	index = invalidIndex;
 }
 
 //script engine - public functions, called from the outside
@@ -287,5 +283,9 @@ void script_engine::cleanEngine()
 	battery = inventory();
 }
 void script_engine::start()
+{
+	parser p(*this);
+}
+script_engine::~script_engine()
 {
 }

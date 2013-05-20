@@ -81,6 +81,6 @@ private:
 	void parseBlock( blockMetaData const & properties );
 	void scanCurrentScope( blockMetaData const & properties );
 public:
-	parser( script_engine & eng ); 
+	parser( script_engine & eng ); //automatic parsing, feed data to the engine's battery
 
 };

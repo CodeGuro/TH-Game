@@ -50,21 +50,23 @@ private:
 	size_t fetchScriptData( size_t objIndex );
 	script_data & getScriptData( size_t index );
 	void addRefScriptData( size_t & index );
-	void releaseScriptData( size_t & index );
 	void scriptDataAssign( size_t & dst, size_t & src );
 	void copyScriptData( size_t & dst, size_t & src );
-	void uniqueize( size_t & dst );
-	void disposeScriptData( size_t index );
+	void uniqueizeScriptData( size_t & dst );
+	float getRealScriptData( size_t index ) const;
+	char getCharacterScriptData( size_t index ) const;
+	bool getBooleanScriptData( size_t index ) const;
+	std::string getStringScriptData( size_t index ) const;
+	void releaseScriptData( size_t & index );
 	size_t fetchScriptEnvironment( size_t blockIndex );
 	script_environment & getScriptEnvironment( size_t index );
 	void addRefScriptEnvironment( size_t & index );
 	void releaseScriptEnvironment( size_t & index );
-	void disposeScriptEnvironment( size_t index );
 	size_t fetchScriptMachine();
 	script_machine & getScriptMachine( size_t index );
 	void terminateMachine( size_t index ); //Finalize runs
 	void terminateImmediateMachine( size_t index ); //Finalize doesn't run (usually for off-screen termination)
-	void disposeScriptMachine( size_t index );
+	void releaseScriptMachine( size_t & index );
 
 public:
 	script_engine();

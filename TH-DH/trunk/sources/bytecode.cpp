@@ -3,6 +3,35 @@
 type_data::type_data() : kind( tk_invalid ), element( invalidIndex )
 {
 }
+type_data::type_data( type_kind k, size_t e ) : kind(k), element(e)
+{
+}
+type_data::type_kind type_data::get_kind() const
+{
+	return kind;
+}
+size_t type_data::get_element() const
+{
+	return element;
+}
+
+
+script_data::script_data() : type( type_data::tk_invalid, invalidIndex )
+{
+}
+script_data::script_data( float real, size_t elementIndex ) : real(real), type(type_data::tk_real, elementIndex)
+{
+}
+script_data::script_data( char character, size_t elementIndex ) : character(character), type(type_data::tk_char, elementIndex)
+{
+}
+script_data::script_data( bool boolean, size_t elementIndex ) : real( boolean? 1.f:0.f ), type(type_data::tk_boolean, elementIndex)
+{
+}
+script_data::script_data( size_t objIndex, size_t elementIndex ) : objIndex(objIndex), type(type_data::tk_object, elementIndex)
+{
+}
+
 code::code() : command( vc_invalid )
 {
 }
