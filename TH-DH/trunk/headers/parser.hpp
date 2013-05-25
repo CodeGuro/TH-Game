@@ -2,6 +2,7 @@
 #include "scriptengine.hpp"
 #include "bytecode.hpp"
 #include <string>
+#include <map>
 
 /*To parse the script into bytecode*/
 class parser
@@ -16,7 +17,8 @@ private:
 		tk_add_assign, tk_subtract_assign, tk_divide_assign, tk_multiply_assign, tk_power_assign, tk_remainder_assign,
 		tk_at, tk_comma, tk_semicolon, tk_sharp, tk_dot,
 		tk_real, tk_character, tk_string, tk_word, tk_invalid,
-		tk_IF, tk_ELSE, tk_WHILE, tk_LOOP, tk_YIELD, tk_BREAK, tk_LET, tk_FUNCTION, tk_TASK, tk_RETURN, tk_SCRIPT_STAGE_MAIN, tk_SCRIPT_ENEMY, 
+		tk_IF, tk_ELSE, tk_WHILE, tk_LOOP, tk_YIELD, tk_BREAK, tk_LET, tk_FUNCTION, tk_TASK, tk_RETURN, tk_SCRIPT_STAGE_MAIN, tk_SCRIPT_ENEMY,
+		tk_TOUHOUDANMAKU, tk_INCLUDE
 	};
 	class lexer
 	{
@@ -26,10 +28,14 @@ private:
 		char character;
 		float real;
 		std::string word; //placeholder for string also
+		token next;
 
 	public:
+		lexer( char const * strstart );
+		lexer();
 		void skip(); //whitespace
 		token advance(); //get the next token
+		token getToken() const;
 		const std::string & getString() const;
 		const std::string & getWord() const;
 		unsigned getLine() const;
@@ -46,11 +52,16 @@ private:
 	{
 		block::block_kind blockKind;
 	};
-	struct docHandler
+	struct scriptHandler
 	{
-		vector< std::string > fullPathDocs;
-		std::string currentDoc;
-		std::string docString;
+		struct scriptObj
+		{
+			std::map< std::string , symbol > exportSymbols;
+			bool finishParsed;
+		};
+		std::map< std::string, scriptObj > scriptUnits;
+		std::string currentScriptPath; //currently working on
+		std::string scriptString; //current
 	};
 	struct blockMetaData
 	{
@@ -58,28 +69,47 @@ private:
 		vector< std::string > args;
 		bool hasResult;
 	};
+	struct error
+	{
+		enum errReason
+		{
+			er_syntax, er_parser, er_internal
+		};
+		errReason reason;
+		std::string pathDoc;
+		unsigned line;
+		std::string fivelines;
+		std::string errmsg;
+	};
 
 	script_engine & engine;
-	docHandler handler;
+	scriptHandler scriptMgr;
+	lexer lexicon;
 	vector< scope > vecScope;
-
+	blockMetaData blockProperty;
 	symbol * search( std::string const & str );
 	symbol * searchResult();
 	void findDocument( std::string const & pathDoc );
-	void parseParentheses( size_t blockIndex );
-	void parseClause( size_t blockIndex );
-	void parsePrefix( size_t blockIndex );
-	void parseSuffix( size_t blockIndex );
-	void parseProduct( size_t blockIndex );
-	void parseSum( size_t blockIndex );
-	void parseComparison( size_t blockIndex );
-	void parseLogic( size_t blockIndex );
-	void parseExpression( size_t blockIndex );
-	unsigned parseArguments( size_t blockIndex );
-	void parseStatements( size_t blockIndex );
-	void parseInline_block( size_t blockIndex );
-	void parseBlock( blockMetaData const & properties );
-	void scanCurrentScope( blockMetaData const & properties );
+	void parseParentheses();
+	void parseClause();
+	void parsePrefix();
+	void parseSuffix();
+	void parseProduct();
+	void parseSum();
+	void parseComparison();
+	void parseLogic();
+	void parseExpression();
+	unsigned parseArguments();
+	void parseStatements();
+	void parseInlineBlock();
+	void parseBlock();
+	void scanCurrentScope();
+	void parseScript( std::string scriptPath );
+	void pushCode( code const & val ); //on the current working block
+	void mapScriptPaths( std::string const & pathStart );
+	void addScriptToQueue( std::string const & fullPath );
+	scriptHandler::scriptObj & getScript( std::string const & fullPath );
+	void raiseError( std::string errmsg, error::errReason reason );
 public:
 	parser( script_engine & eng ); //automatic parsing, feed data to the engine's battery
 

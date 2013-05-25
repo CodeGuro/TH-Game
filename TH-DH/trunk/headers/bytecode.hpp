@@ -5,7 +5,7 @@
 enum instruction
 {
 	//virtual commands
-	vc_assign, vc_invalid
+	vc_assign, vc_callFunction, vc_callFunctionPush, vc_callTask, vc_invalid
 };
 
 struct type_data
@@ -78,11 +78,13 @@ struct code
 
 struct block
 {
+	class script_engine;
 	enum block_kind
 	{
 		bk_normal, bk_loop, bk_function, bk_task
 	};
 	vector< code > vecCodes;
+	void (*nativeCallBack)( script_engine * eng, size_t * args);
 	std::string name;
 	size_t argc;
 	block_kind kind;

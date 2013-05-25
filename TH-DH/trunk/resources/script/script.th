@@ -1,8 +1,9 @@
 //A TH_DH sample script, early project
-#TouhouDanmaku //preprocessor to let the parser know this script is intended for TH-DH
+#TouhouDanmaku //preprocessor to let the parser know this script is intended for TH-DH, must be within first 512 characters
+                          //optional : [single] anonymous is a script enemy, [stage] anonymous is a stage, []/void - assumed [single]
 #include "functions" //preprocessor for including external scripts
 
-script_stage_main //main routine
+script //main routine
 {
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
@@ -15,9 +16,12 @@ script_stage_main //main routine
 	{
 	}
 	//@DrawLoop omitted, SetEnemyGraphic() functions will be used to call that
+	@BackGround //routine called when the script is a stage
+	{
+	}
 }
 
-script_enemy youkai //entity routine
+script youkai //entity routine
 {
 	@Initialize{}
 	@MainLoop{}

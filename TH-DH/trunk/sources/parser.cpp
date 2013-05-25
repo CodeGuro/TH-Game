@@ -1,8 +1,19 @@
 #include <parser.hpp>
 #include <scriptengine.hpp>
+#include <iostream>
+#include <fstream>
+#include <Windows.h>
+#include <direct.h>
 
+parser::lexer::lexer() : current( &character ), next( tk_end ), character( '\0' )
+{
+}
+parser::lexer::lexer( char const * strstart ) : current( strstart ), line( 1 )
+{
+}
 void parser::lexer::skip()
 {
+
 	while( *current == 10 || *current == 13 || *current == 9 || *current == 32 || 
 			( current[0] == '/' && (current[1] == '/' || current[1] == '*') ) )
 	{
@@ -30,11 +41,11 @@ void parser::lexer::skip()
 parser::token parser::lexer::advance()
 {
 	skip();
-	token next;
 	switch( *current )
 	{
-	case '\n':
-		return tk_end;
+	case '\0':
+		next = tk_end;
+		break;
 	case '[':
 		++current;
 		next = tk_openbra;
@@ -277,7 +288,28 @@ parser::token parser::lexer::advance()
 					word += *current;
 					current++;
 				}while( isalpha( *current ) || *current == '_' || isdigit( *current ) );
-				//reserved words checked here
+				if( word == "if" )
+					next = tk_IF;
+				else if( word == "else" )
+					next = tk_ELSE;
+				else if( word == "while" )
+					next = tk_WHILE;
+				else if( word == "loop" )
+					next = tk_LOOP;
+				else if( word == "break" )
+					next = tk_BREAK;
+				else if( word == "let" )
+					next = tk_LET;
+				else if( word == "function" )
+					next = tk_FUNCTION;
+				else if( word == "task" )
+					next = tk_TASK;
+				else if( word == "return" )
+					next = tk_RETURN;
+				else if( word == "script_stage_main" )
+					next = tk_SCRIPT_STAGE_MAIN;
+				else if( word == "script_enemy" )
+					next = tk_SCRIPT_ENEMY;
 			}
 			else
 				next = tk_invalid;
@@ -287,7 +319,100 @@ parser::token parser::lexer::advance()
 
 	return next;
 }
+unsigned parser::lexer::getLine() const
+{
+	return line;
+}
+char parser::lexer::getCharacter() const
+{
+	return character;
+}
+float parser::lexer::getReal() const
+{
+	return real;
+}
+parser::token parser::lexer::getToken() const
+{
+	return next;
+}
 
+void parser::addScriptToQueue( std::string const & fullPath )
+{
+	if( scriptMgr.scriptUnits.find( fullPath ) != scriptMgr.scriptUnits.end() )
+		raiseError( std::string() + "\"" + fullPath + "\" is already in queue", error::er_parser );
+	scriptMgr.scriptUnits[ fullPath ].finishParsed = false;
+}
+
+void parser::raiseError( std::string errmsg, error::errReason reason)
+{
+	error err;
+	err.reason = reason;
+	err.errmsg = errmsg;
+	err.line = lexicon.getLine();
+	err.pathDoc = scriptMgr.currentScriptPath;
+	std::string::const_iterator it = errmsg.begin();
+	for( unsigned i = 1; i < lexicon.getLine() && it != errmsg.end(); ++it )
+	{
+		if( *it == '\n' )
+			++i;
+	}
+
+	for( unsigned i = 0; i < 5 && it != errmsg.end(); ++it )
+		err.fivelines += *it;
+
+	throw err;
+}
+void parser::mapScriptPaths( std::string const & pathStart )
+{
+	WIN32_FIND_DATA findDat;
+	HANDLE hFile = FindFirstFile( ( pathStart + "\\*" ).c_str(), &findDat );
+	do
+	{
+		std::string const fullPath = pathStart + "\\" + findDat.cFileName;
+		if( findDat.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
+		{
+			if( !( std::string( findDat.cFileName ) == "." || std::string( findDat.cFileName ) == ".." ) )
+			{
+				mapScriptPaths( fullPath );
+			}
+		}
+		else
+		{
+			HANDLE _hFile = CreateFile( fullPath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+			char buff[512] = "#TouhouDanmaku";
+			std::string scriptHeader = buff;
+			DWORD readBytes;
+			ReadFile( _hFile, buff, sizeof( buff ), &readBytes, NULL );
+			CloseHandle( _hFile );
+			if( std::string( buff ).find( scriptHeader ) != std::string::npos )
+				addScriptToQueue( fullPath );
+		}
+	}while( FindNextFile( hFile, &findDat ) );
+	FindClose( hFile );
+}
 parser::parser( script_engine & eng ) : engine( eng )
 {
+	try
+	{
+		char buff[512] = { 0 };
+		GetCurrentDirectory( sizeof( buff ), buff );
+		std::string const path = std::string( buff ) + "\\script";
+		mapScriptPaths( path );
+	}
+	catch( error const & err )
+	{
+		switch( err.reason )
+		{
+		case error::er_internal:
+			std::cout << "INTERNAL PARSER ERROR";
+			break;
+		case error::er_parser:
+			std::cout << "Parser error";
+			break;
+		case error::er_syntax:
+			std::cout << "Syntax error" << std::endl << err.pathDoc << std::endl
+				<< "line " << err.line << std::endl << err.errmsg << std::endl << err.fivelines << std::endl;
+			break;
+		}
+	}
 }
