@@ -44,7 +44,9 @@ type_data script_engine::script_type_manager::getArrayType( size_t element )
 //script engine block-related functions
 size_t script_engine::fetchBlock()
 {
-	return battery.vecBlocks.insert( battery.vecBlocks.end(), block() ) - battery.vecBlocks.begin();
+	size_t index = battery.vecBlocks.size();
+	battery.vecBlocks.push_back( block() );
+	return index;
 }
 block & script_engine::getBlock( size_t index )
 {

@@ -76,9 +76,9 @@ struct code
 	code dat( instruction c, size_t scriptDataIdx );
 };
 
+class script_engine;
 struct block
 {
-	class script_engine;
 	enum block_kind
 	{
 		bk_normal, bk_loop, bk_function, bk_task, bk_sub

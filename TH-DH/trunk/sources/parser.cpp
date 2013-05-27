@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <Windows.h>
+#include <math.h>
 
 parser::lexer::lexer() : current( &character ), next( tk_end ), character( '\0' )
 {
@@ -396,6 +397,15 @@ void parser::mapScriptPaths( std::string const & pathStart )
 	}while( FindNextFile( hFile, &findDat ) );
 	FindClose( hFile );
 }
+parser::symbol * parser::search( std::string const & name )
+{
+	for( unsigned i = vecScope.size(); i--; )
+	{
+		if( vecScope[i].find( name ) != vecScope[i].end() )
+			return &(vecScope[i][name]);
+	}
+	return NULL;
+}
 parser::parser( script_engine & eng ) : engine( eng )
 {
 	try
@@ -404,6 +414,9 @@ parser::parser( script_engine & eng ) : engine( eng )
 		GetCurrentDirectory( sizeof( buff ), buff );
 		std::string const path = std::string( buff ) + "\\script";
 		mapScriptPaths( path );
+		vecScope.push_back( scope() );
+		vecScope[0].blockIndex = invalidIndex;
+		importNativeSymbols();
 	}
 	catch( error const & err )
 	{
@@ -420,5 +433,127 @@ parser::parser( script_engine & eng ) : engine( eng )
 				<< "line " << err.line << std::endl << err.errmsg << std::endl << err.fivelines << std::endl;
 			break;
 		}
+	}
+}
+
+struct native_function
+{
+	char const * name;
+	void (*nCallBack)( script_engine * eng, size_t * argv );
+	unsigned argc;
+};
+
+//native symbols defined here
+struct natives
+{
+private:
+	friend class parser;
+	static void _add( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( eng->getScriptData( argv[0] ).real + eng->getScriptData( argv[1] ).real );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _subtract( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( eng->getScriptData( argv[0] ).real - eng->getScriptData( argv[1] ).real );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _multiply( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( eng->getScriptData( argv[0] ).real * eng->getScriptData( argv[1] ).real );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _divide( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( eng->getScriptData( argv[0] ).real / eng->getScriptData( argv[1] ).real );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _power( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( pow( eng->getScriptData( argv[0] ).real, eng->getScriptData( argv[1] ).real ) );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _absolute( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( abs( eng->getScriptData( argv[0] ).real ) );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _roof( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( ceil( eng->getScriptData( argv[0] ).real ) );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _floor( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( floor( eng->getScriptData( argv[0] ).real ) );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _index( script_engine * eng, size_t * argv )
+	{
+		eng->scriptDataAssign( argv[0], eng->getScriptData( argv[0] ).vec[ (unsigned)eng->getScriptData( argv[1] ).real ] );
+	}
+	static void _uniqueize( script_engine * eng, size_t * argv )
+	{
+		eng->uniqueizeScriptData( argv[0] );
+	}
+	static void _rand( script_engine * eng, size_t * argv )
+	{
+		float domain = eng->getScriptData( argv[1] ).real - eng->getScriptData( argv[0] ).real;
+		size_t tmp = eng->fetchScriptData( eng->getScriptData( argv[0] ).real + fmod( (float)rand() + 1.f, domain ) );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _rand_int( script_engine * eng, size_t * argv )
+	{
+		float domain = floor( eng->getScriptData( argv[1] ).real - eng->getScriptData( argv[0] ).real );
+		size_t tmp = eng->fetchScriptData( floor( eng->getScriptData( argv[0] ).real ) + fmod( (float)rand() + 1.f, domain ) );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+};
+
+void parser::importNativeSymbols()
+{
+	if( vecScope.size() != 1 )
+		raiseError( "Natives can be imported only in the file scope", error::er_parser );
+	native_function funcs[] =
+	{
+		{ "add", &natives::_add, 2 },
+		{ "subtract", &natives::_subtract, 2 },
+		{ "multiply", &natives::_multiply, 2 },
+		{ "divide", &natives::_divide, 2 },
+		{ "power", &natives::_power, 2 },
+		{ "absolute", &natives::_absolute, 1 },
+		{ "roof", &natives::_roof, 1 },
+		{ "floor", &natives::_floor, 1 },
+		{ "index", &natives::_index, 1 },
+		{ "uniqueize", &natives::_uniqueize, 1 },
+		{ "rand", &natives::_rand, 2 },
+		{ "rand_int", &natives::_rand_int, 2 }
+	};
+	for( unsigned i = 0; i <  sizeof( funcs ) / sizeof( native_function ); ++i )
+	{
+		symbol * s = search( funcs[i].name );
+		if( s )
+			raiseError( std::string() + "\"" + funcs[i].name +"\" "+ "has already been defined" , error::er_syntax );
+		block & b = engine.getBlock( engine.fetchBlock() );
+		b.hasResult = true;
+		b.kind = block::bk_function;
+		b.name = funcs[i].name;
+		b.argc = funcs[i].argc;
+		b.nativeCallBack = funcs[i].nCallBack;
+		symbol sym;
+		sym.blockIndex = invalidIndex;
+		sym.id = invalidIndex;
+		sym.level = 0;
+		vecScope[0][ funcs[i].name ] = sym;
 	}
 }

@@ -11,6 +11,7 @@ class script_engine
 private:
 	friend class script_machine;
 	friend class parser;
+	friend struct natives;
 	class inventory
 	{
 	private:

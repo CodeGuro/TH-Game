@@ -83,7 +83,7 @@ private:
 	lexer lexicon;
 	vector< scope > vecScope;
 
-	symbol * search( std::string const & str );
+	symbol * search( std::string const & name );
 	symbol * searchResult();
 	void findDocument( std::string const & pathDoc );
 	void parseParentheses();
@@ -108,6 +108,7 @@ private:
 	scriptHandler::scriptObj & getScript( std::string const & fullPath );
 	void raiseError( std::string errmsg, error::errReason reason );
 	void importExportSymbols( std::string const & fullPath );
+	void importNativeSymbols(); //in the topmost scope
 public:
 	parser( script_engine & eng ); //automatic parsing, feed data to the engine's battery
 
