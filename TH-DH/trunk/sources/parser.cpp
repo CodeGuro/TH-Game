@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <Windows.h>
-#include <direct.h>
 
 parser::lexer::lexer() : current( &character ), next( tk_end ), character( '\0' )
 {
@@ -336,13 +335,20 @@ parser::token parser::lexer::getToken() const
 	return next;
 }
 
-void parser::addScriptToQueue( std::string const & fullPath )
+block & parser::getBlock()
+{
+	return engine.getBlock( vecScope[ vecScope.size() - 1 ].blockIndex );
+}
+void parser::pushCode( code const & val )
+{
+	getBlock().vecCodes.push_back( val );
+}
+void parser::registerScript( std::string const & fullPath )
 {
 	if( scriptMgr.scriptUnits.find( fullPath ) != scriptMgr.scriptUnits.end() )
-		raiseError( std::string() + "\"" + fullPath + "\" is already in queue", error::er_parser );
+		raiseError( std::string() + "\"" + fullPath + "\" is already registered", error::er_parser );
 	scriptMgr.scriptUnits[ fullPath ].finishParsed = false;
 }
-
 void parser::raiseError( std::string errmsg, error::errReason reason)
 {
 	error err;
@@ -385,7 +391,7 @@ void parser::mapScriptPaths( std::string const & pathStart )
 			ReadFile( _hFile, buff, sizeof( buff ), &readBytes, NULL );
 			CloseHandle( _hFile );
 			if( std::string( buff ).find( scriptHeader ) != std::string::npos )
-				addScriptToQueue( fullPath );
+				registerScript( fullPath );
 		}
 	}while( FindNextFile( hFile, &findDat ) );
 	FindClose( hFile );

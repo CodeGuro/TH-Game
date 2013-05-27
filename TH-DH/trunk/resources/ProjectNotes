@@ -10,10 +10,7 @@ a stack is mandatory for the script environment
 function calls can have a return value that will be pushed onto the stack
 function calls push a return value to the stack when parsed as expressions
 task calls start a separate coroutine
-
-let bar = foo(32, 22); //function called, return value pushed to stack, said value assigned to another value on the stack
-foo(32, 22); //same function called but does not push a return value to the stack
-
-CreateEnemyFromScript(....) A script function used to spawn an entity
-	Arguments: [string]name of the presubroutine,[real4] position, speed, direction, [val]argument
-	The engine will use an associative array with a string as the key to the index of the subroutine
+Callback functions will be implemented and integrated for script compatibility
+#include will be handled through parsing, scanning the current scope sets the export symbols and parsing defines them
+#include will automatically #pragma once
+if a file has been parsed before, the export (top-level routines) symbols will be imported to save memory and time

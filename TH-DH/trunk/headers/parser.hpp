@@ -48,10 +48,6 @@ private:
 		size_t level; //for script environment runtime
 		size_t blockIndex;
 	};
-	struct scope : std::map< std::string, symbol >
-	{
-		block::block_kind blockKind;
-	};
 	struct scriptHandler
 	{
 		struct scriptObj
@@ -62,12 +58,12 @@ private:
 		std::map< std::string, scriptObj > scriptUnits;
 		std::string currentScriptPath; //currently working on
 		std::string scriptString; //current
+		vector< std::string > pragmaFiles; //for the current unit
 	};
-	struct blockMetaData
+	struct scope : std::map< std::string, symbol >
 	{
 		size_t blockIndex;
 		vector< std::string > args;
-		bool hasResult;
 	};
 	struct error
 	{
@@ -86,7 +82,7 @@ private:
 	scriptHandler scriptMgr;
 	lexer lexicon;
 	vector< scope > vecScope;
-	blockMetaData blockProperty;
+
 	symbol * search( std::string const & str );
 	symbol * searchResult();
 	void findDocument( std::string const & pathDoc );
@@ -101,15 +97,17 @@ private:
 	void parseExpression();
 	unsigned parseArguments();
 	void parseStatements();
-	void parseInlineBlock();
-	void parseBlock();
-	void scanCurrentScope();
+	void parseInlineBlock( block::block_kind kind );
+	void parseBlock( block::block_kind kind, vector< std::string > args );
+	void scanCurrentScope( block::block_kind kind, vector< std::string > args );
 	void parseScript( std::string scriptPath );
+	block & getBlock(); //get the current working block
 	void pushCode( code const & val ); //on the current working block
 	void mapScriptPaths( std::string const & pathStart );
-	void addScriptToQueue( std::string const & fullPath );
+	void registerScript( std::string const & fullPath );
 	scriptHandler::scriptObj & getScript( std::string const & fullPath );
 	void raiseError( std::string errmsg, error::errReason reason );
+	void importExportSymbols( std::string const & fullPath );
 public:
 	parser( script_engine & eng ); //automatic parsing, feed data to the engine's battery
 

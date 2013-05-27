@@ -81,7 +81,7 @@ struct block
 	class script_engine;
 	enum block_kind
 	{
-		bk_normal, bk_loop, bk_function, bk_task
+		bk_normal, bk_loop, bk_function, bk_task, bk_sub
 	};
 	vector< code > vecCodes;
 	void (*nativeCallBack)( script_engine * eng, size_t * args);

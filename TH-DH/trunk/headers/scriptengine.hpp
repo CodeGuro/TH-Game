@@ -9,7 +9,8 @@
 class script_engine
 {
 private:
-	friend class ::script_machine;
+	friend class script_machine;
+	friend class parser;
 	class inventory
 	{
 	private:
