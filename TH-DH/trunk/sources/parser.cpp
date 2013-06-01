@@ -88,6 +88,10 @@ parser::token parser::lexer::advance()
 		++current;
 		next = tk_dot;
 		break;
+	case '#':
+		++current;
+		next = tk_sharp;
+		break;
 	case '*':
 		{
 			++current;
@@ -410,13 +414,20 @@ parser::parser( script_engine & eng ) : engine( eng )
 {
 	try
 	{
+		//map the scripts to individual units to be parsed
 		char buff[512] = { 0 };
 		GetCurrentDirectory( sizeof( buff ), buff );
 		std::string const path = std::string( buff ) + "\\script";
 		mapScriptPaths( path );
-		vecScope.push_back( scope() );
-		vecScope[0].blockIndex = invalidIndex;
-		importNativeSymbols();
+
+		for( std::map< std::string, scriptHandler::scriptObj >::iterator it = scriptMgr.scriptUnits.begin(); it != scriptMgr.scriptUnits.end(); ++it )
+		{
+			if( !(it->second.finishParsed) )
+			{
+				parseScript( it->first );
+				it = scriptMgr.scriptUnits.begin();
+			}
+		}
 	}
 	catch( error const & err )
 	{
@@ -434,6 +445,31 @@ parser::parser( script_engine & eng ) : engine( eng )
 			break;
 		}
 	}
+}
+void parser::parseScript( std::string const & scriptPath )
+{
+	if( vecScope.size() )
+		raiseError( "The scope has not been cleared for new parse", error::er_parser );
+	vecScope.push_back( scope() );
+	vecScope[0].blockIndex = invalidIndex;
+	scriptMgr.currentScriptPath = scriptPath;
+	scriptMgr.scriptString = std::string( (std::istreambuf_iterator< char >( std::ifstream( scriptPath ) )), std::istreambuf_iterator< char >() );
+	lexicon = lexer( scriptMgr.scriptString.c_str() );
+	scanCurrentScope( block::bk_normal, vector< std::string >() );
+	importNativeSymbols();
+	parsePreProcess();
+	parseBlock( block::bk_normal, vector< std::string >() );
+	vecScope.pop_back();
+	scriptMgr.scriptUnits[ scriptPath ].finishParsed = true;
+}
+/*incomplete*/void parser::parseBlock( block::block_kind kind, vector< std::string > const args )
+{
+}
+/*incomplete*/void parser::parsePreProcess( void )
+{
+}
+/*incomplete*/void parser::scanCurrentScope( block::block_kind kind, vector< std::string > const args )
+{
 }
 
 struct native_function

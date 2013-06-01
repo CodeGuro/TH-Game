@@ -97,10 +97,11 @@ private:
 	void parseExpression();
 	unsigned parseArguments();
 	void parseStatements();
-	void parseInlineBlock( block::block_kind kind );
-	void parseBlock( block::block_kind kind, vector< std::string > args );
-	void scanCurrentScope( block::block_kind kind, vector< std::string > args );
-	void parseScript( std::string scriptPath );
+	void parseInlineBlock( block::block_kind kind ); //auto-call (if/loops)
+	void parseBlock( block::block_kind kind, vector< std::string > const args );
+	void scanCurrentScope( block::block_kind kind, vector< std::string > const args );
+	void parsePreProcess();
+	void parseScript( std::string const & scriptPath );
 	block & getBlock(); //get the current working block
 	void pushCode( code const & val ); //on the current working block
 	void mapScriptPaths( std::string const & pathStart );

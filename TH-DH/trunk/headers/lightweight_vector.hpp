@@ -133,11 +133,11 @@ public:
 	{
 		return at + length;
 	}
-	T & back()
+	T & back() const
 	{
 		return at[ length - 1 ];
 	}
-	T & front()
+	T & front() const
 	{
 		return *at;
 	}
