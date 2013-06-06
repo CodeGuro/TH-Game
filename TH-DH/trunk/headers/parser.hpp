@@ -32,15 +32,17 @@ private:
 
 	public:
 		lexer( char const * strstart );
+		lexer( char const * strstart, unsigned line );
 		lexer();
 		void skip(); //whitespace
 		token advance(); //get the next token
 		token getToken() const;
-		const std::string & getString() const;
-		const std::string & getWord() const;
+		std::string getString() const;
+		std::string getWord() const;
 		unsigned getLine() const;
 		float getReal() const;
 		char getCharacter() const;
+		const char * getCurrent() const;
 	};
 	struct symbol
 	{

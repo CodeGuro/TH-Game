@@ -1,7 +1,7 @@
 //A TH_DH sample script, early project
 #TouhouDanmaku //preprocessor to let the parser know this script is intended for TH-DH, must be within first 512 characters
                           //optional : [single] anonymous is a script enemy, [stage] anonymous is a stage, []/void - assumed [single]
-#include "functions" //preprocessor for including external scripts
+#include ".\functions.th" //preprocessor for including external scripts
 
 script //main routine
 {
@@ -39,3 +39,4 @@ function foo( let a, let b ) //args optional
 sub bar( let c )
 {
 }
+//okay

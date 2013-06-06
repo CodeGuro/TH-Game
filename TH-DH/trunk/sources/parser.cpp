@@ -11,24 +11,32 @@ parser::lexer::lexer() : current( &character ), next( tk_end ), character( '\0' 
 parser::lexer::lexer( char const * strstart ) : current( strstart ), line( 1 )
 {
 }
+parser::lexer::lexer( char const * strstart, unsigned lineStart ) : current( strstart ), line( lineStart )
+{
+}
 void parser::lexer::skip()
 {
 
 	while( *current == 10 || *current == 13 || *current == 9 || *current == 32 || 
 			( current[0] == '/' && (current[1] == '/' || current[1] == '*') ) )
 	{
-		if( current[1] == '/' )
-			while( *current++ != '\n' );
-		else if( current[1] == '*' )
+		if( current[0] == '/' && current[1] == '/' )
 		{
-			current += 2;
-			while( !( current[0] == '*' && current[1] == '/' ) )
+			do
 			{
+				++current;
+			}while( !( current[0] == '\n' || current[0] == '\0' ) );
+		}
+		else if( current[0] == '/' && current[1] == '*' )
+		{
+			do
+			{
+				++current;
 				if( *current == '\n' )
 					++line;
-				++current;
-			}
-			current +=2;
+				else if( *current == '\0' )
+					break;
+			}while( !( *(current-2) == '*' && *(current-1) == '/') );
 		}
 		else
 		{
@@ -283,7 +291,7 @@ parser::token parser::lexer::advance()
 				}
 
 			}
-			else if( isalpha( *current ) && *current == '_' )
+			else if( isalpha( *current ) || *current == '_' )
 			{
 				next = tk_word;
 				word = "";
@@ -335,9 +343,21 @@ float parser::lexer::getReal() const
 {
 	return real;
 }
+std::string parser::lexer::getString() const
+{
+	return word;
+}
+std::string parser::lexer::getWord() const
+{
+	return word;
+}
 parser::token parser::lexer::getToken() const
 {
 	return next;
+}
+const char * parser::lexer::getCurrent() const
+{
+	return current;
 }
 
 block & parser::getBlock()
@@ -361,15 +381,19 @@ void parser::raiseError( std::string errmsg, error::errReason reason)
 	err.errmsg = errmsg;
 	err.line = lexicon.getLine();
 	err.pathDoc = scriptMgr.currentScriptPath;
-	std::string::const_iterator it = errmsg.begin();
-	for( unsigned i = 1; i < lexicon.getLine() && it != errmsg.end(); ++it )
+	std::string::iterator it = scriptMgr.scriptString.begin();
+	for( unsigned i = 1; i < lexicon.getLine() && it != scriptMgr.scriptString.end(); ++it )
 	{
 		if( *it == '\n' )
 			++i;
 	}
 
-	for( unsigned i = 0; i < 5 && it != errmsg.end(); ++it )
+	for( unsigned i = 0; i < 5 && it != scriptMgr.scriptString.end(); ++it )
+	{
+		if( *it == '\n' )
+			++i;
 		err.fivelines += *it;
+	}
 
 	throw err;
 }
@@ -455,9 +479,8 @@ void parser::parseScript( std::string const & scriptPath )
 	scriptMgr.currentScriptPath = scriptPath;
 	scriptMgr.scriptString = std::string( (std::istreambuf_iterator< char >( std::ifstream( scriptPath ) )), std::istreambuf_iterator< char >() );
 	lexicon = lexer( scriptMgr.scriptString.c_str() );
-	scanCurrentScope( block::bk_normal, vector< std::string >() );
 	importNativeSymbols();
-	parsePreProcess();
+	scanCurrentScope( block::bk_normal, vector< std::string >() );
 	parseBlock( block::bk_normal, vector< std::string >() );
 	vecScope.pop_back();
 	scriptMgr.scriptUnits[ scriptPath ].finishParsed = true;
@@ -467,6 +490,54 @@ void parser::parseScript( std::string const & scriptPath )
 }
 /*incomplete*/void parser::parsePreProcess( void )
 {
+	while( lexicon.advance() == tk_sharp )
+	{
+		if( lexicon.advance() == tk_word )
+		{
+			if( lexicon.getWord() == "TouhouDanmaku" )
+			{
+			}
+			else if( lexicon.getWord() == "include" )
+			{
+				if( lexicon.advance() != tk_string )
+					raiseError( "\"[string]\" expected", error::er_syntax );
+				lexer tmp = lexicon;
+				std::string str = lexicon.getString();
+				std::string path;
+				std::string::iterator it = str.begin();
+				if( *it == '.' )
+				{
+					std::string::iterator it2 = scriptMgr.currentScriptPath.end() - 1;
+					do
+					{
+						while( *(--it2) != '\\' )
+							--it2;
+					}while( *(++it) == '.' );
+					path = std::string( scriptMgr.currentScriptPath.begin(), it2 ) + std::string( it, str.end() );
+				}
+				else if( str.size() > 7 && std::string( it, it + 7 ) == "script\\" )
+				{
+					char * buff = new char[ 512 ]();
+					GetCurrentDirectory( 512, buff );
+					path = std::string( buff ) + "\\" + str;
+					delete buff;
+				}
+				else
+					path = str;
+				std::string pathStr = std::string( std::istreambuf_iterator< char >( std::ifstream( path ) ), std::istreambuf_iterator< char >() );
+				if( !pathStr.size() )
+					raiseError( "File does not exist or is an invalid document", error::er_syntax );
+
+				//save the current workspace
+				lexer lexSave = lexicon;
+				unsigned lexCurrSave = lexicon.getCurrent() - scriptMgr.currentScriptPath.c_str();
+				std::string currentPath = scriptMgr.currentScriptPath;
+				std::string currentScriptStr = scriptMgr.scriptString;
+
+			}
+		}
+
+	}
 }
 /*incomplete*/void parser::scanCurrentScope( block::block_kind kind, vector< std::string > const args )
 {

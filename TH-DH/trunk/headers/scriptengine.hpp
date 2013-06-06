@@ -23,6 +23,7 @@ private:
 		vector< size_t > vecScriptDataGarbage;
 		vector< size_t > vecRoutinesGabage;
 		vector< size_t > vecMachinesGarbage;
+		std::map< std::string, std::map< std::string, size_t > > mappedScripts;
 	};
 	class script_type_manager
 	{
@@ -69,6 +70,7 @@ private:
 	void terminateMachine( size_t index ); //Finalize runs
 	void terminateImmediateMachine( size_t index ); //Finalize doesn't run (usually for off-screen termination)
 	void releaseScriptMachine( size_t & index );
+	size_t getBlockFromScript( std::string const & filePath, std::string const & scriptName );
 
 public:
 	script_engine();
