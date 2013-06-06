@@ -24,10 +24,10 @@
     <ClCompile Include="trunk\sources\scriptmachine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="trunk\sources\parser.cpp">
+    <ClCompile Include="trunk\sources\bytecode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="trunk\sources\bytecode.cpp">
+    <ClCompile Include="trunk\sources\parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

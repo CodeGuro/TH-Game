@@ -4,6 +4,7 @@
 #include <fstream>
 #include <Windows.h>
 #include <math.h>
+#define CSTRFUNCRESULT "(RESULT)"
 
 parser::lexer::lexer() : current( &character ), next( tk_end ), character( '\0' )
 {
@@ -76,6 +77,7 @@ parser::token parser::lexer::advance()
 	case '}':
 		++current;
 		next = tk_closecur;
+		break;
 	case '@':
 		++current;
 		next = tk_at;
@@ -467,6 +469,10 @@ parser::parser( script_engine & eng ) : engine( eng )
 			std::cout << "Syntax error" << std::endl << err.pathDoc << std::endl
 				<< "line " << err.line << std::endl << err.errmsg << std::endl << err.fivelines << std::endl;
 			break;
+		case error::er_symbol:
+			std::cout << "Symbol collision error" << std::endl << err.pathDoc << std::endl
+				<< "line " << err.line << std::endl << "\"" << err.errmsg << "\"" << " has already been defined"
+				<< std::endl << err.fivelines << std::endl;
 		}
 	}
 }
@@ -541,6 +547,72 @@ void parser::parseScript( std::string const & scriptPath )
 }
 /*incomplete*/void parser::scanCurrentScope( block::block_kind kind, vector< std::string > const args )
 {
+	//if it's a function, allow a result
+	unsigned id = 0;
+	unsigned level = vecScope.size() - 1;
+	scope & currentScope = vecScope[ vecScope.size() -1 ];
+	if( kind == block::bk_function )
+	{
+		symbol result;
+		result.blockIndex = -1;
+		result.id = id++;
+		result.level = level;
+		vecScope[ vecScope.size() - 1 ][ CSTRFUNCRESULT ] = result;
+	}
+	for( unsigned i = 0; i < args.size(); ++i )
+	{
+		symbol arg;
+		arg.blockIndex = -1;
+		arg.id = id++;
+		arg.level = level;
+		vecScope[ level ][ args[i] ] = arg;
+	}
+
+	lexer anchorpoint = lexicon;
+	unsigned nested = level;
+	token tok;
+	do
+	{
+		tok = lexicon.advance();
+
+		if( tok == tk_opencur )
+			++nested;
+		else if( tok == tk_closecur )
+			--nested;
+		else if( nested == level )
+		{
+			if( tok == tk_LET )
+			{
+				if( lexicon.advance() == tk_word )
+				{
+					std::string word = lexicon.getWord();
+					if( currentScope.find( word ) != currentScope.end() )
+						raiseError( word, error::er_symbol );
+					symbol variable;
+					variable.blockIndex = -1;
+					variable.level = level;
+					variable.id = id++;
+					currentScope[ word ] = variable;
+				}
+			}
+			else if( tok == tk_at || tok == tk_FUNCTION || tok == tk_TASK )
+			{
+				if( lexicon.advance() == tk_word )
+				{
+					std::string subroutine = lexicon.getWord();
+					if( currentScope.find( subroutine ) != currentScope.end() )
+						raiseError( subroutine, error::er_symbol );
+					symbol routine;
+					routine.blockIndex = engine.fetchBlock();
+					routine.id = -1;
+					routine.level = level + 1;
+					currentScope[ subroutine ] = routine;
+				}
+			}
+		}
+	}while( tok != tk_end );
+
+	lexicon = anchorpoint;
 }
 
 struct native_function

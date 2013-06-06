@@ -71,7 +71,7 @@ private:
 	{
 		enum errReason
 		{
-			er_syntax, er_parser, er_internal
+			er_syntax, er_symbol, er_parser, er_internal
 		};
 		errReason reason;
 		std::string pathDoc;
