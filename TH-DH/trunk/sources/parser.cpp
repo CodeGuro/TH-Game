@@ -4,6 +4,7 @@
 #include <fstream>
 #include <Windows.h>
 #include <math.h>
+#include <sstream>
 #define CSTRFUNCRESULT "(RESULT)"
 
 parser::lexer::lexer() : current( &character ), next( tk_end ), character( '\0' )
@@ -62,6 +63,7 @@ parser::token parser::lexer::advance()
 	case ']':
 		++current;
 		next = tk_closebra;
+		break;
 	case '(':
 		++current;
 		next = tk_lparen;
@@ -457,23 +459,27 @@ parser::parser( script_engine & eng ) : engine( eng )
 	}
 	catch( error const & err )
 	{
+		std::stringstream sstr;
+		std::string title;
 		switch( err.reason )
 		{
 		case error::er_internal:
-			std::cout << "INTERNAL PARSER ERROR";
+			title = "INTERNAL PARSER ERROR";
 			break;
 		case error::er_parser:
-			std::cout << "Parser error";
-			break;
 		case error::er_syntax:
-			std::cout << "Syntax error" << std::endl << err.pathDoc << std::endl
-				<< "line " << err.line << std::endl << err.errmsg << std::endl << err.fivelines << std::endl;
+			title = ( err.reason == error::er_parser? "Parser Error" : "Syntax Error" );
+			sstr << err.pathDoc << "\n\n" << "line " << err.line << "\n\n"
+				<< err.errmsg << "\n\n" << err.fivelines << "\n" << "....." << std::endl;
 			break;
 		case error::er_symbol:
-			std::cout << "Symbol collision error" << std::endl << err.pathDoc << std::endl
-				<< "line " << err.line << std::endl << "\"" << err.errmsg << "\"" << " has already been defined"
-				<< std::endl << err.fivelines << std::endl;
+			title = "Syntax / Linkage Error";
+			sstr << err.pathDoc << "\n\n" << "line " << err.line << "\n\n"
+				<< "\"" << err.errmsg << "\"" << " has already been defined" << "\n\n"
+				<< err.fivelines << std::endl;
+			break;
 		}
+		MessageBoxA( NULL, sstr.str().c_str(), title.c_str(), NULL );
 	}
 }
 void parser::parseScript( std::string const & scriptPath )
@@ -487,14 +493,16 @@ void parser::parseScript( std::string const & scriptPath )
 	lexicon = lexer( scriptMgr.scriptString.c_str() );
 	importNativeSymbols();
 	scanCurrentScope( block::bk_normal, vector< std::string >() );
-	parseBlock( block::bk_normal, vector< std::string >() );
+	parseStatements();
+	if( lexicon.getToken() != tk_end )
+		raiseError( "Parser did not completely parse the script", error::er_parser );
 	vecScope.pop_back();
 	scriptMgr.scriptUnits[ scriptPath ].finishParsed = true;
 }
 /*incomplete*/void parser::parseBlock( block::block_kind kind, vector< std::string > const args )
 {
 }
-/*incomplete*/void parser::parsePreProcess( void )
+/*incomplete / deprecated */void parser::parsePreProcess( void )
 {
 	while( lexicon.advance() == tk_sharp )
 	{
@@ -630,6 +638,83 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 	}while( tok != tk_end );
 
 	lexicon = anchorpoint;
+}
+/*incomplete*/ void parser::parseStatements()
+{
+	bool finished = false;
+	do
+	{
+		bool needSemicolon = true;
+		if( lexicon.advance() == tk_sharp )
+		{
+			if( lexicon.advance() == tk_word )
+			{
+				std::string preproc = lexicon.getWord();
+				if( preproc == "TouhouDanmaku" )
+				{
+					if( lexicon.advance() != tk_openbra )
+						raiseError( "\"[\" expected", error::er_syntax );
+					if( lexicon.advance() != tk_word )
+						raiseError( "script specification necessary", error::er_syntax );
+					std::string scriptspec = lexicon.getWord();
+					if( lexicon.advance() != tk_closebra )
+						raiseError( "\"]\" expected", error::er_syntax );
+
+				}
+				else if( preproc == "include" )
+				{
+					if( lexicon.advance() != tk_string )
+						raiseError( "script path [string] expected", error::er_syntax );
+					std::string fullPath;
+					std::string path = lexicon.getString();
+					std::string::iterator it = path.begin();
+					if( *it == '.' )
+					{
+						std::string::iterator it2 = scriptMgr.currentScriptPath.end() - 1;
+						do
+						{
+							while( *(--it2) != '\\' )
+								--it2;
+						}while( *(++it) == '.' );
+						fullPath = std::string( scriptMgr.currentScriptPath.begin(), it2 ) + std::string( it, path.end() );
+					}
+					else if( path.size() > 7 && std::string( it, it + 7 ) == "script\\" )
+					{
+						char * buff = new char[ 512 ]();
+						GetCurrentDirectory( 512, buff );
+						fullPath = std::string( buff ) + "\\" + path;
+						delete buff;
+					}
+					else
+						fullPath = path;
+					std::string scriptstr = std::string( std::istreambuf_iterator< char >( std::ifstream( fullPath ) ), std::istreambuf_iterator< char >() );
+					if( !scriptstr.size() )
+						raiseError( "File does not exist or is an invalid document", error::er_syntax );
+					//save
+					unsigned lexLine = lexicon.getLine();
+					unsigned lexPlace = lexicon.getCurrent() - scriptMgr.scriptString.c_str();
+					scriptMgr.pragmaFiles.push_back( fullPath );
+					std::string currentPath = scriptMgr.currentScriptPath;
+					std::string currentScriptStr = scriptMgr.scriptString;
+
+					//parse the new document
+					scriptMgr.currentScriptPath = fullPath;
+					scriptMgr.scriptString = scriptstr;
+					lexicon = lexer( scriptMgr.scriptString.c_str() );
+					scanCurrentScope( block::bk_normal, vector< std::string >() );
+					parseStatements();
+
+					//restore
+					scriptMgr.currentScriptPath = currentPath;
+					scriptMgr.scriptString = currentScriptStr;
+					lexicon = lexer( scriptMgr.scriptString.c_str() + lexPlace, lexLine );
+				}
+			}
+			needSemicolon = false;
+		}
+		if( needSemicolon && lexicon.advance() != tk_semicolon )
+			finished = true;
+	}while( !finished );
 }
 
 struct native_function
