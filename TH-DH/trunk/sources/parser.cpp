@@ -460,6 +460,7 @@ parser::parser( script_engine & eng ) : engine( eng )
 	catch( error const & err )
 	{
 		std::stringstream sstr;
+		std::stringstream sstrAdditional;
 		std::string title;
 		switch( err.reason )
 		{
@@ -469,16 +470,18 @@ parser::parser( script_engine & eng ) : engine( eng )
 		case error::er_parser:
 		case error::er_syntax:
 			title = ( err.reason == error::er_parser? "Parser Error" : "Syntax Error" );
-			sstr << err.pathDoc << "\n\n" << "line " << err.line << "\n\n"
-				<< err.errmsg << "\n\n" << err.fivelines << "\n" << "....." << std::endl;
+			sstrAdditional << err.errmsg;
 			break;
 		case error::er_symbol:
 			title = "Syntax / Linkage Error";
-			sstr << err.pathDoc << "\n\n" << "line " << err.line << "\n\n"
-				<< "\"" << err.errmsg << "\"" << " has already been defined" << "\n\n"
-				<< err.fivelines << std::endl;
+			sstrAdditional << "\"" << err.errmsg << "\"" << " has already been defined";
 			break;
+		case error::er_usymbol:
+			title = "Syntax Error";
+			sstrAdditional << "\"" << err.errmsg << "\"" << " undefined symbol";
 		}
+		sstr << err.pathDoc << "\n\n" << "line " << err.line << "\n\n"
+			<< sstrAdditional << "\n\n" << err.fivelines << "\n" << "....." << std::endl;
 		MessageBoxA( NULL, sstr.str().c_str(), title.c_str(), NULL );
 	}
 }
@@ -499,8 +502,21 @@ void parser::parseScript( std::string const & scriptPath )
 	vecScope.pop_back();
 	scriptMgr.scriptUnits[ scriptPath ].finishParsed = true;
 }
-/*incomplete*/void parser::parseBlock( block::block_kind kind, vector< std::string > const args )
+/*incomplete*/void parser::parseBlock( symbol const symSub, vector< std::string > const & args )
 {
+	if( lexicon.advance() != tk_opencur )
+		raiseError( "\"{\" expected", error::er_syntax );
+
+	vecScope.push_back( scope() );
+	vecScope[ vecScope.size() - 1 ].blockIndex = symSub.blockIndex;
+	scanCurrentScope( engine.getBlock( symSub.blockIndex ).kind, args );
+	for( unsigned i = 0; i < args.size(); ++i )
+		engine.getBlock( symSub.blockIndex ).vecCodes.push_back( code::varLev( vc_assign, search( args[i] )->id, 0 ) );
+	parseStatements();
+	vecScope.pop_back();
+
+	if( lexicon.getToken() != tk_closecur )
+		raiseError( "\"}\" expected", error::er_syntax );
 }
 /*incomplete / deprecated */void parser::parsePreProcess( void )
 {
@@ -553,7 +569,7 @@ void parser::parseScript( std::string const & scriptPath )
 
 	}
 }
-void parser::scanCurrentScope( block::block_kind kind, vector< std::string > const args )
+void parser::scanCurrentScope( block::block_kind kind, vector< std::string > const & args )
 {
 	//if it's a function, allow a result
 	unsigned id = 0;
@@ -645,7 +661,8 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 	do
 	{
 		bool needSemicolon = true;
-		if( lexicon.advance() == tk_sharp )
+		token lextok = lexicon.advance();
+		if( lextok == tk_sharp )
 		{
 			if( lexicon.advance() == tk_word )
 			{
@@ -712,6 +729,35 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			}
 			needSemicolon = false;
 		}
+
+		else if( lextok == tk_FUNCTION || lextok == tk_at || lextok == tk_TASK )
+		{
+			if ( lexicon.advance() != tk_word )
+				raiseError( "the subroutine must be named", error::er_syntax );
+			std::string subname = lexicon.getWord();
+			symbol * subsym = search( subname );
+			if( !subsym )
+				raiseError( subname, error::er_usymbol );
+			vector< std::string > args;
+			if( lexicon.advance() == tk_lparen ) //function foo( let a, let b, );
+			{
+				do
+				{
+					if( lexicon.advance() == tk_LET )
+					{
+						if( lexicon.advance() != tk_word )
+							raiseError( "improper syntax", error::er_syntax );
+						args.push_back( lexicon.getWord() );
+					}
+				}while( lexicon.advance() == tk_comma );
+				if( lexicon.getToken() != tk_rparen )
+					raiseError( "\")\" expected", error::er_syntax );
+			}
+			parseBlock( *subsym, args );
+			needSemicolon = false;
+		}
+
+
 		if( needSemicolon && lexicon.advance() != tk_semicolon )
 			finished = true;
 	}while( !finished );

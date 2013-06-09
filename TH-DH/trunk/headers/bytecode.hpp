@@ -70,10 +70,10 @@ struct code
 	code();
 	code( instruction c );
 	//named constructor idom
-	code varLev( instruction c, size_t varIndex, size_t levelUp );
-	code subArg( instruction c, size_t subIndex, size_t subArgc );
-	code loop( instruction c, size_t loopBackIndex );
-	code dat( instruction c, size_t scriptDataIdx );
+	static code varLev( instruction c, size_t varIndex, size_t levelUp );
+	static code subArg( instruction c, size_t subIndex, size_t subArgc );
+	static code loop( instruction c, size_t loopBackIndex );
+	static code dat( instruction c, size_t scriptDataIdx );
 };
 
 class script_engine;
