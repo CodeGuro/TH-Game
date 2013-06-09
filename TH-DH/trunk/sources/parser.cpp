@@ -545,7 +545,7 @@ void parser::parseScript( std::string const & scriptPath )
 
 	}
 }
-/*incomplete*/void parser::scanCurrentScope( block::block_kind kind, vector< std::string > const args )
+void parser::scanCurrentScope( block::block_kind kind, vector< std::string > const args )
 {
 	//if it's a function, allow a result
 	unsigned id = 0;
@@ -607,6 +607,23 @@ void parser::parseScript( std::string const & scriptPath )
 					routine.id = -1;
 					routine.level = level + 1;
 					currentScope[ subroutine ] = routine;
+					block & blockRoutine = engine.getBlock( routine.blockIndex );
+					blockRoutine.kind = (tok == tk_FUNCTION? block::bk_function : (tok == tk_TASK? block::bk_task : block::bk_sub));
+					blockRoutine.hasResult = (tok == tk_FUNCTION);
+					blockRoutine.name = subroutine;
+					blockRoutine.nativeCallBack = 0;
+					blockRoutine.argc = 0;
+					if( lexicon.advance() == tk_lparen )
+					{
+						do
+						{
+							if( lexicon.advance() == tk_LET )
+								if( lexicon.advance() == tk_word )
+									++blockRoutine.argc;
+						}while( lexicon.advance() == tk_comma );
+						if( lexicon.getToken() != tk_rparen )
+							raiseError( "\")\" expected", error::er_syntax );
+					}
 				}
 			}
 		}
