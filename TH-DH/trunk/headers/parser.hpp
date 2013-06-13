@@ -88,15 +88,16 @@ private:
 	symbol * search( std::string const & name );
 	symbol * searchResult();
 	void findDocument( std::string const & pathDoc );
-	void parseParentheses();
-	void parseClause();
-	void parsePrefix();
-	void parseSuffix();
-	void parseProduct();
-	void parseSum();
-	void parseComparison();
-	void parseLogic();
+	void writeOperation( std::string const & nativeFunc );
 	void parseExpression();
+	void parseLogic();
+	void parseComparison();
+	void parseSum();
+	void parseProduct();
+	void parseSuffix();
+	void parsePrefix();
+	void parseClause();
+	void parseParentheses();
 	unsigned parseArguments();
 	void parseStatements();
 	void parseInlineBlock( symbol const symSub ); //auto-call (if/loops)

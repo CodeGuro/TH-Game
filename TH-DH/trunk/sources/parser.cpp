@@ -364,6 +364,181 @@ const char * parser::lexer::getCurrent() const
 	return current;
 }
 
+void parser::parseExpression()
+{
+	parseLogic();
+}
+void parser::parseLogic()
+{
+	parseComparison();
+	while( lexicon.getToken() == tk_and || lexicon.getToken() == tk_or )
+	{
+		token tok = lexicon.getToken();
+		lexicon.advance();
+		parseComparison();
+		std::string operation = ( tok == tk_and ? "logicAnd" : "logicOr" );
+		writeOperation( operation );
+	}
+}
+void parser::parseComparison()
+{
+	parseSum();
+	std::string operation;
+	switch( lexicon.getToken() )
+	{
+	case tk_assign:
+		raiseError( "\"=\" is not a comparison operator, did you mean \"==\"?", error::er_syntax );
+		break;
+	case tk_compare_equal:
+		operation = "compareEqual";
+		break;
+	case tk_compare_notequal:
+		operation = "compareNotEqual";
+		break;
+	case tk_compare_greater:
+		operation = "compareGreater";
+		break;
+	case tk_compare_greaterequal:
+		operation = "compareGreaterEqual";
+		break;
+	case tk_compare_less:
+		operation = "compareLess";
+		break;
+	case tk_compare_lessequal:
+		operation = "compareLessEqual";
+		break;
+	}
+	if( operation.size() )
+	{
+		lexicon.advance();
+		writeOperation( operation );
+	}
+}
+void parser::parseSum()
+{
+	parseProduct();
+	while( lexicon.getToken() == tk_plus || lexicon.getToken() == tk_minus )
+	{
+		token tok = lexicon.getToken();
+		lexicon.advance();
+		parseProduct();
+		std::string operation = ( tok == tk_plus ? "add" : "subtract" );
+		writeOperation( operation );
+	}
+}
+void parser::parseProduct()
+{
+	parsePrefix();
+	while( lexicon.getToken() == tk_asterisk || lexicon.getToken() == tk_slash )
+	{
+		token tok = lexicon.getToken();
+		lexicon.advance();
+		parsePrefix();
+		std::string operation = ( tok == tk_asterisk ? "multiply" : "divide" );
+		writeOperation( operation );
+	}
+}
+void parser::parsePrefix()
+{
+	std::string operation;
+	switch( lexicon.getToken() )
+	{
+	case tk_plus:
+		lexicon.advance();
+		parsePrefix();
+		break;
+	case tk_minus:
+		lexicon.advance();
+		operation = "negative";
+		parsePrefix();
+		break;
+	case tk_not:
+		lexicon.advance();
+		operation = "not";
+		parsePrefix();
+		break;
+	}
+	operation.size() ? writeOperation( operation ) : parseSuffix();
+}
+void parser::parseSuffix()
+{
+	parseClause();
+	if( lexicon.getToken() == tk_caret )
+	{
+		lexicon.advance();
+		parseSuffix();
+		writeOperation( std::string( "power" ) );
+	}
+}
+void parser::parseClause()
+{
+	switch( lexicon.getToken() )
+	{
+	case tk_real:
+		getBlock().vecCodes.push_back( code::dat( vc_pushVal, engine.fetchScriptData( lexicon.getReal() ) ) );
+		lexicon.advance();
+		break;
+	case tk_character:
+		getBlock().vecCodes.push_back( code::dat( vc_pushVal, engine.fetchScriptData( lexicon.getCharacter() ) ) );
+		lexicon.advance();
+		break;
+	case tk_string:
+		getBlock().vecCodes.push_back( code::dat( vc_pushVal, engine.fetchScriptData( lexicon.getString() ) ) );
+		lexicon.advance();
+		//uniqueize
+		break;
+	case tk_word:
+		{
+			symbol * sym = search( lexicon.getWord() );
+			if( !sym )
+				raiseError( lexicon.getWord(), error::er_symbol );
+			lexicon.advance();
+			if( sym->blockIndex != invalidIndex )
+			{
+				int argc;
+				if( (argc = parseArguments()) != engine.getBlock( sym->blockIndex ).argc )
+					raiseError( "wrong number of arguments", error::er_syntax );
+				getBlock().vecCodes.push_back( code::subArg( vc_callFunctionPush, sym->blockIndex, argc ) );
+			}
+			else
+				getBlock().vecCodes.push_back( code::varLev( vc_pushVar, sym->id, sym->level - vecScope.size() ) );
+
+		}
+		break;
+	case tk_lparen:
+		{
+			parseParentheses();
+		}
+		break;
+	default:
+		raiseError( "invalid clause in expression", error::er_syntax );
+	}
+}
+void parser::parseParentheses()
+{
+	if( lexicon.getToken() != tk_lparen )
+		raiseError( "\"(\" expected" , error::er_syntax );
+	lexicon.advance();
+	parseExpression();
+	if( lexicon.getToken() != tk_rparen )
+		raiseError( "\")\" expected", error::er_syntax );
+	lexicon.advance();
+}
+unsigned parser::parseArguments()
+{
+	unsigned argc = 0;
+	if( lexicon.getToken() == tk_lparen )
+	{
+		do
+		{
+			if( lexicon.advance() == tk_rparen )
+				break;
+			parseExpression();
+			++argc;
+		}while( !(lexicon.getToken() == tk_comma || lexicon.getToken() == tk_rparen) );
+	}
+	return argc;
+}
 block & parser::getBlock()
 {
 	return engine.getBlock( vecScope[ vecScope.size() - 1 ].blockIndex );
@@ -438,6 +613,11 @@ parser::symbol * parser::search( std::string const & name )
 	}
 	return NULL;
 }
+parser::symbol * parser::searchResult()
+{
+	std::string str = CSTRFUNCRESULT;
+	return search( str );
+}
 parser::parser( script_engine & eng ) : engine( eng )
 {
 	try
@@ -502,9 +682,9 @@ void parser::parseScript( std::string const & scriptPath )
 	vecScope.pop_back();
 	scriptMgr.scriptUnits[ scriptPath ].finishParsed = true;
 }
-/*incomplete*/void parser::parseBlock( symbol const symSub, vector< std::string > const & args )
+void parser::parseBlock( symbol const symSub, vector< std::string > const & args )
 {
-	if( lexicon.advance() != tk_opencur )
+	if( lexicon.getToken() != tk_opencur )
 		raiseError( "\"{\" expected", error::er_syntax );
 
 	vecScope.push_back( scope() );
@@ -739,7 +919,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			if( !subsym )
 				raiseError( subname, error::er_usymbol );
 			vector< std::string > args;
-			if( lexicon.advance() == tk_lparen ) //function foo( let a, let b, );
+			if( lexicon.advance() == tk_lparen ) //function foo( let a, let b, ){}
 			{
 				do
 				{
@@ -748,17 +928,30 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 						if( lexicon.advance() != tk_word )
 							raiseError( "improper syntax", error::er_syntax );
 						args.push_back( lexicon.getWord() );
+						lexicon.advance();
 					}
-				}while( lexicon.advance() == tk_comma );
+				}while( lexicon.getToken() == tk_comma );
 				if( lexicon.getToken() != tk_rparen )
 					raiseError( "\")\" expected", error::er_syntax );
+				lexicon.advance();
 			}
 			parseBlock( *subsym, args );
 			needSemicolon = false;
 		}
-
-
-		if( needSemicolon && lexicon.advance() != tk_semicolon )
+		
+		else if( lextok == tk_RETURN )
+		{
+			if( lexicon.advance() != tk_semicolon )
+			{
+				parseExpression();
+				symbol * res = searchResult();
+				if( !res )
+					raiseError( "\"return\" not nested within a functional scope", error::er_syntax );
+				getBlock().vecCodes.push_back( code::varLev( vc_assign, res->id, vecScope.size() - res->level ) );
+			}
+			getBlock().vecCodes.push_back( code::code( vc_breakRoutine )  );
+		}
+		if( needSemicolon && lexicon.getToken() != tk_semicolon )
 			finished = true;
 	}while( !finished );
 }
@@ -799,6 +992,12 @@ private:
 		eng->scriptDataAssign( argv[0], tmp );
 		eng->releaseScriptData( tmp );
 	}
+	static void _negative( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( -(eng->getScriptData( argv[0] ).real) );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
 	static void _power( script_engine * eng, size_t * argv )
 	{
 		size_t tmp = eng->fetchScriptData( pow( eng->getScriptData( argv[0] ).real, eng->getScriptData( argv[1] ).real ) );
@@ -808,6 +1007,60 @@ private:
 	static void _absolute( script_engine * eng, size_t * argv )
 	{
 		size_t tmp = eng->fetchScriptData( abs( eng->getScriptData( argv[0] ).real ) );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _not( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( !(eng->getScriptData( argv[0] ).real) );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _compareEqual( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( eng->getScriptData( argv[0] ).real == eng->getScriptData( argv[1] ).real );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _compareNotEqual( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( eng->getScriptData( argv[0] ).real != eng->getScriptData( argv[1] ).real );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _compareGreater( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( eng->getScriptData( argv[0] ).real > eng->getScriptData( argv[1] ).real );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _compareGreaterEqual( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( eng->getScriptData( argv[0] ).real >= eng->getScriptData( argv[1] ).real );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _compareLess( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( eng->getScriptData( argv[0] ).real < eng->getScriptData( argv[1] ).real );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _compareLessEqual( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( eng->getScriptData( argv[0] ).real <= eng->getScriptData( argv[1] ).real );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _logicOr( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( eng->getScriptData( argv[0] ).real || eng->getScriptData( argv[1] ).real );
+		eng->scriptDataAssign( argv[0], tmp );
+		eng->releaseScriptData( tmp );
+	}
+	static void _logicAnd( script_engine * eng, size_t * argv )
+	{
+		size_t tmp = eng->fetchScriptData( eng->getScriptData( argv[0] ).real && eng->getScriptData( argv[1] ).real );
 		eng->scriptDataAssign( argv[0], tmp );
 		eng->releaseScriptData( tmp );
 	}
@@ -857,8 +1110,16 @@ void parser::importNativeSymbols()
 		{ "subtract", &natives::_subtract, 2 },
 		{ "multiply", &natives::_multiply, 2 },
 		{ "divide", &natives::_divide, 2 },
+		{ "negative", &natives::_negative, 1 },
 		{ "power", &natives::_power, 2 },
 		{ "absolute", &natives::_absolute, 1 },
+		{ "not", &natives::_not, 1 },
+		{ "compareEqual", &natives::_compareEqual, 2 },
+		{ "compareNotEqual", &natives::_compareNotEqual, 2 },
+		{ "compareGreater", &natives::_compareGreater, 2 },
+		{ "compareEqualEqual", &natives::_compareGreaterEqual, 2 },
+		{ "compareLess", &natives::_compareLess, 2 },
+		{ "compareLessEqual", &natives::_compareLessEqual, 2 },
 		{ "roof", &natives::_roof, 1 },
 		{ "floor", &natives::_floor, 1 },
 		{ "index", &natives::_index, 1 },
@@ -871,16 +1132,27 @@ void parser::importNativeSymbols()
 		symbol * s = search( funcs[i].name );
 		if( s )
 			raiseError( std::string() + "\"" + funcs[i].name +"\" "+ "has already been defined" , error::er_syntax );
-		block & b = engine.getBlock( engine.fetchBlock() );
+		unsigned blockIndex = engine.fetchBlock();
+		block & b = engine.getBlock( blockIndex );
 		b.hasResult = true;
 		b.kind = block::bk_function;
 		b.name = funcs[i].name;
 		b.argc = funcs[i].argc;
 		b.nativeCallBack = funcs[i].nCallBack;
 		symbol sym;
-		sym.blockIndex = invalidIndex;
+		sym.blockIndex = blockIndex;
 		sym.id = invalidIndex;
 		sym.level = 0;
 		vecScope[0][ funcs[i].name ] = sym;
 	}
+}
+void parser::writeOperation( std::string const & nativeFunc )
+{
+	symbol * func;
+	if( !(func = search( nativeFunc )) || func->blockIndex == invalidIndex )
+		raiseError( "parser::writeOperation", error::er_internal );
+	block & blockFunc = engine.getBlock( func->blockIndex );
+	if( !(blockFunc.hasResult && blockFunc.nativeCallBack != 0) )
+		raiseError( "parser::writeOperation", error::er_internal );
+	blockFunc.vecCodes.push_back( code::subArg( vc_callFunctionPush, func->blockIndex, blockFunc.argc ) );
 }
