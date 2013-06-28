@@ -470,7 +470,7 @@ void parser::parseSuffix()
 		writeOperation( std::string( "power" ) );
 	}
 }
-void parser::parseClause()
+/*incomplete - needs array support*/void parser::parseClause()
 {
 	switch( lexicon.getToken() )
 	{
@@ -484,8 +484,8 @@ void parser::parseClause()
 		break;
 	case tk_string:
 		getBlock().vecCodes.push_back( code::dat( vc_pushVal, engine.fetchScriptData( lexicon.getString() ) ) );
+		writeOperation( "uniqueize" );
 		lexicon.advance();
-		//uniqueize
 		break;
 	case tk_word:
 		{
@@ -697,6 +697,22 @@ void parser::parseBlock( symbol const symSub, vector< std::string > const & args
 
 	if( lexicon.getToken() != tk_closecur )
 		raiseError( "\"}\" expected", error::er_syntax );
+}
+void parser::parseInlineBlock( block::block_kind const bk_kind )
+{
+	size_t blockIndex = engine.fetchBlock();
+	block & inlineBlock = engine.getBlock( blockIndex );
+	inlineBlock.argc = 0;
+	inlineBlock.hasResult = false;
+	inlineBlock.kind = bk_kind;
+	inlineBlock.nativeCallBack = 0;
+	inlineBlock.name = "inlinedBlock";
+	symbol virtualSymbol;
+	virtualSymbol.blockIndex = vecScope[ vecScope.size() - 1 ].blockIndex;
+	virtualSymbol.level = vecScope.size() + 1;
+	virtualSymbol.id = (size_t)-1;
+	parseBlock( virtualSymbol, vector< std::string >() );
+	getBlock().vecCodes.push_back( code::subArg( vc_callFunction, blockIndex, 0 ) );
 }
 /*incomplete / deprecated */void parser::parsePreProcess( void )
 {
@@ -951,6 +967,43 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			}
 			getBlock().vecCodes.push_back( code::code( vc_breakRoutine )  );
 		}
+
+		else if( lextok == tk_LET )
+		{
+			if( lexicon.advance() != tk_word )
+				raiseError( "\"let\" improper declaration of a symbol", error::er_syntax );
+			symbol * declsym = search( lexicon.getWord() );
+			if( !declsym )
+				raiseError( std::string() + "parser::parseStatements unreferenced symbol \"tk_LET\" with " + lexicon.getWord(), error::er_parser );
+			if( lexicon.advance() == tk_assign )
+			{
+				lexicon.advance();
+				parseExpression();
+				pushCode( code::varLev( vc_assign, declsym->id, vecScope.size() - declsym->level ) );
+			}
+		}
+		
+		else if( lextok == tk_LOOP )
+		{
+			if( lexicon.advance() == tk_lparen )
+			{
+				parseParentheses();
+				writeOperation( "uniqueize" ); 
+				unsigned loopBackIndex = getBlock().vecCodes.size(); 
+				pushCode( code::code( vc_loopDecr ) );
+				parseInlineBlock( block::bk_loop );
+				pushCode( code::loop( vc_loopBack, loopBackIndex ) );
+				pushCode( code::code( vc_popStack ) );
+			}
+			else
+			{
+				unsigned loopBackIndex = getBlock().vecCodes.size();
+				parseInlineBlock( block::bk_loop );
+				pushCode( code::loop( vc_loopBack, loopBackIndex ) );
+			}
+			needSemicolon = false;
+		}
+
 		if( needSemicolon && lexicon.getToken() != tk_semicolon )
 			finished = true;
 	}while( !finished );

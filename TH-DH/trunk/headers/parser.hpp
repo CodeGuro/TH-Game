@@ -100,7 +100,7 @@ private:
 	void parseParentheses();
 	unsigned parseArguments();
 	void parseStatements();
-	void parseInlineBlock( symbol const symSub ); //auto-call (if/loops)
+	void parseInlineBlock( block::block_kind const bk_kind ); //auto-call (if/loops)
 	void parseBlock( symbol const symSub, vector< std::string > const & args );
 	void scanCurrentScope( block::block_kind kind, vector< std::string > const & args );
 	void parsePreProcess();

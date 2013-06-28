@@ -5,7 +5,8 @@
 enum instruction
 {
 	//virtual commands
-	vc_assign, vc_pushVal, vc_pushVar, vc_callFunction, vc_callFunctionPush, vc_callTask, vc_invalid, vc_breakRoutine
+	vc_assign, vc_pushVal, vc_pushVar, vc_callFunction, vc_callFunctionPush, vc_callTask, vc_breakRoutine, 
+	vc_loopDecr, vc_loopBack, vc_popStack, vc_invalid, 
 };
 
 struct type_data
