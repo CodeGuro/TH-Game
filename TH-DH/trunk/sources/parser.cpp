@@ -992,7 +992,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			if( !sym )
 				raiseError( lexicon.getWord(), error::er_usymbol );
 			lexicon.advance();
-			if( lexicon.getToken() == tk_assign )
+			if( lexicon.getToken() == tk_assign && sym->id != invalidIndex )
 			{
 				lexicon.advance();
 				parseExpression();
@@ -1000,7 +1000,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			}
 			else if( lexicon.getToken() == tk_openbra )
 			{
-				while( lexicon.getToken() == tk_openbra ) //word[32][32]='5';
+				while( lexicon.getToken() == tk_openbra && sym->id != invalidIndex ) //word[32][32]='5';
 				{
 					lexicon.advance();
 					parseExpression();
@@ -1014,6 +1014,19 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 				lexicon.advance();
 				parseExpression();
 				pushCode( code::code( vc_overWrite ) );
+			}
+			else if( sym->blockIndex != invalidIndex )
+			{
+				unsigned argc = parseArguments();
+				if( argc != engine.getBlock( sym->blockIndex ).argc )
+					raiseError( "wrong number of arguments", error::er_syntax );
+				instruction callInst = ( (engine.getBlock( sym->blockIndex ).kind == block::bk_task)? vc_callTask : vc_callFunction );
+				pushCode( code::subArg( callInst, sym->blockIndex, argc ) );
+
+			}
+			else
+			{
+				raiseError( "parser::parseStatements() lextok == tk_word ", error::er_parser );
 			}
 		}
 		
