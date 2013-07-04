@@ -532,7 +532,10 @@ unsigned parser::parseArguments()
 		do
 		{
 			if( lexicon.advance() == tk_rparen )
+			{
+				lexicon.advance();
 				break;
+			}
 			parseExpression();
 			++argc;
 		}while( !(lexicon.getToken() == tk_comma || lexicon.getToken() == tk_rparen) );
@@ -983,6 +986,37 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			}
 		}
 		
+		else if( lextok == tk_word )
+		{
+			symbol * sym = search( lexicon.getWord() );
+			if( !sym )
+				raiseError( lexicon.getWord(), error::er_usymbol );
+			lexicon.advance();
+			if( lexicon.getToken() == tk_assign )
+			{
+				lexicon.advance();
+				parseExpression();
+				pushCode( code::varLev( vc_assign, sym->id, vecScope.size() - sym->level ) );
+			}
+			else if( lexicon.getToken() == tk_openbra )
+			{
+				while( lexicon.getToken() == tk_openbra ) //word[32][32]='5';
+				{
+					lexicon.advance();
+					parseExpression();
+					if( lexicon.advance() != tk_closebra )
+						raiseError( "\"]\" expected", error::er_syntax );
+					writeOperation( "index" );
+					lexicon.advance();
+				}
+				if( lexicon.getToken() != tk_assign )
+					raiseError( "\"=\" expected", error::er_syntax );
+				lexicon.advance();
+				parseExpression();
+				pushCode( code::code( vc_overWrite ) );
+			}
+		}
+		
 		else if( lextok == tk_LOOP )
 		{
 			unsigned loopBackIndex;
@@ -1016,7 +1050,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			}
 		}
 
-		else if( lextok == tk_IF ) ///if(V){}else if(V){} else if(V){} else{}
+		else if( lextok == tk_IF ) 
 		{
 			pushCode( code::code( vc_caseBegin ) );
 			do
