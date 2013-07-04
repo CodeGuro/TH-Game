@@ -475,15 +475,15 @@ void parser::parseSuffix()
 	switch( lexicon.getToken() )
 	{
 	case tk_real:
-		getBlock().vecCodes.push_back( code::dat( vc_pushVal, engine.fetchScriptData( lexicon.getReal() ) ) );
+		pushCode( code::dat( vc_pushVal, engine.fetchScriptData( lexicon.getReal() ) ) );
 		lexicon.advance();
 		break;
 	case tk_character:
-		getBlock().vecCodes.push_back( code::dat( vc_pushVal, engine.fetchScriptData( lexicon.getCharacter() ) ) );
+		pushCode( code::dat( vc_pushVal, engine.fetchScriptData( lexicon.getCharacter() ) ) );
 		lexicon.advance();
 		break;
 	case tk_string:
-		getBlock().vecCodes.push_back( code::dat( vc_pushVal, engine.fetchScriptData( lexicon.getString() ) ) );
+		pushCode( code::dat( vc_pushVal, engine.fetchScriptData( lexicon.getString() ) ) );
 		writeOperation( "uniqueize" );
 		lexicon.advance();
 		break;
@@ -498,10 +498,10 @@ void parser::parseSuffix()
 				int argc;
 				if( (argc = parseArguments()) != engine.getBlock( sym->blockIndex ).argc )
 					raiseError( "wrong number of arguments", error::er_syntax );
-				getBlock().vecCodes.push_back( code::subArg( vc_callFunctionPush, sym->blockIndex, argc ) );
+				pushCode( code::subArg( vc_callFunctionPush, sym->blockIndex, argc ) );
 			}
 			else
-				getBlock().vecCodes.push_back( code::varLev( vc_pushVar, sym->id, sym->level - vecScope.size() ) );
+				pushCode( code::varLev( vc_pushVar, sym->id, sym->level - vecScope.size() ) );
 
 		}
 		break;
@@ -686,7 +686,7 @@ void parser::parseBlock( symbol const symSub, vector< std::string > const & args
 {
 	if( lexicon.getToken() != tk_opencur )
 		raiseError( "\"{\" expected", error::er_syntax );
-
+	lexicon.advance();
 	vecScope.push_back( scope() );
 	vecScope[ vecScope.size() - 1 ].blockIndex = symSub.blockIndex;
 	scanCurrentScope( engine.getBlock( symSub.blockIndex ).kind, args );
@@ -963,9 +963,9 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 				symbol * res = searchResult();
 				if( !res )
 					raiseError( "\"return\" not nested within a functional scope", error::er_syntax );
-				getBlock().vecCodes.push_back( code::varLev( vc_assign, res->id, vecScope.size() - res->level ) );
+				pushCode( code::varLev( vc_assign, res->id, vecScope.size() - res->level ) );
 			}
-			getBlock().vecCodes.push_back( code::code( vc_breakRoutine )  );
+			pushCode( code::code( vc_breakRoutine )  );
 		}
 
 		else if( lextok == tk_LET )
@@ -985,23 +985,63 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 		
 		else if( lextok == tk_LOOP )
 		{
+			unsigned loopBackIndex;
 			if( lexicon.advance() == tk_lparen )
 			{
 				parseParentheses();
 				writeOperation( "uniqueize" ); 
-				unsigned loopBackIndex = getBlock().vecCodes.size(); 
-				pushCode( code::code( vc_loopDecr ) );
-				parseInlineBlock( block::bk_loop );
-				pushCode( code::loop( vc_loopBack, loopBackIndex ) );
-				pushCode( code::code( vc_popStack ) );
+				loopBackIndex = getBlock().vecCodes.size(); 
+				pushCode( code::code( vc_loopIfDecr ) );
+
 			}
 			else
 			{
+				loopBackIndex = getBlock().vecCodes.size();
+			}
+			parseInlineBlock( block::bk_loop );
+			pushCode( code::loop( vc_loopBack, loopBackIndex ) );
+			needSemicolon = false;
+		}
+
+		else if( lextok == tk_WHILE )
+		{
+			if( lexicon.advance() == tk_lparen )
+			{
+				parseParentheses();
 				unsigned loopBackIndex = getBlock().vecCodes.size();
+				pushCode( code::code( vc_loopIf ) );
 				parseInlineBlock( block::bk_loop );
 				pushCode( code::loop( vc_loopBack, loopBackIndex ) );
+				needSemicolon = false;
 			}
+		}
+
+		else if( lextok == tk_IF ) ///if(V){}else if(V){} else if(V){} else{}
+		{
+			pushCode( code::code( vc_caseBegin ) );
+			do
+			{
+				lexicon.advance();
+				parseParentheses();
+				pushCode( code::code( vc_checkIf ) );
+				lexicon.advance();
+				parseInlineBlock( block::bk_normal );
+				pushCode( code::code( vc_gotoEnd ) );
+				if( lexicon.advance() == tk_ELSE )
+				{
+					pushCode( code::code( vc_caseNext ) );
+					if( lexicon.advance() != tk_IF )
+						parseInlineBlock( block::bk_normal );
+				}
+			}while( lexicon.getToken() == tk_IF );
+			pushCode( code::code( vc_caseEnd ) );
 			needSemicolon = false;
+		}
+
+		else if( lextok == tk_YIELD )
+		{
+			lexicon.advance();
+			pushCode( code::code( vc_yield ) );
 		}
 
 		if( needSemicolon && lexicon.getToken() != tk_semicolon )
