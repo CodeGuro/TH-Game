@@ -35,8 +35,4 @@ function foo( let a, let b ) //args optional
 {
 	return a + b; //return optional
 }
-
-sub bar( let c )
-{
-}
 //okay

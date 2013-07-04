@@ -12,9 +12,11 @@ parser::lexer::lexer() : current( &character ), next( tk_end ), character( '\0' 
 }
 parser::lexer::lexer( char const * strstart ) : current( strstart ), line( 1 )
 {
+	advance();
 }
 parser::lexer::lexer( char const * strstart, unsigned lineStart ) : current( strstart ), line( lineStart )
 {
+	advance();
 }
 void parser::lexer::skip()
 {
@@ -664,7 +666,7 @@ parser::parser( script_engine & eng ) : engine( eng )
 			sstrAdditional << "\"" << err.errmsg << "\"" << " undefined symbol";
 		}
 		sstr << err.pathDoc << "\n\n" << "line " << err.line << "\n\n"
-			<< sstrAdditional << "\n\n" << err.fivelines << "\n" << "....." << std::endl;
+			<< sstrAdditional.str() << "\n\n" << err.fivelines << "\n" << "....." << std::endl;
 		MessageBoxA( NULL, sstr.str().c_str(), title.c_str(), NULL );
 	}
 }
@@ -700,6 +702,7 @@ void parser::parseBlock( symbol const symSub, vector< std::string > const & args
 
 	if( lexicon.getToken() != tk_closecur )
 		raiseError( "\"}\" expected", error::er_syntax );
+	lexicon.advance();
 }
 void parser::parseInlineBlock( block::block_kind const bk_kind )
 {
@@ -796,7 +799,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 	token tok;
 	do
 	{
-		tok = lexicon.advance();
+		tok = lexicon.getToken();
 
 		if( tok == tk_opencur )
 			++nested;
@@ -850,7 +853,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 				}
 			}
 		}
-	}while( tok != tk_end );
+	}while( lexicon.advance() != tk_end );
 
 	lexicon = anchorpoint;
 }
@@ -860,8 +863,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 	do
 	{
 		bool needSemicolon = true;
-		token lextok = lexicon.advance();
-		if( lextok == tk_sharp )
+		if( lexicon.getToken() == tk_sharp )
 		{
 			if( lexicon.advance() == tk_word )
 			{
@@ -875,6 +877,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 					std::string scriptspec = lexicon.getWord();
 					if( lexicon.advance() != tk_closebra )
 						raiseError( "\"]\" expected", error::er_syntax );
+					lexicon.advance();
 
 				}
 				else if( preproc == "include" )
@@ -929,7 +932,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			needSemicolon = false;
 		}
 
-		else if( lextok == tk_FUNCTION || lextok == tk_at || lextok == tk_TASK )
+		else if( lexicon.getToken() == tk_FUNCTION || lexicon.getToken() == tk_at || lexicon.getToken() == tk_TASK )
 		{
 			if ( lexicon.advance() != tk_word )
 				raiseError( "the subroutine must be named", error::er_syntax );
@@ -958,7 +961,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			needSemicolon = false;
 		}
 		
-		else if( lextok == tk_RETURN )
+		else if( lexicon.getToken() == tk_RETURN )
 		{
 			if( lexicon.advance() != tk_semicolon )
 			{
@@ -971,7 +974,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			pushCode( code::code( vc_breakRoutine )  );
 		}
 
-		else if( lextok == tk_LET )
+		else if( lexicon.getToken() == tk_LET )
 		{
 			if( lexicon.advance() != tk_word )
 				raiseError( "\"let\" improper declaration of a symbol", error::er_syntax );
@@ -986,7 +989,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			}
 		}
 		
-		else if( lextok == tk_word )
+		else if( lexicon.getToken() == tk_word )
 		{
 			symbol * sym = search( lexicon.getWord() );
 			if( !sym )
@@ -1030,7 +1033,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			}
 		}
 		
-		else if( lextok == tk_LOOP )
+		else if( lexicon.getToken() == tk_LOOP )
 		{
 			unsigned loopBackIndex;
 			if( lexicon.advance() == tk_lparen )
@@ -1050,7 +1053,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			needSemicolon = false;
 		}
 
-		else if( lextok == tk_WHILE )
+		else if( lexicon.getToken() == tk_WHILE )
 		{
 			if( lexicon.advance() == tk_lparen )
 			{
@@ -1063,7 +1066,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			}
 		}
 
-		else if( lextok == tk_IF ) 
+		else if( lexicon.getToken() == tk_IF ) 
 		{
 			pushCode( code::code( vc_caseBegin ) );
 			do
@@ -1085,7 +1088,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			needSemicolon = false;
 		}
 
-		else if( lextok == tk_YIELD )
+		else if( lexicon.getToken() == tk_YIELD )
 		{
 			lexicon.advance();
 			pushCode( code::code( vc_yield ) );
@@ -1093,6 +1096,8 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 
 		if( needSemicolon && lexicon.getToken() != tk_semicolon )
 			finished = true;
+		if( lexicon.getToken() == tk_semicolon )
+			lexicon.advance();
 	}while( !finished );
 }
 
