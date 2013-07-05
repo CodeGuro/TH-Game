@@ -1,12 +1,13 @@
 #include <scriptengine.hpp>
 #include <parser.hpp>
 #include <assert.h>
-//script type manager
+//script type manager, script_engine::getScriptTypeManager
 script_engine::script_type_manager::script_type_manager()
 {
 	types.push_back( type_data( type_data::tk_real, invalidIndex ) );
 	types.push_back( type_data( type_data::tk_boolean, invalidIndex ) );
 	types.push_back( type_data( type_data::tk_char, invalidIndex ) );
+	types.push_back( type_data( type_data::tk_array, invalidIndex) );
 	types.push_back( type_data( type_data::tk_array, (size_t)2 ) );
 	types.push_back( type_data( type_data::tk_object, invalidIndex ) );
 }
@@ -30,6 +31,10 @@ type_data script_engine::script_type_manager::getObjectType() const
 {
 	return type_data( type_data::tk_object, invalidIndex );
 }
+type_data script_engine::script_type_manager::getArrayType() const
+{
+	return type_data( type_data::tk_array, invalidIndex );
+}
 type_data script_engine::script_type_manager::getArrayType( size_t element )
 {
 	for( unsigned i = 0; i < types.size(); ++i )
@@ -51,6 +56,17 @@ size_t script_engine::fetchBlock()
 block & script_engine::getBlock( size_t index )
 {
 	return battery.vecBlocks[index];
+}
+void script_engine::registerScript( std::string const scriptName, size_t index )
+{
+	battery.mappedScriptBlockIds[ scriptName ] = index;
+}
+size_t script_engine::getScript( std::string const & scriptName )
+{
+	std::map< std::string, size_t >::iterator it = battery.mappedScriptBlockIds.find( scriptName );
+	if( it != battery.mappedScriptBlockIds.end() )
+		return it->second;
+	return invalidIndex;
 }
 
 //script engine - script data - related functions
@@ -135,7 +151,7 @@ void script_engine::copyScriptData( size_t & dst, size_t & src ) //contents copy
 {
 	if( dst == invalidIndex )
 		dst = fetchScriptData();
-	script_data destDat = getScriptData( dst );
+	script_data & destDat = getScriptData( dst );
 
 	for( unsigned i = 0; i < destDat.vec.size(); ++i )
 		releaseScriptData( destDat.vec[i] );

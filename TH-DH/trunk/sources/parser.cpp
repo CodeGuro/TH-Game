@@ -276,7 +276,6 @@ parser::token parser::lexer::advance()
 		{
 			if( isdigit( *current ) )
 			{
-				++current;
 				next = tk_real;
 				real = 0.0f;
 				do
@@ -324,8 +323,8 @@ parser::token parser::lexer::advance()
 					next = tk_TASK;
 				else if( word == "return" )
 					next = tk_RETURN;
-				else if( word == "script_stage_main" )
-					next = tk_SCRIPT_STAGE_MAIN;
+				else if( word == "script_main" )
+					next = tk_SCRIPT_MAIN;
 				else if( word == "script_enemy" )
 					next = tk_SCRIPT_ENEMY;
 			}
@@ -419,12 +418,12 @@ void parser::parseComparison()
 void parser::parseSum()
 {
 	parseProduct();
-	while( lexicon.getToken() == tk_plus || lexicon.getToken() == tk_minus )
+	while( lexicon.getToken() == tk_plus || lexicon.getToken() == tk_minus || lexicon.getToken() == tk_tilde )
 	{
 		token tok = lexicon.getToken();
 		lexicon.advance();
 		parseProduct();
-		std::string operation = ( tok == tk_plus ? "add" : "subtract" );
+		std::string operation = ( tok == tk_plus ? "add" : ( tok == tk_minus ? "subtract" : "concatenate" ) );
 		writeOperation( operation );
 	}
 }
@@ -472,7 +471,7 @@ void parser::parseSuffix()
 		writeOperation( std::string( "power" ) );
 	}
 }
-/*incomplete - needs array support*/void parser::parseClause()
+void parser::parseClause()
 {
 	switch( lexicon.getToken() )
 	{
@@ -510,6 +509,24 @@ void parser::parseSuffix()
 	case tk_lparen:
 		{
 			parseParentheses();
+		}
+		break;
+	case tk_openbra:
+		{
+			size_t scriptDataIdx = engine.fetchScriptData();
+			engine.getScriptData( scriptDataIdx ).type = engine.typeManager.getArrayType();
+			pushCode( code::dat( vc_pushVal, scriptDataIdx ) );
+			writeOperation( "uniqueize" );
+			do
+			{
+				lexicon.advance();
+				parseExpression();
+				writeOperation( "appendArray" );
+			}while( lexicon.getToken() == tk_comma );
+			if( lexicon.getToken() != tk_closebra )
+				raiseError( "\"]\" expected", error::er_syntax );
+			writeOperation( "uniqueize" );
+			lexicon.advance();
 		}
 		break;
 	default:
@@ -800,6 +817,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 	do
 	{
 		tok = lexicon.getToken();
+		lexicon.advance();
 
 		if( tok == tk_opencur )
 			++nested;
@@ -809,7 +827,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 		{
 			if( tok == tk_LET )
 			{
-				if( lexicon.advance() == tk_word )
+				if( lexicon.getToken() == tk_word )
 				{
 					std::string word = lexicon.getWord();
 					if( currentScope.find( word ) != currentScope.end() )
@@ -821,9 +839,9 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 					currentScope[ word ] = variable;
 				}
 			}
-			else if( tok == tk_at || tok == tk_FUNCTION || tok == tk_TASK )
+			else if( tok == tk_at || tok == tk_FUNCTION || tok == tk_TASK || tok == tk_SCRIPT_MAIN || tok == tk_SCRIPT_ENEMY )
 			{
-				if( lexicon.advance() == tk_word )
+				if( lexicon.getToken() == tk_word )
 				{
 					std::string subroutine = lexicon.getWord();
 					if( currentScope.find( subroutine ) != currentScope.end() )
@@ -834,12 +852,16 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 					routine.level = level + 1;
 					currentScope[ subroutine ] = routine;
 					block & blockRoutine = engine.getBlock( routine.blockIndex );
-					blockRoutine.kind = (tok == tk_FUNCTION? block::bk_function : (tok == tk_TASK? block::bk_task : block::bk_sub));
+					blockRoutine.kind = (tok == tk_FUNCTION? block::bk_function : (tok == tk_TASK? block::bk_task : (tok == tk_at? block::bk_sub : block::bk_normal )));
 					blockRoutine.hasResult = (tok == tk_FUNCTION);
 					blockRoutine.name = subroutine;
 					blockRoutine.nativeCallBack = 0;
 					blockRoutine.argc = 0;
-					if( lexicon.advance() == tk_lparen )
+					if( tok == tk_SCRIPT_MAIN || tok == tk_SCRIPT_ENEMY )
+					{
+						engine.registerScript( subroutine, routine.blockIndex );
+					}
+					else if( lexicon.advance() == tk_lparen )
 					{
 						do
 						{
@@ -853,7 +875,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 				}
 			}
 		}
-	}while( lexicon.advance() != tk_end );
+	}while( tok != tk_end && nested >= level );
 
 	lexicon = anchorpoint;
 }
@@ -932,7 +954,9 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			needSemicolon = false;
 		}
 
-		else if( lexicon.getToken() == tk_FUNCTION || lexicon.getToken() == tk_at || lexicon.getToken() == tk_TASK )
+		else if( lexicon.getToken() == tk_FUNCTION || lexicon.getToken() == tk_at 
+			|| lexicon.getToken() == tk_TASK || lexicon.getToken() == tk_SCRIPT_MAIN 
+			|| lexicon.getToken() == tk_SCRIPT_ENEMY )
 		{
 			if ( lexicon.advance() != tk_word )
 				raiseError( "the subroutine must be named", error::er_syntax );
@@ -957,6 +981,8 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 					raiseError( "\")\" expected", error::er_syntax );
 				lexicon.advance();
 			}
+			if( engine.getScript( subname ) != invalidIndex  && args.size() )
+				raiseError( "script_main and script_enemy routine types have zero parameters", error::er_syntax );
 			parseBlock( *subsym, args );
 			needSemicolon = false;
 		}
@@ -1007,7 +1033,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 				{
 					lexicon.advance();
 					parseExpression();
-					if( lexicon.advance() != tk_closebra )
+					if( lexicon.getToken() != tk_closebra )
 						raiseError( "\"]\" expected", error::er_syntax );
 					writeOperation( "index" );
 					lexicon.advance();
@@ -1149,6 +1175,17 @@ private:
 		eng->scriptDataAssign( argv[0], tmp );
 		eng->releaseScriptData( tmp );
 	}
+	static void _concatenate( script_engine * eng, size_t * argv )
+	{
+		eng->uniqueizeScriptData( argv[0] );
+		unsigned s = eng->getScriptData( argv[1] ).vec.size();
+		for( unsigned i = 0; i < s; ++i )
+		{
+			size_t idx = invalidIndex;
+			eng->scriptDataAssign( idx, eng->getScriptData( argv[1] ).vec[i] );
+			eng->getScriptData( argv[0] ).vec.push_back( idx );
+		}
+	}
 	static void _absolute( script_engine * eng, size_t * argv )
 	{
 		size_t tmp = eng->fetchScriptData( abs( eng->getScriptData( argv[0] ).real ) );
@@ -1225,6 +1262,12 @@ private:
 	{
 		eng->scriptDataAssign( argv[0], eng->getScriptData( argv[0] ).vec[ (unsigned)eng->getScriptData( argv[1] ).real ] );
 	}
+	static void _appendArray( script_engine * eng, size_t * argv )
+	{
+		size_t idx = invalidIndex;
+		eng->scriptDataAssign( idx, argv[1] );
+		eng->getScriptData( argv[0] ).vec.push_back( idx );
+	}
 	static void _uniqueize( script_engine * eng, size_t * argv )
 	{
 		eng->uniqueizeScriptData( argv[0] );
@@ -1257,6 +1300,7 @@ void parser::importNativeSymbols()
 		{ "divide", &natives::_divide, 2 },
 		{ "negative", &natives::_negative, 1 },
 		{ "power", &natives::_power, 2 },
+		{ "concatenate", &natives::_concatenate, 2 }, 
 		{ "absolute", &natives::_absolute, 1 },
 		{ "not", &natives::_not, 1 },
 		{ "compareEqual", &natives::_compareEqual, 2 },
@@ -1267,7 +1311,8 @@ void parser::importNativeSymbols()
 		{ "compareLessEqual", &natives::_compareLessEqual, 2 },
 		{ "roof", &natives::_roof, 1 },
 		{ "floor", &natives::_floor, 1 },
-		{ "index", &natives::_index, 1 },
+		{ "index", &natives::_index, 2 },
+		{ "appendArray", &natives::_appendArray, 2 },
 		{ "uniqueize", &natives::_uniqueize, 1 },
 		{ "rand", &natives::_rand, 2 },
 		{ "rand_int", &natives::_rand_int, 2 }

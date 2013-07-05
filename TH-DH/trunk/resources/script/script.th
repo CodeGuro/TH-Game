@@ -3,7 +3,7 @@
                           //optional : [single] anonymous is a script enemy, [stage] anonymous is a stage, []/void - assumed [single]
 #include ".\functions.th" //preprocessor for including external scripts
 
-script //main routine
+script_main main_script //main routine
 {
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
@@ -24,7 +24,7 @@ script //main routine
 	}
 }
 
-script youkai //entity routine
+script_enemy youkai //entity routine
 {
 	@Initialize{}
 	@MainLoop{}

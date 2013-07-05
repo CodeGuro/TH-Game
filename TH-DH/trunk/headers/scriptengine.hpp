@@ -23,7 +23,7 @@ private:
 		vector< size_t > vecScriptDataGarbage;
 		vector< size_t > vecRoutinesGabage;
 		vector< size_t > vecMachinesGarbage;
-		std::map< std::string, std::map< std::string, size_t > > mappedScripts;
+		std::map< std::string, size_t > mappedScriptBlockIds;
 	};
 	class script_type_manager
 	{
@@ -36,6 +36,7 @@ private:
 		type_data getCharacterType() const;
 		type_data getStringType() const;
 		type_data getObjectType() const;
+		type_data getArrayType() const;
 		type_data getArrayType( size_t element ); //an array of some type
 	};
 
@@ -71,6 +72,8 @@ private:
 	void terminateImmediateMachine( size_t index ); //Finalize doesn't run (usually for off-screen termination)
 	void releaseScriptMachine( size_t & index );
 	size_t getBlockFromScript( std::string const & filePath, std::string const & scriptName );
+	void registerScript( std::string const scriptName, size_t index );
+	size_t getScript( std::string const & scriptName );
 
 public:
 	script_engine();
