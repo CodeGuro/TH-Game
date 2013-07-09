@@ -23,7 +23,7 @@ private:
 		vector< size_t > vecScriptDataGarbage;
 		vector< size_t > vecRoutinesGabage;
 		vector< size_t > vecMachinesGarbage;
-		std::map< std::string, size_t > mappedScriptBlockIds;
+		std::map< std::string, size_t > mappedScriptBlocks;
 	};
 	class script_type_manager
 	{
@@ -60,7 +60,7 @@ private:
 	float getRealScriptData( size_t index ) const;
 	char getCharacterScriptData( size_t index ) const;
 	bool getBooleanScriptData( size_t index ) const;
-	std::string getStringScriptData( size_t index ) const;
+	std::string getStringScriptData( size_t index );
 	void releaseScriptData( size_t & index );
 	size_t fetchScriptEnvironment( size_t blockIndex );
 	script_environment & getScriptEnvironment( size_t index );

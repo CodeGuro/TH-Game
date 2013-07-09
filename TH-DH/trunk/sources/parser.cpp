@@ -737,57 +737,6 @@ void parser::parseInlineBlock( block::block_kind const bk_kind )
 	parseBlock( virtualSymbol, vector< std::string >() );
 	getBlock().vecCodes.push_back( code::subArg( vc_callFunction, blockIndex, 0 ) );
 }
-/*incomplete / deprecated */void parser::parsePreProcess( void )
-{
-	while( lexicon.advance() == tk_sharp )
-	{
-		if( lexicon.advance() == tk_word )
-		{
-			if( lexicon.getWord() == "TouhouDanmaku" )
-			{
-			}
-			else if( lexicon.getWord() == "include" )
-			{
-				if( lexicon.advance() != tk_string )
-					raiseError( "\"[string]\" expected", error::er_syntax );
-				lexer tmp = lexicon;
-				std::string str = lexicon.getString();
-				std::string path;
-				std::string::iterator it = str.begin();
-				if( *it == '.' )
-				{
-					std::string::iterator it2 = scriptMgr.currentScriptPath.end() - 1;
-					do
-					{
-						while( *(--it2) != '\\' )
-							--it2;
-					}while( *(++it) == '.' );
-					path = std::string( scriptMgr.currentScriptPath.begin(), it2 ) + std::string( it, str.end() );
-				}
-				else if( str.size() > 7 && std::string( it, it + 7 ) == "script\\" )
-				{
-					char * buff = new char[ 512 ]();
-					GetCurrentDirectory( 512, buff );
-					path = std::string( buff ) + "\\" + str;
-					delete buff;
-				}
-				else
-					path = str;
-				std::string pathStr = std::string( std::istreambuf_iterator< char >( std::ifstream( path ) ), std::istreambuf_iterator< char >() );
-				if( !pathStr.size() )
-					raiseError( "File does not exist or is an invalid document", error::er_syntax );
-
-				//save the current workspace
-				lexer lexSave = lexicon;
-				unsigned lexCurrSave = lexicon.getCurrent() - scriptMgr.currentScriptPath.c_str();
-				std::string currentPath = scriptMgr.currentScriptPath;
-				std::string currentScriptStr = scriptMgr.scriptString;
-
-			}
-		}
-
-	}
-}
 void parser::scanCurrentScope( block::block_kind kind, vector< std::string > const & args )
 {
 	//if it's a function, allow a result
@@ -981,8 +930,13 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 					raiseError( "\")\" expected", error::er_syntax );
 				lexicon.advance();
 			}
-			if( engine.getScript( subname ) != invalidIndex  && args.size() )
+			if( engine.getScript( subname ) != invalidIndex && args.size() )
 				raiseError( "script_main and script_enemy routine types have zero parameters", error::er_syntax );
+			if( subname == "Initialize" || subname == "MainLoop" || subname == "Finalize" || subname == "BackGround" )
+			{
+				if( engine.getBlock( subsym->blockIndex ).hasResult )
+					raiseError( std::string() + "\"" + subname + "\" must be prefixed with \"@\"", error::er_syntax );
+			}
 			parseBlock( *subsym, args );
 			needSemicolon = false;
 		}
@@ -1092,24 +1046,32 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			}
 		}
 
-		else if( lexicon.getToken() == tk_IF ) 
+		else if( lexicon.getToken() == tk_IF )
 		{
+			bool fin = false;
 			pushCode( code::code( vc_caseBegin ) );
 			do
 			{
+				token tok = lexicon.getToken();
 				lexicon.advance();
-				parseParentheses();
-				pushCode( code::code( vc_checkIf ) );
-				lexicon.advance();
-				parseInlineBlock( block::bk_normal );
-				pushCode( code::code( vc_gotoEnd ) );
-				if( lexicon.advance() == tk_ELSE )
+				if( tok == tk_IF )
+				{
+					parseParentheses();
+					pushCode( code::code( vc_checkIf ) );
+					parseInlineBlock( block::bk_normal );
+					if( lexicon.getToken() != tk_ELSE )
+						fin = true;
+				}
+				else if( tok == tk_ELSE )
 				{
 					pushCode( code::code( vc_caseNext ) );
-					if( lexicon.advance() != tk_IF )
+					if( lexicon.getToken() != tk_IF )
+					{
 						parseInlineBlock( block::bk_normal );
+						fin = true;
+					}
 				}
-			}while( lexicon.getToken() == tk_IF );
+			}while( !fin );
 			pushCode( code::code( vc_caseEnd ) );
 			needSemicolon = false;
 		}
@@ -1286,6 +1248,11 @@ private:
 		eng->scriptDataAssign( argv[0], tmp );
 		eng->releaseScriptData( tmp );
 	}
+	static void _print( script_engine * eng, size_t * argv )
+	{
+		std::string str = eng->getStringScriptData( argv[0] );
+		std::cout << str << std::endl;
+	}
 };
 
 void parser::importNativeSymbols()
@@ -1315,7 +1282,8 @@ void parser::importNativeSymbols()
 		{ "appendArray", &natives::_appendArray, 2 },
 		{ "uniqueize", &natives::_uniqueize, 1 },
 		{ "rand", &natives::_rand, 2 },
-		{ "rand_int", &natives::_rand_int, 2 }
+		{ "rand_int", &natives::_rand_int, 2 },
+		{ "print", &natives::_print, 1 }
 	};
 	for( unsigned i = 0; i <  sizeof( funcs ) / sizeof( native_function ); ++i )
 	{

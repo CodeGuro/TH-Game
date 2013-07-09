@@ -59,12 +59,12 @@ block & script_engine::getBlock( size_t index )
 }
 void script_engine::registerScript( std::string const scriptName, size_t index )
 {
-	battery.mappedScriptBlockIds[ scriptName ] = index;
+	battery.mappedScriptBlocks[ scriptName ] = index;
 }
 size_t script_engine::getScript( std::string const & scriptName )
 {
-	std::map< std::string, size_t >::iterator it = battery.mappedScriptBlockIds.find( scriptName );
-	if( it != battery.mappedScriptBlockIds.end() )
+	std::map< std::string, size_t >::iterator it = battery.mappedScriptBlocks.find( scriptName );
+	if( it != battery.mappedScriptBlocks.end() )
 		return it->second;
 	return invalidIndex;
 }
@@ -216,6 +216,15 @@ void script_engine::uniqueizeScriptData( size_t & dst )
 	}
 	else
 		getScriptData( dst = fetchScriptData() ).type.kind = type_data::tk_invalid;
+}
+std::string script_engine::getStringScriptData( size_t index )
+{
+	script_data const & dat = getScriptData( index );
+	unsigned size = dat.vec.size();
+	std::string result;
+	for( unsigned i = 0; i < size; ++i)
+		result += getScriptData( dat.vec[ i ] ).character;
+	return result;
 }
 
 
