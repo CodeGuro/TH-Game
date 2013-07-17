@@ -52,12 +52,6 @@ private:
 	};
 	struct scriptHandler
 	{
-		struct scriptObj
-		{
-			std::map< std::string , symbol > exportSymbols;
-			bool finishParsed;
-		};
-		std::map< std::string, scriptObj > scriptUnits;
 		std::string currentScriptPath; //currently working on
 		std::string scriptString; //current
 		vector< std::string > pragmaFiles; //for the current unit
@@ -109,7 +103,6 @@ private:
 	void pushCode( code const & val ); //on the current working block
 	void mapScriptPaths( std::string const & pathStart );
 	void registerScript( std::string const & fullPath );
-	scriptHandler::scriptObj & getScript( std::string const & fullPath );
 	void raiseError( std::string errmsg, error::errReason reason );
 	void importExportSymbols( std::string const & fullPath );
 	void importNativeSymbols(); //in the topmost scope

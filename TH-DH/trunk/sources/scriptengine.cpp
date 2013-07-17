@@ -1,6 +1,7 @@
 #include <scriptengine.hpp>
 #include <parser.hpp>
 #include <assert.h>
+
 //script type manager, script_engine::getScriptTypeManager
 script_engine::script_type_manager::script_type_manager()
 {
@@ -57,16 +58,16 @@ block & script_engine::getBlock( size_t index )
 {
 	return battery.vecBlocks[index];
 }
-void script_engine::registerScript( std::string const scriptName, size_t index )
+void script_engine::registerScript( std::string const scriptName )
 {
-	battery.mappedScriptBlocks[ scriptName ] = index;
+	battery.mappedScriptBlocks[ scriptName ] = script_container();
 }
-size_t script_engine::getScript( std::string const & scriptName )
+script_container * script_engine::getScript( std::string const & scriptName )
 {
-	std::map< std::string, size_t >::iterator it = battery.mappedScriptBlocks.find( scriptName );
+	std::map< std::string, script_container >::iterator it = battery.mappedScriptBlocks.find( scriptName );
 	if( it != battery.mappedScriptBlocks.end() )
-		return it->second;
-	return invalidIndex;
+		return &(it->second);
+	return 0;
 }
 
 //script engine - script data - related functions
@@ -288,7 +289,7 @@ size_t script_engine::fetchScriptMachine()
 	}
 	return index;
 }
-script_machine & script_engine::getScriptMachine( size_t index )
+script_engine::inventory::script_machine_container & script_engine::getScriptMachine( size_t index )
 {
 	return battery.vecMachines[ index ];
 }

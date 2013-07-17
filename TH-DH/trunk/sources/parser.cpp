@@ -569,12 +569,6 @@ void parser::pushCode( code const & val )
 {
 	getBlock().vecCodes.push_back( val );
 }
-void parser::registerScript( std::string const & fullPath )
-{
-	if( scriptMgr.scriptUnits.find( fullPath ) != scriptMgr.scriptUnits.end() )
-		raiseError( std::string() + "\"" + fullPath + "\" is already registered", error::er_parser );
-	scriptMgr.scriptUnits[ fullPath ].finishParsed = false;
-}
 void parser::raiseError( std::string errmsg, error::errReason reason)
 {
 	error err;
@@ -598,7 +592,7 @@ void parser::raiseError( std::string errmsg, error::errReason reason)
 
 	throw err;
 }
-void parser::mapScriptPaths( std::string const & pathStart )
+/*deprecated*/void parser::mapScriptPaths( std::string const & pathStart )
 {
 	WIN32_FIND_DATA findDat;
 	HANDLE hFile = FindFirstFile( ( pathStart + "\\*" ).c_str(), &findDat );
@@ -620,8 +614,6 @@ void parser::mapScriptPaths( std::string const & pathStart )
 			DWORD readBytes;
 			ReadFile( _hFile, buff, sizeof( buff ), &readBytes, NULL );
 			CloseHandle( _hFile );
-			if( std::string( buff ).find( scriptHeader ) != std::string::npos )
-				registerScript( fullPath );
 		}
 	}while( FindNextFile( hFile, &findDat ) );
 	FindClose( hFile );
@@ -650,14 +642,20 @@ parser::parser( script_engine & eng ) : engine( eng )
 		std::string const path = std::string( buff ) + "\\script";
 		mapScriptPaths( path );
 
-		for( std::map< std::string, scriptHandler::scriptObj >::iterator it = scriptMgr.scriptUnits.begin(); it != scriptMgr.scriptUnits.end(); ++it )
-		{
-			if( !(it->second.finishParsed) )
-			{
-				parseScript( it->first );
-				it = scriptMgr.scriptUnits.begin();
-			}
-		}
+		std::string scriptPath;
+		OPENFILENAMEA ofn ={ 0 };
+		char buff2[1024] ={ 0 };
+		ofn.lStructSize = sizeof( OPENFILENAMEA );
+		ofn.lpstrFilter = "All Files\0*.*\0\0";
+		ofn.lpstrFile = buff2;
+		ofn.nMaxFile = sizeof( buff2 );
+		ofn.lpstrTitle = "Open script...";
+		ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_FORCESHOWHIDDEN | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST ;
+		GetOpenFileNameA( &ofn );
+		scriptPath= ofn.lpstrFile;
+		if( !scriptPath.size() )
+			raiseError( std::string() + "Parser failed to open the file \"" + scriptPath + "\" in constructor", error::er_parser );
+		parseScript( scriptPath );
 	}
 	catch( error const & err )
 	{
@@ -695,6 +693,8 @@ void parser::parseScript( std::string const & scriptPath )
 	vecScope[0].blockIndex = invalidIndex;
 	scriptMgr.currentScriptPath = scriptPath;
 	scriptMgr.scriptString = std::string( (std::istreambuf_iterator< char >( std::ifstream( scriptPath ) )), std::istreambuf_iterator< char >() );
+	if( !scriptMgr.scriptString.size() )
+		raiseError( std::string() + "Invalid document \"" + scriptMgr.currentScriptPath + "\"", error::er_parser );
 	lexicon = lexer( scriptMgr.scriptString.c_str() );
 	importNativeSymbols();
 	scanCurrentScope( block::bk_normal, vector< std::string >() );
@@ -702,7 +702,6 @@ void parser::parseScript( std::string const & scriptPath )
 	if( lexicon.getToken() != tk_end )
 		raiseError( "Parser did not completely parse the script", error::er_parser );
 	vecScope.pop_back();
-	scriptMgr.scriptUnits[ scriptPath ].finishParsed = true;
 }
 void parser::parseBlock( symbol const symSub, vector< std::string > const & args )
 {
@@ -808,7 +807,8 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 					blockRoutine.argc = 0;
 					if( tok == tk_SCRIPT_MAIN || tok == tk_SCRIPT_ENEMY )
 					{
-						engine.registerScript( subroutine, routine.blockIndex );
+						engine.registerScript( subroutine );
+						engine.getScript( subroutine )->ScriptBlock = routine.blockIndex;
 					}
 					else if( lexicon.advance() == tk_lparen )
 					{
@@ -907,6 +907,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			|| lexicon.getToken() == tk_TASK || lexicon.getToken() == tk_SCRIPT_MAIN 
 			|| lexicon.getToken() == tk_SCRIPT_ENEMY )
 		{
+			token routineDeclToken = lexicon.getToken();
 			if ( lexicon.advance() != tk_word )
 				raiseError( "the subroutine must be named", error::er_syntax );
 			std::string subname = lexicon.getWord();
@@ -930,12 +931,19 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 					raiseError( "\")\" expected", error::er_syntax );
 				lexicon.advance();
 			}
-			if( engine.getScript( subname ) != invalidIndex && args.size() )
+			if( ( routineDeclToken == tk_SCRIPT_MAIN || routineDeclToken == tk_SCRIPT_ENEMY) && args.size() )
 				raiseError( "script_main and script_enemy routine types have zero parameters", error::er_syntax );
 			if( subname == "Initialize" || subname == "MainLoop" || subname == "Finalize" || subname == "BackGround" )
 			{
 				if( engine.getBlock( subsym->blockIndex ).hasResult )
 					raiseError( std::string() + "\"" + subname + "\" must be prefixed with \"@\"", error::er_syntax );
+				script_container * s_cont = engine.getScript( getBlock().name );
+				if( !s_cont ) raiseError( std::string() +"@\"" + subname + "\" must be defined 1 level above the scope of script's block", error::er_parser );
+				if( subname == "Initialize" ) s_cont->InitializeBlock = subsym->blockIndex;
+				else if( subname == "MainLoop" ) s_cont->MainLoopBlock = subsym->blockIndex;
+				else if( subname == "Finalize" ) s_cont->FinalizeBlock = subsym->blockIndex;
+				else if( subname == "BackGround" ) s_cont->BackGroundBlock = subsym->blockIndex;
+				else raiseError( "Parser::ParseStatements unexpected error at parsing @routins", error::er_parser );
 			}
 			parseBlock( *subsym, args );
 			needSemicolon = false;

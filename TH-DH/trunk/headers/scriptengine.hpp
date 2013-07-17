@@ -16,14 +16,19 @@ private:
 	{
 	private:
 		friend class script_engine;
+		struct script_machine_container
+		{
+			script_machine machine;
+			script_container scriptRoutines;
+		};
 		vector< script_data > vecScriptData;
 		vector< script_environment > vecRoutines;
 		vector< block > vecBlocks;
-		vector< script_machine > vecMachines;
+		vector< script_machine_container > vecMachines;
 		vector< size_t > vecScriptDataGarbage;
 		vector< size_t > vecRoutinesGabage;
 		vector< size_t > vecMachinesGarbage;
-		std::map< std::string, size_t > mappedScriptBlocks;
+		std::map< std::string, script_container > mappedScriptBlocks;
 	};
 	class script_type_manager
 	{
@@ -67,13 +72,13 @@ private:
 	void addRefScriptEnvironment( size_t & index );
 	void releaseScriptEnvironment( size_t & index );
 	size_t fetchScriptMachine();
-	script_machine & getScriptMachine( size_t index );
+	inventory::script_machine_container & getScriptMachine( size_t index );
 	void terminateMachine( size_t index ); //Finalize runs
 	void terminateImmediateMachine( size_t index ); //Finalize doesn't run (usually for off-screen termination)
 	void releaseScriptMachine( size_t & index );
 	size_t getBlockFromScript( std::string const & filePath, std::string const & scriptName );
-	void registerScript( std::string const scriptName, size_t index );
-	size_t getScript( std::string const & scriptName );
+	void registerScript( std::string const scriptName );
+	script_container * getScript( std::string const & scriptName );
 
 public:
 	script_engine();

@@ -102,3 +102,12 @@ struct script_environment
 	size_t parentIndex;
 	size_t refCount;
 };
+
+struct script_container
+{
+	size_t ScriptBlock;
+	size_t InitializeBlock;
+	size_t MainLoopBlock;
+	size_t FinalizeBlock;
+	size_t BackGroundBlock;
+};
