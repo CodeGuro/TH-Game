@@ -1,0 +1,5 @@
+[ ] Build a container to handle textures
+[ ] Build a container to handle vertices
+[ ] Build a container to handle instances
+[ ] Build a container to handle matrices
+[ ] Build a container to handle shaders
