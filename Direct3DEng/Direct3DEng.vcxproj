@@ -10,6 +10,9 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="trunk\sources\WinMain.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6A298186-A243-4049-B2F7-3E57683E6C4D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
