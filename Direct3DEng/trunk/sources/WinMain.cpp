@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <Direct3DEngine.h>
+
 LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
 	if( uMsg == WM_DESTROY )
@@ -36,7 +37,9 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	
 	MSG msg;
 	Direct3DEngine D3dEng;
-	D3dEng.InitEng( hWnd, false );
+	D3dEng.InitEng( hWnd, MessageBox(NULL, "Fullscreen Mode?", "FULLSCREEN/WINDOW", MB_YESNO | MB_ICONQUESTION ) == IDNO );
+	D3dEng.TestDevice();
+	//we'll now attempt to draw a simple texture to the focus window
 	do
 	{
 		PeekMessage( &msg, NULL, NULL, NULL, PM_REMOVE );
