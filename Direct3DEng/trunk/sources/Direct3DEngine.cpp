@@ -33,8 +33,8 @@ void Direct3DEngine::InitEng( HWND hWnd, bool windowed )
 		D3DPRESENT_PARAMETERS d3dpp;
 		d3d->EnumAdapterModes( D3DADAPTER_DEFAULT, D3DFMT_X8R8G8B8, d3d->GetAdapterModeCount( D3DADAPTER_DEFAULT, D3DFMT_X8R8G8B8 ) - 1, &d3ddm );
 		
-		d3dpp.BackBufferWidth = windowed ? rec.right - rec.left : d3ddm.Width;
-		d3dpp.BackBufferHeight = windowed ? rec.bottom - rec.top : d3ddm.Height;
+		d3dpp.BackBufferWidth = rec.right - rec.left;
+		d3dpp.BackBufferHeight = rec.bottom - rec.top;
 		d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
 		d3dpp.BackBufferCount = 0;
 		d3dpp.MultiSampleType = D3DMULTISAMPLE_NONE;
@@ -51,12 +51,7 @@ void Direct3DEngine::InitEng( HWND hWnd, bool windowed )
 		d3d->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd , D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &d3ddev );
 
 		d3ddev->Clear( 0, 0, D3DCLEAR_TARGET, D3DCOLOR_XRGB( 100, 30, 180 ), 1.f, 0 );
-		d3ddev->Present( NULL, NULL, NULL, NULL );
-
-		CamSettings.Eye = D3DXVECTOR3( 0, 0, 0 );
-		CamSettings.LookAt = D3DXVECTOR3( 0, 0, 1 );
-		CamSettings.UpDir = D3DXVECTOR3( 0, 1, 0 );
-		
+		d3ddev->Present( NULL, NULL, NULL, NULL );		
 	}
 }
 void Direct3DEngine::TestDevice()
@@ -127,6 +122,24 @@ void Direct3DEngine::TestDevice()
 	d3ddev->Present( NULL, NULL, NULL, NULL );
 
 }
+void Direct3DEngine::LoadTexture( std::string const pathname )
+{
+	auto it = inventory.mapTextures.find( pathname );
+	if( it != inventory.mapTextures.end() )
+	{
+		inventory.mapTextures[ pathname ];
+		D3DXCreateTextureFromFile( d3ddev, pathname.c_str(), &(it->second) );
+	}
+}
+void Direct3DEngine::DeleteTexture( std::string const pathname )
+{
+	auto it = inventory.mapTextures.find( pathname );
+	if( it != inventory.mapTextures.end() )
+	{
+		it->second->Release();
+		inventory.mapTextures.erase( it );
+	}
+}
 
 template<typename T>
 void Direct3DEngine::D3dRelease( T *& RefPtr )
@@ -136,4 +149,144 @@ void Direct3DEngine::D3dRelease( T *& RefPtr )
 		RefPtr->Release();
 		RefPtr = NULL;
 	}
+}
+
+ObjMgr::ObjMgr() : VertexCount( 0 ), pTexture( NULL )
+{
+}
+ObjMgr::ObjMgr( ObjMgr const & source ) : VertexCount( source.VertexCount ), pTexture( source.pTexture ),
+	vecVertices( source.vecVertices ), vecObjects( source.vecObjects ),
+	vecIntermediateLayer( source.vecIntermediateLayer ), vecIntermediateLayerGC( source.vecIntermediateLayerGC )
+{
+	if( source.pTexture )
+		source.pTexture->AddRef();
+}
+ObjMgr & ObjMgr::operator = ( ObjMgr const & source )
+{
+	if( pTexture )
+		pTexture->Release();
+	source.pTexture->AddRef();
+	pTexture = source.pTexture;
+	VertexCount = source.VertexCount;
+	vecVertices = source.vecVertices;
+	vecObjects = source.vecObjects;
+	vecIntermediateLayer = source.vecIntermediateLayer;
+	vecIntermediateLayerGC = source.vecIntermediateLayerGC;
+	return *this;
+}
+ObjMgr::~ObjMgr()
+{
+	if( pTexture )
+		pTexture->Release();
+}
+void ObjMgr::SetVertexCount( unsigned const Count )
+{
+	VertexCount = Count;
+}
+void ObjMgr::SetTexture( LPDIRECT3DTEXTURE9 pTex )
+{
+	pTex->AddRef();
+	pTexture = pTex;
+}
+unsigned ObjMgr::PushObj( MatrixObject const Obj, Vertex const * PtrVertices )
+{
+	unsigned result;
+	vecIntermediateLayer.push_back( vecObjects.size() ); //to reference the object
+	if( vecIntermediateLayerGC.size() )
+	{
+		result = vecIntermediateLayerGC.back();
+		vecIntermediateLayerGC.pop_back();
+	}
+	else
+		result = vecObjects.size();
+	vecObjects.push_back( Obj );
+	for( unsigned i = 0; i < VertexCount; ++i )
+		vecVertices.push_back( *PtrVertices++ );
+	return result;
+}
+void ObjMgr::EraseObj( unsigned Index ) //Index to the intermediate layer
+{
+	unsigned ObjIndex = vecIntermediateLayer[ Index ];
+	vecIntermediateLayerGC.push_back( Index );
+	for( unsigned i = 0; i < vecIntermediateLayer.size(); ++i )
+	{
+		if( vecIntermediateLayer[ i ] > ObjIndex )
+			--(vecIntermediateLayer[ i ]);
+	}
+	vecVertices.erase( vecVertices.begin() + (ObjIndex * VertexCount ), vecVertices.begin() + ( (ObjIndex + 1 ) * VertexCount ) );
+	vecObjects.erase( vecObjects.begin() + ObjIndex );
+}
+MatrixObject & ObjMgr::GetObjRef( unsigned Index )
+{
+	return vecObjects[ vecIntermediateLayer[ Index ] ];
+}
+MatrixObject * ObjMgr::GetObjPtr( unsigned Index )
+{
+	return &(vecObjects[ vecIntermediateLayer[ Index ] ]);
+}
+void ObjMgr::Advance()
+{
+	unsigned s = vecObjects.size();
+	for( unsigned u = 0; u < s; ++u )
+		vecObjects[ u ].Advance();
+}
+
+void MatrixObject::SetSpeed( float Speed )
+{
+	D3DXVec3Scale( &velocity, &velocity, Speed / D3DXVec3Length( &velocity ) );
+}
+void MatrixObject::SetVelocity( D3DXVECTOR3 Velocity )
+{
+	velocity = Velocity;
+}
+void MatrixObject::SetPosition( D3DXVECTOR3 Position )
+{
+	/*
+	D3DXMATRIX displace;
+	D3DXMatrixTranslation( &displace, Position.x, Position.y, Position.z );
+	spacial = spacial * displace;
+	*/
+	spacial._41 = Position.x;
+	spacial._42 = Position.y;
+	spacial._43 = Position.z;
+}
+void MatrixObject::SetScale( D3DXVECTOR3 Scale )
+{
+	D3DXQUATERNION quatrot;
+	D3DXVECTOR3 matsca, mattrans;
+	D3DXMatrixDecompose( NULL, &quatrot, &mattrans, &spacial );
+	D3DXMatrixTransformation( &spacial, NULL, NULL, &Scale, NULL, &quatrot, &mattrans );
+}
+void MatrixObject::SetAngle( float Theta )
+{
+	D3DXQUATERNION quatRot;
+	D3DXVECTOR3 vecSca, vecTrans;
+	D3DXMatrixDecompose( &vecSca, NULL, &vecTrans, &spacial );
+	D3DXQuaternionRotationAxis( &quatRot, &D3DXVECTOR3( 0, 0, 1 ), Theta );
+	D3DXMatrixTransformation( &spacial, NULL, NULL, &vecSca, NULL, &quatRot, &vecTrans );
+}
+void MatrixObject::SetAngleEx( D3DXVECTOR3 Axis, float Theta )
+{
+	D3DXQUATERNION quatRot;
+	D3DXVECTOR3 vecSca, vecTrans;
+	D3DXMatrixDecompose( &vecSca, NULL, &vecTrans, &spacial );
+	D3DXQuaternionRotationAxis( &quatRot, &Axis, Theta );
+	D3DXMatrixTransformation( &spacial, NULL, NULL, &vecSca, NULL, &quatRot, &vecTrans );
+}
+void MatrixObject::SetAngularVelocity( float Theta )
+{
+	D3DXQuaternionRotationAxis( &orientvel, &D3DXVECTOR3( 0, 0, 1 ), Theta );
+}
+void MatrixObject::SetAngularVelocityEx( D3DXVECTOR3 Axis, float Theta )
+{
+	D3DXQuaternionRotationAxis( &orientvel, &Axis, Theta );
+}
+void MatrixObject::Advance()
+{
+	D3DXVECTOR3 vecsca, vectrans;
+	D3DXQUATERNION quatrot;
+	D3DXMatrixDecompose( &vecsca, &quatrot, &vectrans, &spacial );
+	quatrot = quatrot * orientvel;
+	D3DXMatrixTransformation( &spacial, NULL, NULL, &vecsca, NULL, &quatrot, &( vectrans + velocity ) );
+	velocity += accel;
 }
