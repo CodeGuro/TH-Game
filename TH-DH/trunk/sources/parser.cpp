@@ -640,7 +640,7 @@ parser::parser( script_engine & eng ) : engine( eng )
 		char buff[512] = { 0 };
 		GetCurrentDirectory( sizeof( buff ), buff );
 		std::string const path = std::string( buff ) + "\\script";
-		mapScriptPaths( path );
+		/*deprecated*///mapScriptPaths( path );
 
 		std::string scriptPath;
 		OPENFILENAMEA ofn ={ 0 };

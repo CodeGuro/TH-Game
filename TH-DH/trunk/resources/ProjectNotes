@@ -29,4 +29,4 @@ This will save space for the script_machine_cont container, it holding merely an
 -- some fixes needed with the parser
 
 [ ] Prepare for parsing files determined by the user via DirectX interface instead of GetOpenFile() using Explorer
-[ ] Operational testing of all functions, loops, subfunctions, script calls, and 
+[ ] Operational testing of all functions, loops, subfunctions, script calls

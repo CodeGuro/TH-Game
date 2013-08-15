@@ -60,14 +60,19 @@ block & script_engine::getBlock( size_t index )
 }
 void script_engine::registerScript( std::string const scriptName )
 {
-	battery.mappedScriptBlocks[ scriptName ] = script_container();
+	battery.mappedScriptBlocks[ scriptName ] = battery.vecScripts.size();
+	battery.vecScripts.push_back( script_container() );
 }
 script_container * script_engine::getScript( std::string const & scriptName )
 {
-	std::map< std::string, script_container >::iterator it = battery.mappedScriptBlocks.find( scriptName );
+	std::map< std::string, unsigned >::iterator it = battery.mappedScriptBlocks.find( scriptName );
 	if( it != battery.mappedScriptBlocks.end() )
-		return &(it->second);
+		return &(battery.vecScripts[ it->second ]);
 	return 0;
+}
+script_container & script_engine::getScript( size_t index )
+{
+	return battery.vecScripts[ index ];
 }
 
 //script engine - script data - related functions
@@ -240,8 +245,8 @@ size_t script_engine::fetchScriptEnvironment( size_t blockIndex )
 	}
 	else
 	{
-		index = battery.vecScriptData.size();
-		battery.vecScriptData.resize( 1 + index );
+		index = battery.vecScriptEnvironment.size();
+		battery.vecScriptEnvironment.resize( 1 + index );
 	}
 	script_environment & env = getScriptEnvironment( index );
 	env.blockIndex = blockIndex;
@@ -251,7 +256,7 @@ size_t script_engine::fetchScriptEnvironment( size_t blockIndex )
 }
 script_environment & script_engine::getScriptEnvironment( size_t index )
 {
-	return battery.vecRoutines[ index ];
+	return battery.vecScriptEnvironment[ index ];
 }
 void script_engine::addRefScriptEnvironment( size_t & index )
 {
@@ -289,7 +294,7 @@ size_t script_engine::fetchScriptMachine()
 	}
 	return index;
 }
-script_engine::inventory::script_machine_container & script_engine::getScriptMachine( size_t index )
+script_machine & script_engine::getScriptMachine( size_t index )
 {
 	return battery.vecMachines[ index ];
 }
@@ -313,6 +318,13 @@ void script_engine::cleanEngine()
 void script_engine::start()
 {
 	parser p(*this);
+
+	//temporary for testing purposes
+	currentRunningMachine = fetchScriptMachine();
+	script_machine & machine = getScriptMachine( currentRunningMachine );
+	machine.initialize( *this, 0 );
+/*	for( unsigned u = 0; u < 15; ++u )
+		advance();*/
 }
 script_engine::~script_engine()
 {

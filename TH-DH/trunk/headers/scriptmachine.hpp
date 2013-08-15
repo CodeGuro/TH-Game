@@ -9,9 +9,10 @@ class script_machine
 private:
 	vector< size_t > threads;
 	size_t current_thread_index;
+	size_t current_script_index;
 
 public:
-	void advance( script_engine & engine );
-	void initialize( script_engine & engine );
+	bool advance( script_engine & engine );
+	void initialize( script_engine & engine, size_t script_index );
 	void clean( script_engine & engine );
 };
