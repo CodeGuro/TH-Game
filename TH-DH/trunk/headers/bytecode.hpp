@@ -91,7 +91,6 @@ struct block
 	std::string name;
 	size_t argc;
 	block_kind kind;
-	bool hasResult;
 };
 
 struct script_environment
@@ -101,6 +100,7 @@ struct script_environment
 	size_t blockIndex;
 	size_t parentIndex;
 	size_t refCount;
+	bool hasResult;
 };
 
 struct script_container

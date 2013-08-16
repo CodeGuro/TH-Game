@@ -1,5 +1,6 @@
 #include <scriptengine.hpp>
 #include <parser.hpp>
+#include <iostream>
 #include <assert.h>
 
 //script type manager, script_engine::getScriptTypeManager
@@ -322,7 +323,24 @@ void script_engine::start()
 	//temporary for testing purposes
 	currentRunningMachine = fetchScriptMachine();
 	script_machine & machine = getScriptMachine( currentRunningMachine );
-	machine.initialize( *this, 0 );
+	size_t scriptIdx = invalidIndex;
+	for( unsigned i = 0; i < 3; ++i )
+	{
+		std::string name;
+		std::cout << "Scripts\n";
+		for( unsigned j = 0; j < battery.vecScripts.size(); ++j )
+			std::cout << "\t" << getBlock( battery.vecScripts[ j ].ScriptBlock ).name << "\n";
+		std::cout << "Enter Script: ";
+		std::getline( std::cin, name );
+		if( getScript( name ) )
+		{
+			scriptIdx = battery.mappedScriptBlocks[ name ];
+			break;
+		}
+	}
+	if( scriptIdx == invalidIndex )
+		return;
+	machine.initialize( *this, scriptIdx );
 /*	for( unsigned u = 0; u < 15; ++u )
 		advance();*/
 }

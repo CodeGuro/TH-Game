@@ -725,7 +725,6 @@ void parser::parseInlineBlock( block::block_kind const bk_kind )
 	size_t blockIndex = engine.fetchBlock();
 	block & inlineBlock = engine.getBlock( blockIndex );
 	inlineBlock.argc = 0;
-	inlineBlock.hasResult = false;
 	inlineBlock.kind = bk_kind;
 	inlineBlock.nativeCallBack = 0;
 	inlineBlock.name = "inlinedBlock";
@@ -801,7 +800,6 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 					currentScope[ subroutine ] = routine;
 					block & blockRoutine = engine.getBlock( routine.blockIndex );
 					blockRoutine.kind = (tok == tk_FUNCTION? block::bk_function : (tok == tk_TASK? block::bk_task : (tok == tk_at? block::bk_sub : block::bk_normal )));
-					blockRoutine.hasResult = (tok == tk_FUNCTION);
 					blockRoutine.name = subroutine;
 					blockRoutine.nativeCallBack = 0;
 					blockRoutine.argc = 0;
@@ -935,7 +933,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 				raiseError( "script_main and script_enemy routine types have zero parameters", error::er_syntax );
 			if( subname == "Initialize" || subname == "MainLoop" || subname == "Finalize" || subname == "BackGround" )
 			{
-				if( engine.getBlock( subsym->blockIndex ).hasResult )
+				if( engine.getBlock( subsym->blockIndex ).kind == block::bk_function )
 					raiseError( std::string() + "\"" + subname + "\" must be prefixed with \"@\"", error::er_syntax );
 				script_container * s_cont = engine.getScript( getBlock().name );
 				if( !s_cont ) raiseError( std::string() +"@\"" + subname + "\" must be defined 1 level above the scope of script's block", error::er_parser );
@@ -1300,7 +1298,6 @@ void parser::importNativeSymbols()
 			raiseError( std::string() + "\"" + funcs[i].name +"\" "+ "has already been defined" , error::er_syntax );
 		unsigned blockIndex = engine.fetchBlock();
 		block & b = engine.getBlock( blockIndex );
-		b.hasResult = true;
 		b.kind = block::bk_function;
 		b.name = funcs[i].name;
 		b.argc = funcs[i].argc;
@@ -1318,7 +1315,7 @@ void parser::writeOperation( std::string const & nativeFunc )
 	if( !(func = search( nativeFunc )) || func->blockIndex == invalidIndex )
 		raiseError( "parser::writeOperation", error::er_internal );
 	block & blockFunc = engine.getBlock( func->blockIndex );
-	if( !(blockFunc.hasResult && blockFunc.nativeCallBack != 0) )
+	if( !(blockFunc.kind == block::bk_function && blockFunc.nativeCallBack != 0) )
 		raiseError( "parser::writeOperation", error::er_internal );
 	blockFunc.vecCodes.push_back( code::subArg( vc_callFunctionPush, func->blockIndex, blockFunc.argc ) );
 }
