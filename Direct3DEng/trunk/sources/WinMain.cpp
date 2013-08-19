@@ -37,14 +37,12 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	MSG msg;
 	Direct3DEngine D3dEng;
 	D3dEng.InitEng( hWnd, MessageBox(NULL, "Fullscreen Mode?", "FULLSCREEN/WINDOW", MB_YESNO | MB_ICONQUESTION ) == IDNO );
-	D3dEng.LoadTexture( "etama.png" );
-	D3dEng.TestDevice();
-	//we'll now attempt to draw a simple texture to the focus window
 	do
 	{
 		PeekMessage( &msg, NULL, NULL, NULL, PM_REMOVE );
 		TranslateMessage( &msg );
 		DispatchMessage( &msg );
+		D3dEng.RenderFrame( msg );
 	}while( msg.message != WM_QUIT );
 
 	return EXIT_SUCCESS;

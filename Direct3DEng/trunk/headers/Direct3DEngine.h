@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <Windows.h>
 
 struct Vertex
 {
@@ -60,8 +61,8 @@ class Direct3DEngine
 private:
 	struct GenCameraSetting
 	{
-		D3DXMATRIX worldMat;
-		D3DXMATRIX viewMat;
+		D3DXMATRIX WorldMat;
+		D3DXMATRIX ViewMat;
 		D3DXMATRIX ProjMat;
 	};
 	struct Battery
@@ -84,7 +85,10 @@ public:
 	Direct3DEngine( Direct3DEngine && source );
 	*/
 	void InitEng( HWND hWnd, bool windowed );
-	void TestDevice();
+	void ToggleWindowed();
 	void LoadTexture( std::string const pathname );
 	void DeleteTexture( std::string const pathname );
+	void DrawGridTerrain( unsigned Rows, unsigned Columns, float Spacing );
+	void RenderFrame( MSG const Msg );
+	void ProcUserInput( MSG const Msg );
 };
