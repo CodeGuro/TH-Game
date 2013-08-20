@@ -52,7 +52,25 @@ void Direct3DEngine::InitEng( HWND hWnd, bool windowed )
 		D3DXMatrixIdentity( &CamSetting.WorldMat );
 		D3DXMatrixLookAtLH( &CamSetting.ViewMat, &D3DXVECTOR3(0, 1,-10), &D3DXVECTOR3(0,1,0), &D3DXVECTOR3(0,1,0) );
 		D3DXMatrixPerspectiveFovLH( &CamSetting.ProjMat, D3DXToRadian(45), 640.f/480.f, 1.0f, 100.0f );
+
+		LPD3DXBUFFER pshaderbuff = NULL;
+		LPD3DXBUFFER pshadererrbuff = NULL;
+		if( D3D_OK != D3DXCompileShaderFromFile( "Default3D.vs", NULL, NULL, "vs_main", "vs_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, &inventory.pDefaultConstable ) )
+			MessageBox( NULL, pshadererrbuff? (LPCSTR)pshadererrbuff->GetBufferPointer() : "Vertex Shader Compiler Error", "DX Shader Error", NULL );
+		d3ddev->CreateVertexShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &inventory.pDefault3DVShader );
+		pshaderbuff->Release();
+		if(pshadererrbuff ) pshadererrbuff->Release();
+		if( D3D_OK != D3DXCompileShaderFromFile( "Default3D.ps", NULL, NULL, "ps_main", "ps_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, NULL ) )
+			MessageBox( NULL, pshadererrbuff? (LPCSTR)pshadererrbuff->GetBufferPointer() : "Pixel Shader Compiler Error", "DX Shader Error", NULL );	
+		d3ddev->CreatePixelShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &inventory.pDefault3DPShader );
+		pshaderbuff->Release();
+		if(pshadererrbuff ) pshadererrbuff->Release();
 		
+		d3ddev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+		d3ddev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+		d3ddev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+		d3ddev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
+
 		d3ddev->Clear( 0, 0, D3DCLEAR_TARGET, D3DCOLOR_XRGB( 100, 30, 180 ), 1.f, 0 );
 		d3ddev->Present( NULL, NULL, NULL, NULL );		
 	}
@@ -63,7 +81,6 @@ void Direct3DEngine::ToggleWindowed()
 	D3DPRESENT_PARAMETERS d3dpp;
 	LPDIRECT3DSWAPCHAIN9 psc;
 	D3DDISPLAYMODE d3ddm;
-
 
 	d3d->EnumAdapterModes( D3DADAPTER_DEFAULT, D3DFMT_X8R8G8B8, d3d->GetAdapterModeCount( D3DADAPTER_DEFAULT, D3DFMT_X8R8G8B8 ) - 1, &d3ddm );
 	d3ddev->GetSwapChain( 0, &psc );
@@ -77,10 +94,10 @@ void Direct3DEngine::ToggleWindowed()
 void Direct3DEngine::LoadTexture( std::string const pathname )
 {
 	auto it = inventory.mapTextures.find( pathname );
-	if( it != inventory.mapTextures.end() )
+	if( it == inventory.mapTextures.end() )
 	{
 		inventory.mapTextures[ pathname ];
-		D3DXCreateTextureFromFile( d3ddev, pathname.c_str(), &(it->second) );
+		D3DXCreateTextureFromFile( d3ddev, pathname.c_str(), &inventory.mapTextures[ pathname ] );
 	}
 }
 void Direct3DEngine::DeleteTexture( std::string const pathname )
@@ -124,21 +141,24 @@ void Direct3DEngine::DrawGridTerrain( unsigned Rows, unsigned Columns, float Spa
 	pverts = (Vertex*)ptr;
 	for( unsigned i = 0; i < Columns; ++i )
 	{
-		Vertex v1 = { Spacing / 2.f * (float)Columns - Spacing * (float)i, 0, Spacing / 2 * (float)Rows, 0, 0, D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
-		Vertex v2 = { Spacing / 2.f * (float)Columns - Spacing * (float)i, 0, Spacing / -2 * (float)Rows, 0, 0, D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
+		Vertex v1 = { Spacing / 2.f * (float)Columns - Spacing * (float)i, 0, Spacing / 2 * (float)Rows, 0, 0, D3DCOLOR_ARGB( 100, 0, 0, 255 ) };
+		Vertex v2 = { Spacing / 2.f * (float)Columns - Spacing * (float)i, 0, Spacing / -2 * (float)Rows, 0, 0, D3DCOLOR_ARGB( 0, 255, 255, 255 ) };
 		*pverts++ = v1;
 		*pverts++ = v2;
 	}
 	for( unsigned i = 0; i < Rows; ++i )
 	{
-		Vertex v1 = { Spacing / 2.f * (float)Columns, 0, Spacing / 2.f * Columns - Spacing * (float)i, 0, 0, D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
-		Vertex v2 = { Spacing / -2.f * (float)Columns, 0, Spacing / 2.f * Columns - Spacing * (float)i, 0, 0, D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
+		Vertex v1 = { Spacing / 2.f * (float)Columns, 0, Spacing / 2.f * Columns - Spacing * (float)i, 0, 0, D3DCOLOR_ARGB( 100, 255, 0, 0 ) };
+		Vertex v2 = { Spacing / -2.f * (float)Columns, 0, Spacing / 2.f * Columns - Spacing * (float)i, 0, 0, D3DCOLOR_ARGB( 0, 255, 255, 255 ) };
 		*pverts++ = v1;
 		*pverts++ = v2;
 	}
 	pvb->Unlock();
 	d3ddev->SetVertexDeclaration( pvd );
 	d3ddev->SetStreamSource( 0, pvb, 0, sizeof( Vertex ) );
+	inventory.pDefaultConstable->SetMatrix( d3ddev, "WorldViewProjMat", &( CamSetting.WorldMat * CamSetting.ViewMat * CamSetting.ProjMat ) );
+	d3ddev->SetVertexShader( inventory.pDefault3DVShader );
+	d3ddev->SetPixelShader( inventory.pDefault3DPShader );
 	d3ddev->DrawPrimitive( D3DPT_LINELIST, 0, Rows + Columns );
 	pvb->Release();
 	pvd->Release();

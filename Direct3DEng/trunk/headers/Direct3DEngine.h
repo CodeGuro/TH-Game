@@ -68,6 +68,9 @@ private:
 	struct Battery
 	{
 		std::map< std::string, LPDIRECT3DTEXTURE9 > mapTextures;
+		LPDIRECT3DVERTEXSHADER9 pDefault3DVShader;
+		LPDIRECT3DPIXELSHADER9 pDefault3DPShader;
+		LPD3DXCONSTANTTABLE pDefaultConstable;
 	};
 	LPDIRECT3D9 d3d;
 	LPDIRECT3DDEVICE9 d3ddev;
