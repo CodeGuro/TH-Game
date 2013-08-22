@@ -1,6 +1,6 @@
-[ ] Build a world matrix / camera
+[x] Build a world matrix / camera
 [X] Test the DirectX 9 Device
-[ ] Build a container to handle textures
+[x] Build a container to handle textures
 [ ] Build a container to handle vertices
 [ ] Build a container to handle instances
 [ ] Build a container to handle matrices

@@ -1,12 +1,6 @@
 //Default pixel shader to sample the texture to the pixel
 
-sampler texsampler = sampler_state
-{
-	Texture = <texsamp>;
-	MAGFILTER = LINEAR;
-	MINFILTER = LINEAR;
-	MIPFILTER = LINEAR;
-};
+sampler texsampler;
 
 struct Vertex3D
 {

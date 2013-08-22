@@ -89,7 +89,15 @@ void Direct3DEngine::ToggleWindowed()
 	d3dpp.Windowed = (BOOL)!d3dpp.Windowed;
 	d3dpp.FullScreen_RefreshRateInHz = d3dpp.Windowed? 0 : d3ddm.RefreshRate;
 	d3ddev->Reset( &d3dpp );
-	UpdateWindow( d3dpp.hDeviceWindow );
+
+	d3ddev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+	d3ddev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+	d3ddev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+	d3ddev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
+	d3ddev->SetVertexShader( inventory.pDefault3DVShader );
+	d3ddev->SetPixelShader( inventory.pDefault3DPShader );
+	ShowWindow( d3dpp.hDeviceWindow, SW_SHOWMINIMIZED );
+	ShowWindow( d3dpp.hDeviceWindow, SW_RESTORE );
 }
 void Direct3DEngine::LoadTexture( std::string const pathname )
 {
@@ -113,7 +121,8 @@ void Direct3DEngine::RenderFrame( MSG const msg )
 {
 	d3ddev->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB( 100, 30, 180 ), 1.f, 0 );
 	d3ddev->BeginScene();
-	DrawGridTerrain( 1000, 1000, 1.f );
+//	DrawGridTerrain( 1000, 1000, 1.f );
+	DrawTexture();
 	d3ddev->EndScene();
 	d3ddev->Present( NULL, NULL, NULL, NULL );
 	ProcUserInput( msg );
@@ -162,6 +171,61 @@ void Direct3DEngine::DrawGridTerrain( unsigned Rows, unsigned Columns, float Spa
 	d3ddev->DrawPrimitive( D3DPT_LINELIST, 0, Rows + Columns );
 	pvb->Release();
 	pvd->Release();
+}
+void Direct3DEngine::DrawTexture()
+{
+
+	d3ddev->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB( 100, 30, 180 ), 1.f, 0 );
+	LPDIRECT3DTEXTURE9 pTexture;
+	LPDIRECT3DVERTEXBUFFER9 pvb;
+	LPDIRECT3DVERTEXDECLARATION9 pvd;
+
+	D3DXCreateTextureFromFile( d3ddev, "tester.png", &pTexture );
+
+	D3DVERTEXELEMENT9 ve[] = 
+	{
+		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		{ 0, 20, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0 },
+		D3DDECL_END()
+	};
+	d3ddev->CreateVertexDeclaration( ve, &pvd );
+	
+	Vertex verts[] =
+	{
+		{ -128.f, -128.f, 0.f, 0.f, 0.f, D3DCOLOR_ARGB( 255, 255, 255, 255 ) },
+		{ 128.f, -128.f, 0.f, 1.f, 0.f, D3DCOLOR_ARGB( 255, 255, 255, 255 ) },
+		{ -128.f, 128.f, 0.f, 0.f, 1.f, D3DCOLOR_ARGB( 255, 255, 255, 255 ) },
+		{ 128.f, 128.f, 0.f, 1.f, 1.f, D3DCOLOR_ARGB( 255, 255, 255, 255 ) },
+	};
+	d3ddev->CreateVertexBuffer( sizeof( verts ), D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &pvb, 0 );
+	
+	void * ptr;
+	pvb->Lock( 0, NULL, &ptr, D3DLOCK_DISCARD );
+	memcpy( ptr, verts, sizeof( verts ) );
+	pvb->Unlock();
+
+	D3DXMATRIX world, view, proj;
+	D3DXMatrixIdentity( &world );
+	D3DXMatrixOrthoLH( &proj, 640.f, -480.f, 0.f, 100.f );
+	D3DXMatrixLookAtLH(&view, &D3DXVECTOR3(0,0,-1.f), &D3DXVECTOR3(0,0,0 ), &D3DXVECTOR3(0,1,0) );
+	D3DXMatrixTranslation( &world, -640.f/2 - 0.5f, -480.f/2 - 0.5f, 0.f );
+	inventory.pDefaultConstable->SetMatrix( d3ddev, "WorldViewProjMat", &(world*view*proj) );
+	//d3ddev->SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
+	d3ddev->SetTexture( 0, pTexture );
+	d3ddev->SetStreamSource( 0, pvb, 0, sizeof( Vertex ) );
+	d3ddev->SetVertexDeclaration( pvd );
+	d3ddev->SetVertexShader( inventory.pDefault3DVShader );
+	d3ddev->SetPixelShader( inventory.pDefault3DPShader );
+	d3ddev->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
+	d3ddev->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
+	d3ddev->SetSamplerState( 0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR );
+	d3ddev->DrawPrimitive( D3DPT_TRIANGLESTRIP, 0, 2 );
+
+	pvb->Release();
+	pvd->Release();
+	pTexture->Release();
+
 }
 void Direct3DEngine::ProcUserInput( MSG const Msg )
 {
@@ -237,8 +301,32 @@ void ObjMgr::SetTexture( LPDIRECT3DTEXTURE9 pTex )
 {
 	pTex->AddRef();
 	pTexture = pTex;
+	pTexture->GetLevelDesc(0, &SurfaceDesc );
+};
+void ObjMgr::PushQuadLib( D3DXVECTOR2 TopLeft, D3DXVECTOR2 WidthHeight )
+{
+	if( VertexCount == 4 )
+	{
+		float y = TopLeft.y;
+		for( unsigned j = 0; j < 2; ++j )
+		{
+			float x = TopLeft.x;
+			for( unsigned i = 0; i < 2; ++i )
+			{
+				Vertex v = { x, y, 0.f, x / SurfaceDesc.Width, y / SurfaceDesc.Height, D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
+				vecVertexLibrary.push_back( v );
+				x += WidthHeight.x;
+			}
+			y += WidthHeight.y;
+		}
+	}
 }
-unsigned ObjMgr::PushObj( MatrixObject const Obj, Vertex const * PtrVertices )
+void ObjMgr::PushVertexLib( std::vector< Vertex > const & VecVerts )
+{
+	for( unsigned u = 0; u < VecVerts.size(); ++u )
+		vecVertexLibrary.push_back( VecVerts[ u ] );
+}
+unsigned ObjMgr::PushObj( MatrixObject const Obj, unsigned const Index )
 {
 	unsigned result;
 	vecIntermediateLayer.push_back( vecObjects.size() ); //to reference the object
@@ -250,8 +338,8 @@ unsigned ObjMgr::PushObj( MatrixObject const Obj, Vertex const * PtrVertices )
 	else
 		result = vecObjects.size();
 	vecObjects.push_back( Obj );
-	for( unsigned i = 0; i < VertexCount; ++i )
-		vecVertices.push_back( *PtrVertices++ );
+	for( unsigned u = 0; u < VertexCount; ++u )
+		vecVertices.push_back( vecVertexLibrary[ Index * VertexCount + u ] );
 	return result;
 }
 void ObjMgr::EraseObj( unsigned Index ) //Index to the intermediate layer
@@ -273,6 +361,10 @@ MatrixObject & ObjMgr::GetObjRef( unsigned Index )
 MatrixObject * ObjMgr::GetObjPtr( unsigned Index )
 {
 	return &(vecObjects[ vecIntermediateLayer[ Index ] ]);
+}
+D3DSURFACE_DESC ObjMgr::GetSurfaceDesc()
+{
+	return SurfaceDesc;
 }
 void ObjMgr::Advance()
 {

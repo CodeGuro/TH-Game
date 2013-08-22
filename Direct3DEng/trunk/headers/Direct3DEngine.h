@@ -38,6 +38,8 @@ class ObjMgr
 private:
 	unsigned VertexCount;
 	LPDIRECT3DTEXTURE9 pTexture;
+	D3DSURFACE_DESC SurfaceDesc;
+	std::vector< Vertex > vecVertexLibrary;
 	std::vector< Vertex > vecVertices;
 	std::vector< MatrixObject > vecObjects;
 	std::vector< unsigned > vecIntermediateLayer;
@@ -49,10 +51,13 @@ public:
 	~ObjMgr();
 	void SetVertexCount( unsigned const Count );
 	void SetTexture( LPDIRECT3DTEXTURE9 pTex );
-	unsigned PushObj( MatrixObject const Obj , Vertex const * PtrVertices);
+	void PushQuadLib( D3DXVECTOR2 TopLeft, D3DXVECTOR2 WidthHeight );
+	void PushVertexLib( std::vector< Vertex > const & VecVerts );
+	unsigned PushObj( MatrixObject const Obj , unsigned const Index );
 	void EraseObj( unsigned Index );
 	MatrixObject & GetObjRef( unsigned Index );
 	MatrixObject * GetObjPtr( unsigned Index );
+	D3DSURFACE_DESC GetSurfaceDesc();
 	void Advance();
 };
 
@@ -67,10 +72,12 @@ private:
 	};
 	struct Battery
 	{
-		std::map< std::string, LPDIRECT3DTEXTURE9 > mapTextures;
 		LPDIRECT3DVERTEXSHADER9 pDefault3DVShader;
 		LPDIRECT3DPIXELSHADER9 pDefault3DPShader;
 		LPD3DXCONSTANTTABLE pDefaultConstable;
+
+		std::map< std::string, LPDIRECT3DTEXTURE9 > mapTextures;
+		std::vector< ObjMgr > vecObjManagers;
 	};
 	LPDIRECT3D9 d3d;
 	LPDIRECT3DDEVICE9 d3ddev;
@@ -92,6 +99,7 @@ public:
 	void LoadTexture( std::string const pathname );
 	void DeleteTexture( std::string const pathname );
 	void DrawGridTerrain( unsigned Rows, unsigned Columns, float Spacing );
+	void DrawTexture();
 	void RenderFrame( MSG const Msg );
 	void ProcUserInput( MSG const Msg );
 };
