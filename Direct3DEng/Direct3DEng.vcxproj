@@ -48,6 +48,7 @@
     <IncludePath>$(DXSDK_DIR)\Include\;$(ProjectDir)\trunk\headers\;$(IncludePath)</IncludePath>
     <LibraryPath>$(DXSDK_DIR)\Lib\x86\;$(LibraryPath)</LibraryPath>
     <SourcePath>$(ProjectDir)\trunk\sources\;$(SourcePath)</SourcePath>
+    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>

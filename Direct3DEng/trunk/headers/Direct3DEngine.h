@@ -100,6 +100,7 @@ public:
 	void DeleteTexture( std::string const pathname );
 	void DrawGridTerrain( unsigned Rows, unsigned Columns, float Spacing );
 	void DrawTexture();
+	void DrawFPS();
 	void RenderFrame( MSG const Msg );
 	void ProcUserInput( MSG const Msg );
 };

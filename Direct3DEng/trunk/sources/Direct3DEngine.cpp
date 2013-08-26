@@ -2,6 +2,7 @@
 #define D3D_DEBUG_INFO
 #endif
 #include <Direct3DEngine.h>
+#include <sstream>
 
 Direct3DEngine::Direct3DEngine() : d3d( Direct3DCreate9( D3D_SDK_VERSION ) ), d3ddev( NULL )
 {
@@ -87,7 +88,7 @@ void Direct3DEngine::ToggleWindowed()
 	psc->GetPresentParameters( &d3dpp );
 	GetClientRect( d3dpp.hDeviceWindow, &rec );
 	d3dpp.Windowed = (BOOL)!d3dpp.Windowed;
-	d3dpp.FullScreen_RefreshRateInHz = d3dpp.Windowed? 0 : d3ddm.RefreshRate;
+	d3dpp.FullScreen_RefreshRateInHz = (d3dpp.Windowed? 0 : d3ddm.RefreshRate);
 	d3ddev->Reset( &d3dpp );
 
 	d3ddev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
@@ -121,8 +122,10 @@ void Direct3DEngine::RenderFrame( MSG const msg )
 {
 	d3ddev->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB( 100, 30, 180 ), 1.f, 0 );
 	d3ddev->BeginScene();
-//	DrawGridTerrain( 1000, 1000, 1.f );
+
+	DrawGridTerrain( 1000, 1000, 1.f );
 	DrawTexture();
+	DrawFPS();
 	d3ddev->EndScene();
 	d3ddev->Present( NULL, NULL, NULL, NULL );
 	ProcUserInput( msg );
@@ -150,15 +153,15 @@ void Direct3DEngine::DrawGridTerrain( unsigned Rows, unsigned Columns, float Spa
 	pverts = (Vertex*)ptr;
 	for( unsigned i = 0; i < Columns; ++i )
 	{
-		Vertex v1 = { Spacing / 2.f * (float)Columns - Spacing * (float)i, 0, Spacing / 2 * (float)Rows, 0, 0, D3DCOLOR_ARGB( 100, 0, 0, 255 ) };
-		Vertex v2 = { Spacing / 2.f * (float)Columns - Spacing * (float)i, 0, Spacing / -2 * (float)Rows, 0, 0, D3DCOLOR_ARGB( 0, 255, 255, 255 ) };
+		Vertex v1 = { Spacing / 2.f * (float)Columns - Spacing * (float)i, 0, Spacing / 2 * (float)Rows, 0, 0, D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
+		Vertex v2 = { Spacing / 2.f * (float)Columns - Spacing * (float)i, 0, Spacing / -2 * (float)Rows, 0, 0, D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
 		*pverts++ = v1;
 		*pverts++ = v2;
 	}
 	for( unsigned i = 0; i < Rows; ++i )
 	{
-		Vertex v1 = { Spacing / 2.f * (float)Columns, 0, Spacing / 2.f * Columns - Spacing * (float)i, 0, 0, D3DCOLOR_ARGB( 100, 255, 0, 0 ) };
-		Vertex v2 = { Spacing / -2.f * (float)Columns, 0, Spacing / 2.f * Columns - Spacing * (float)i, 0, 0, D3DCOLOR_ARGB( 0, 255, 255, 255 ) };
+		Vertex v1 = { Spacing / 2.f * (float)Columns, 0, Spacing / 2.f * Columns - Spacing * (float)i, 0, 0, D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
+		Vertex v2 = { Spacing / -2.f * (float)Columns, 0, Spacing / 2.f * Columns - Spacing * (float)i, 0, 0, D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
 		*pverts++ = v1;
 		*pverts++ = v2;
 	}
@@ -168,14 +171,13 @@ void Direct3DEngine::DrawGridTerrain( unsigned Rows, unsigned Columns, float Spa
 	inventory.pDefaultConstable->SetMatrix( d3ddev, "WorldViewProjMat", &( CamSetting.WorldMat * CamSetting.ViewMat * CamSetting.ProjMat ) );
 	d3ddev->SetVertexShader( inventory.pDefault3DVShader );
 	d3ddev->SetPixelShader( inventory.pDefault3DPShader );
+	d3ddev->SetTexture( 0, NULL );
 	d3ddev->DrawPrimitive( D3DPT_LINELIST, 0, Rows + Columns );
 	pvb->Release();
 	pvd->Release();
 }
 void Direct3DEngine::DrawTexture()
 {
-
-	d3ddev->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB( 100, 30, 180 ), 1.f, 0 );
 	LPDIRECT3DTEXTURE9 pTexture;
 	LPDIRECT3DVERTEXBUFFER9 pvb;
 	LPDIRECT3DVERTEXDECLARATION9 pvd;
@@ -193,10 +195,10 @@ void Direct3DEngine::DrawTexture()
 	
 	Vertex verts[] =
 	{
-		{ -128.f, -128.f, 0.f, 0.f, 0.f, D3DCOLOR_ARGB( 255, 255, 255, 255 ) },
+		{ -128.f, -128.f, 0.f, 0.f, 0.f, D3DCOLOR_ARGB( 255, 0, 0, 255 ) },
 		{ 128.f, -128.f, 0.f, 1.f, 0.f, D3DCOLOR_ARGB( 255, 255, 255, 255 ) },
-		{ -128.f, 128.f, 0.f, 0.f, 1.f, D3DCOLOR_ARGB( 255, 255, 255, 255 ) },
-		{ 128.f, 128.f, 0.f, 1.f, 1.f, D3DCOLOR_ARGB( 255, 255, 255, 255 ) },
+		{ -128.f, 128.f, 0.f, 0.f, 1.f, D3DCOLOR_ARGB( 100, 0, 255, 0 ) },
+		{ 128.f, 128.f, 0.f, 1.f, 1.f, D3DCOLOR_ARGB( 255, 255, 0, 0 ) },
 	};
 	d3ddev->CreateVertexBuffer( sizeof( verts ), D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &pvb, 0 );
 	
@@ -209,7 +211,7 @@ void Direct3DEngine::DrawTexture()
 	D3DXMatrixIdentity( &world );
 	D3DXMatrixOrthoLH( &proj, 640.f, -480.f, 0.f, 100.f );
 	D3DXMatrixLookAtLH(&view, &D3DXVECTOR3(0,0,-1.f), &D3DXVECTOR3(0,0,0 ), &D3DXVECTOR3(0,1,0) );
-	D3DXMatrixTranslation( &world, -640.f/2 - 0.5f, -480.f/2 - 0.5f, 0.f );
+	D3DXMatrixTranslation( &world, -640.f/4 - 0.5f, 0.f - 0.5f, 0.f );
 	inventory.pDefaultConstable->SetMatrix( d3ddev, "WorldViewProjMat", &(world*view*proj) );
 	//d3ddev->SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
 	d3ddev->SetTexture( 0, pTexture );
@@ -221,11 +223,34 @@ void Direct3DEngine::DrawTexture()
 	d3ddev->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
 	d3ddev->SetSamplerState( 0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR );
 	d3ddev->DrawPrimitive( D3DPT_TRIANGLESTRIP, 0, 2 );
-
+	d3ddev->SetTexture(0, NULL );
 	pvb->Release();
 	pvd->Release();
 	pTexture->Release();
 
+}
+void Direct3DEngine::DrawFPS()
+{
+
+	static DWORD Frame;
+	static DWORD FrameShow;
+	static DWORD TicDelta;
+	DWORD CurrentTick = GetTickCount();
+	if( CurrentTick - TicDelta >= 1000  )
+	{
+		FrameShow = Frame;
+		TicDelta = CurrentTick;
+		Frame = -1;
+	}
+	LPD3DXFONT pFont;
+	D3DXCreateFont( d3ddev, 30, 0, FW_NORMAL, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Lucida", &pFont );
+	RECT rec = { 0, 0, 640, 480 };
+	std::stringstream ss;
+	ss << FrameShow;
+	pFont->DrawTextA( NULL, ss.str().c_str(), -1, &rec, DT_BOTTOM | DT_SINGLELINE | DT_RIGHT, D3DCOLOR_ARGB( 100, 255, 255, 255 ) );
+	pFont->Release();
+	++Frame;
+	
 }
 void Direct3DEngine::ProcUserInput( MSG const Msg )
 {
