@@ -78,7 +78,6 @@ void Direct3DEngine::InitEng( HWND hWnd, bool windowed )
 }
 void Direct3DEngine::ToggleWindowed()
 {
-	RECT rec;
 	D3DPRESENT_PARAMETERS d3dpp;
 	LPDIRECT3DSWAPCHAIN9 psc;
 	D3DDISPLAYMODE d3ddm;
@@ -86,19 +85,21 @@ void Direct3DEngine::ToggleWindowed()
 	d3d->EnumAdapterModes( D3DADAPTER_DEFAULT, D3DFMT_X8R8G8B8, d3d->GetAdapterModeCount( D3DADAPTER_DEFAULT, D3DFMT_X8R8G8B8 ) - 1, &d3ddm );
 	d3ddev->GetSwapChain( 0, &psc );
 	psc->GetPresentParameters( &d3dpp );
-	GetClientRect( d3dpp.hDeviceWindow, &rec );
 	d3dpp.Windowed = (BOOL)!d3dpp.Windowed;
 	d3dpp.FullScreen_RefreshRateInHz = (d3dpp.Windowed? 0 : d3ddm.RefreshRate);
 	d3ddev->Reset( &d3dpp );
-
 	d3ddev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
 	d3ddev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
 	d3ddev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
 	d3ddev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
 	d3ddev->SetVertexShader( inventory.pDefault3DVShader );
 	d3ddev->SetPixelShader( inventory.pDefault3DPShader );
-	ShowWindow( d3dpp.hDeviceWindow, SW_SHOWMINIMIZED );
-	ShowWindow( d3dpp.hDeviceWindow, SW_RESTORE );
+
+	RECT rec = { 0, 0, 640, 480 };
+	AdjustWindowRect( &rec, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE, FALSE );
+	if( d3dpp.Windowed )
+		MoveWindow( d3dpp.hDeviceWindow, 100, 100, rec.right - rec.left, rec.bottom - rec.top, FALSE );
+	
 }
 void Direct3DEngine::LoadTexture( std::string const pathname )
 {
@@ -153,15 +154,15 @@ void Direct3DEngine::DrawGridTerrain( unsigned Rows, unsigned Columns, float Spa
 	pverts = (Vertex*)ptr;
 	for( unsigned i = 0; i < Columns; ++i )
 	{
-		Vertex v1 = { Spacing / 2.f * (float)Columns - Spacing * (float)i, 0, Spacing / 2 * (float)Rows, 0, 0, D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
-		Vertex v2 = { Spacing / 2.f * (float)Columns - Spacing * (float)i, 0, Spacing / -2 * (float)Rows, 0, 0, D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
+		Vertex v1 = { D3DXVECTOR3( Spacing / 2.f * (float)Columns - Spacing * (float)i, 0, Spacing / 2 * (float)Rows ), D3DXVECTOR2( 0, 0 ), D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
+		Vertex v2 = { D3DXVECTOR3( Spacing / 2.f * (float)Columns - Spacing * (float)i, 0, Spacing / -2 * (float)Rows ), D3DXVECTOR2( 0, 0 ), D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
 		*pverts++ = v1;
 		*pverts++ = v2;
 	}
 	for( unsigned i = 0; i < Rows; ++i )
 	{
-		Vertex v1 = { Spacing / 2.f * (float)Columns, 0, Spacing / 2.f * Columns - Spacing * (float)i, 0, 0, D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
-		Vertex v2 = { Spacing / -2.f * (float)Columns, 0, Spacing / 2.f * Columns - Spacing * (float)i, 0, 0, D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
+		Vertex v1 = { D3DXVECTOR3( Spacing / 2.f * (float)Columns, 0, Spacing / 2.f * Columns - Spacing * (float)i ), D3DXVECTOR2( 0, 0 ), D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
+		Vertex v2 = { D3DXVECTOR3( Spacing / -2.f * (float)Columns, 0, Spacing / 2.f * Columns - Spacing * (float)i ), D3DXVECTOR2( 0, 0 ), D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
 		*pverts++ = v1;
 		*pverts++ = v2;
 	}
@@ -195,10 +196,10 @@ void Direct3DEngine::DrawTexture()
 	
 	Vertex verts[] =
 	{
-		{ -128.f, -128.f, 0.f, 0.f, 0.f, D3DCOLOR_ARGB( 255, 0, 0, 255 ) },
-		{ 128.f, -128.f, 0.f, 1.f, 0.f, D3DCOLOR_ARGB( 255, 255, 255, 255 ) },
-		{ -128.f, 128.f, 0.f, 0.f, 1.f, D3DCOLOR_ARGB( 100, 0, 255, 0 ) },
-		{ 128.f, 128.f, 0.f, 1.f, 1.f, D3DCOLOR_ARGB( 255, 255, 0, 0 ) },
+		{ D3DXVECTOR3( -128.f, -128.f, 0.f ), D3DXVECTOR2( 0.f, 0.f ), D3DCOLOR_ARGB( 255, 0, 0, 255 ) },
+		{ D3DXVECTOR3(128.f, -128.f, 0.f ), D3DXVECTOR2( 1.f, 0.f ), D3DCOLOR_ARGB( 255, 255, 255, 255 ) },
+		{ D3DXVECTOR3(-128.f, 128.f, 0.f ), D3DXVECTOR2( 0.f, 1.f ), D3DCOLOR_ARGB( 100, 0, 255, 0 ) },
+		{ D3DXVECTOR3(128.f, 128.f, 0.f ), D3DXVECTOR2( 1.f, 1.f ), D3DCOLOR_ARGB( 255, 255, 0, 0 ) },
 	};
 	d3ddev->CreateVertexBuffer( sizeof( verts ), D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &pvb, 0 );
 	
@@ -338,7 +339,7 @@ void ObjMgr::PushQuadLib( D3DXVECTOR2 TopLeft, D3DXVECTOR2 WidthHeight )
 			float x = TopLeft.x;
 			for( unsigned i = 0; i < 2; ++i )
 			{
-				Vertex v = { x, y, 0.f, x / SurfaceDesc.Width, y / SurfaceDesc.Height, D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
+				Vertex v = { D3DXVECTOR3( x, y, 0.f ), D3DXVECTOR2( x / SurfaceDesc.Width, y / SurfaceDesc.Height ), D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
 				vecVertexLibrary.push_back( v );
 				x += WidthHeight.x;
 			}
@@ -348,23 +349,25 @@ void ObjMgr::PushQuadLib( D3DXVECTOR2 TopLeft, D3DXVECTOR2 WidthHeight )
 }
 void ObjMgr::PushVertexLib( std::vector< Vertex > const & VecVerts )
 {
-	for( unsigned u = 0; u < VecVerts.size(); ++u )
-		vecVertexLibrary.push_back( VecVerts[ u ] );
+	if( VecVerts.size() == VertexCount )
+	{
+		for( unsigned u = 0; u < VecVerts.size(); ++u )
+			vecVertexLibrary.push_back( VecVerts[ u ] );
+	}
 }
-unsigned ObjMgr::PushObj( MatrixObject const Obj, unsigned const Index )
+unsigned ObjMgr::PushObj( unsigned const Index )
 {
 	unsigned result;
-	vecIntermediateLayer.push_back( vecObjects.size() ); //to reference the object
 	if( vecIntermediateLayerGC.size() )
 	{
 		result = vecIntermediateLayerGC.back();
 		vecIntermediateLayerGC.pop_back();
 	}
 	else
-		result = vecObjects.size();
-	vecObjects.push_back( Obj );
-	for( unsigned u = 0; u < VertexCount; ++u )
-		vecVertices.push_back( vecVertexLibrary[ Index * VertexCount + u ] );
+		vecIntermediateLayer.resize( 1 + ( result = vecIntermediateLayer.size() ) );
+	vecIntermediateLayer[ result ] = vecVertices.size();
+	vecObjects.resize( 1 + vecObjects.size() );
+	vecVertices.insert( vecVertices.end(), vecVertexLibrary.begin() + Index * VertexCount, vecVertexLibrary.begin() + ( Index + 1 ) * VertexCount );
 	return result;
 }
 void ObjMgr::EraseObj( unsigned Index ) //Index to the intermediate layer
@@ -376,7 +379,7 @@ void ObjMgr::EraseObj( unsigned Index ) //Index to the intermediate layer
 		if( vecIntermediateLayer[ i ] > ObjIndex )
 			--(vecIntermediateLayer[ i ]);
 	}
-	vecVertices.erase( vecVertices.begin() + (ObjIndex * VertexCount ), vecVertices.begin() + ( (ObjIndex + 1 ) * VertexCount ) );
+	vecVertices.erase( vecVertices.end() - VertexCount, vecVertices.end() );
 	vecObjects.erase( vecObjects.begin() + ObjIndex );
 }
 MatrixObject & ObjMgr::GetObjRef( unsigned Index )
@@ -391,11 +394,15 @@ D3DSURFACE_DESC ObjMgr::GetSurfaceDesc()
 {
 	return SurfaceDesc;
 }
-void ObjMgr::Advance()
+void ObjMgr::Advance( D3DVIEWPORT9 const ViewPort )
 {
 	unsigned s = vecObjects.size();
 	for( unsigned u = 0; u < s; ++u )
+	{
+		for( unsigned v = 0; v < VertexCount; ++v )
+			D3DXVec3Project( &(vecVertices[ VertexCount * u + v ].pos), &( vecVertexLibrary[ vecObjects[ u ].libidx * VertexCount + v ].pos ), &ViewPort, &( vecObjects[ u ].spacial ), NULL, NULL );
 		vecObjects[ u ].Advance();
+	}
 }
 
 void MatrixObject::SetSpeed( float Speed )

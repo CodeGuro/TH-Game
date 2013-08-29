@@ -7,11 +7,8 @@
 
 struct Vertex
 {
-	float posx;
-	float posy;
-	float posz;
-	float posu;
-	float posv;
+	D3DXVECTOR3 pos;
+	D3DXVECTOR2 tex;
 	D3DCOLOR color;
 };
 
@@ -21,6 +18,7 @@ struct MatrixObject
 	D3DXVECTOR3 velocity;
 	D3DXVECTOR3 accel;
 	D3DXQUATERNION orientvel;
+	ULONG libidx;
 
 	void SetSpeed( float Speed );
 	void SetVelocity( D3DXVECTOR3 Velocity );
@@ -53,12 +51,12 @@ public:
 	void SetTexture( LPDIRECT3DTEXTURE9 pTex );
 	void PushQuadLib( D3DXVECTOR2 TopLeft, D3DXVECTOR2 WidthHeight );
 	void PushVertexLib( std::vector< Vertex > const & VecVerts );
-	unsigned PushObj( MatrixObject const Obj , unsigned const Index );
+	unsigned PushObj( unsigned const Index );
 	void EraseObj( unsigned Index );
 	MatrixObject & GetObjRef( unsigned Index );
 	MatrixObject * GetObjPtr( unsigned Index );
 	D3DSURFACE_DESC GetSurfaceDesc();
-	void Advance();
+	void Advance( D3DVIEWPORT9 const ViewPort );
 };
 
 class Direct3DEngine
