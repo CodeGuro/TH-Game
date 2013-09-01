@@ -329,22 +329,18 @@ void ObjMgr::SetTexture( LPDIRECT3DTEXTURE9 pTex )
 	pTexture = pTex;
 	pTexture->GetLevelDesc(0, &SurfaceDesc );
 };
-void ObjMgr::PushQuadLib( D3DXVECTOR2 TopLeft, D3DXVECTOR2 WidthHeight )
+void ObjMgr::PushQuadLib( RECT Quad, D3DCOLOR Color )
 {
 	if( VertexCount == 4 )
 	{
-		float y = TopLeft.y;
-		for( unsigned j = 0; j < 2; ++j )
+		Vertex v[4] = 
 		{
-			float x = TopLeft.x;
-			for( unsigned i = 0; i < 2; ++i )
-			{
-				Vertex v = { D3DXVECTOR3( x, y, 0.f ), D3DXVECTOR2( x / SurfaceDesc.Width, y / SurfaceDesc.Height ), D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
-				vecVertexLibrary.push_back( v );
-				x += WidthHeight.x;
-			}
-			y += WidthHeight.y;
-		}
+			{ D3DXVECTOR3( -(float)(Quad.right - Quad.left)/2, -(float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.left / (float)SurfaceDesc.Width, (float)Quad.top / (float)SurfaceDesc.Height ), Color },
+			{ D3DXVECTOR3( (float)(Quad.right - Quad.left)/2, -(float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.right / (float)SurfaceDesc.Width, (float)Quad.top / (float)SurfaceDesc.Height ), Color },
+			{ D3DXVECTOR3( -(float)(Quad.right - Quad.left)/2, (float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.left / (float)SurfaceDesc.Width, (float)Quad.bottom / (float)SurfaceDesc.Height ), Color },
+			{ D3DXVECTOR3( (float)(Quad.right - Quad.left)/2, (float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.right / (float)SurfaceDesc.Width, (float)Quad.bottom / (float)SurfaceDesc.Height ), Color },
+		};
+		for( unsigned u = 0; u < 4; ++u ) vecVertexLibrary.push_back( v[0] );
 	}
 }
 void ObjMgr::PushVertexLib( std::vector< Vertex > const & VecVerts )
@@ -367,7 +363,16 @@ unsigned ObjMgr::PushObj( unsigned const Index )
 		vecIntermediateLayer.resize( 1 + ( result = vecIntermediateLayer.size() ) );
 	vecIntermediateLayer[ result ] = vecVertices.size();
 	vecObjects.resize( 1 + vecObjects.size() );
-	vecVertices.insert( vecVertices.end(), vecVertexLibrary.begin() + Index * VertexCount, vecVertexLibrary.begin() + ( Index + 1 ) * VertexCount );
+	vecVertices.resize( vecVertices.size() + VertexCount );
+	auto & back = vecObjects.back();
+	back.libidx = Index;
+	back.SetPosition( D3DXVECTOR3( 0, 0, 0 ) );
+	back.SetVelocity( D3DXVECTOR3( 0, 0, 0 ) );
+	back.SetAccel( D3DXVECTOR3( 0, 0, 0 ) );
+	back.SetScale( D3DXVECTOR3( 1, 1, 1 ) );
+	back.SetAngle( 0.f );
+	back.SetRotation( 0.f );
+	back.SetRotationVelocity( 0.f );
 	return result;
 }
 void ObjMgr::EraseObj( unsigned Index ) //Index to the intermediate layer
@@ -382,11 +387,11 @@ void ObjMgr::EraseObj( unsigned Index ) //Index to the intermediate layer
 	vecVertices.erase( vecVertices.end() - VertexCount, vecVertices.end() );
 	vecObjects.erase( vecObjects.begin() + ObjIndex );
 }
-MatrixObject & ObjMgr::GetObjRef( unsigned Index )
+Object & ObjMgr::GetObjRef( unsigned Index )
 {
 	return vecObjects[ vecIntermediateLayer[ Index ] ];
 }
-MatrixObject * ObjMgr::GetObjPtr( unsigned Index )
+Object * ObjMgr::GetObjPtr( unsigned Index )
 {
 	return &(vecObjects[ vecIntermediateLayer[ Index ] ]);
 }
@@ -394,73 +399,73 @@ D3DSURFACE_DESC ObjMgr::GetSurfaceDesc()
 {
 	return SurfaceDesc;
 }
-void ObjMgr::Advance( D3DVIEWPORT9 const ViewPort )
+void ObjMgr::AdvanceTransformed()
 {
 	unsigned s = vecObjects.size();
+	D3DXMATRIX mat;
 	for( unsigned u = 0; u < s; ++u )
 	{
+		Vertex * dst = &vecVertices[ u * VertexCount ];
+		Vertex * src = &vecVertexLibrary[ vecObjects[ u ].libidx ];
+		D3DXMatrixTransformation( &mat, NULL, NULL, &vecObjects[ u ].scale, NULL, &( vecObjects[ u ].direction * vecObjects[ u ].orient ), &vecObjects[ u ].position );
 		for( unsigned v = 0; v < VertexCount; ++v )
-			D3DXVec3Project( &(vecVertices[ VertexCount * u + v ].pos), &( vecVertexLibrary[ vecObjects[ u ].libidx * VertexCount + v ].pos ), &ViewPort, &( vecObjects[ u ].spacial ), NULL, NULL );
+		{
+			D3DXVec3TransformCoord( &dst->pos, &src->pos, &mat );
+			dst->tex = src->tex;
+			dst->color = src->color;
+			++dst;
+			++src;
+		};
 		vecObjects[ u ].Advance();
 	}
 }
 
-void MatrixObject::SetSpeed( float Speed )
+void Object::SetSpeed( float Speed )
 {
 	D3DXVec3Scale( &velocity, &velocity, Speed / D3DXVec3Length( &velocity ) );
 }
-void MatrixObject::SetVelocity( D3DXVECTOR3 Velocity )
+void Object::SetVelocity( D3DXVECTOR3 Velocity )
 {
 	velocity = Velocity;
 }
-void MatrixObject::SetPosition( D3DXVECTOR3 Position )
+void Object::SetAccel( D3DXVECTOR3 Accel )
 {
-	/*
-	D3DXMATRIX displace;
-	D3DXMatrixTranslation( &displace, Position.x, Position.y, Position.z );
-	spacial = spacial * displace;
-	*/
-	spacial._41 = Position.x;
-	spacial._42 = Position.y;
-	spacial._43 = Position.z;
+	accel = Accel;
 }
-void MatrixObject::SetScale( D3DXVECTOR3 Scale )
+void Object::SetPosition( D3DXVECTOR3 Position )
 {
-	D3DXQUATERNION quatrot;
-	D3DXVECTOR3 matsca, mattrans;
-	D3DXMatrixDecompose( NULL, &quatrot, &mattrans, &spacial );
-	D3DXMatrixTransformation( &spacial, NULL, NULL, &Scale, NULL, &quatrot, &mattrans );
+	position = Position;
 }
-void MatrixObject::SetAngle( float Theta )
+void Object::SetScale( D3DXVECTOR3 Scaling )
 {
-	D3DXQUATERNION quatRot;
-	D3DXVECTOR3 vecSca, vecTrans;
-	D3DXMatrixDecompose( &vecSca, NULL, &vecTrans, &spacial );
-	D3DXQuaternionRotationAxis( &quatRot, &D3DXVECTOR3( 0, 0, 1 ), Theta );
-	D3DXMatrixTransformation( &spacial, NULL, NULL, &vecSca, NULL, &quatRot, &vecTrans );
+	scale = Scaling;
 }
-void MatrixObject::SetAngleEx( D3DXVECTOR3 Axis, float Theta )
+void Object::SetAngle( float Theta )
 {
-	D3DXQUATERNION quatRot;
-	D3DXVECTOR3 vecSca, vecTrans;
-	D3DXMatrixDecompose( &vecSca, NULL, &vecTrans, &spacial );
-	D3DXQuaternionRotationAxis( &quatRot, &Axis, Theta );
-	D3DXMatrixTransformation( &spacial, NULL, NULL, &vecSca, NULL, &quatRot, &vecTrans );
+	D3DXQuaternionRotationAxis( &direction, &D3DXVECTOR3( 0, 0, 1 ), Theta );
 }
-void MatrixObject::SetAngularVelocity( float Theta )
+void Object::SetAngleEx( D3DXVECTOR3 Axis, float Theta )
+{
+	D3DXQuaternionRotationAxis( &direction, &Axis, Theta );
+}
+void Object::SetRotation( float Theta )
+{
+	D3DXQuaternionRotationAxis( &orient, &D3DXVECTOR3( 0, 0, 1 ), Theta );
+}
+void Object::SetRotationEx( D3DXVECTOR3 Axis, float Theta )
+{
+	D3DXQuaternionRotationAxis( &orient, &Axis, Theta );
+}
+void Object::SetRotationVelocity( float Theta )
 {
 	D3DXQuaternionRotationAxis( &orientvel, &D3DXVECTOR3( 0, 0, 1 ), Theta );
 }
-void MatrixObject::SetAngularVelocityEx( D3DXVECTOR3 Axis, float Theta )
+void Object::SetRotationVelocityEx( D3DXVECTOR3 Axis, float Theta )
 {
 	D3DXQuaternionRotationAxis( &orientvel, &Axis, Theta );
 }
-void MatrixObject::Advance()
+void Object::Advance()
 {
-	D3DXVECTOR3 vecsca, vectrans;
-	D3DXQUATERNION quatrot;
-	D3DXMatrixDecompose( &vecsca, &quatrot, &vectrans, &spacial );
-	quatrot = quatrot * orientvel;
-	D3DXMatrixTransformation( &spacial, NULL, NULL, &vecsca, NULL, &quatrot, &( vectrans + velocity ) );
-	velocity += accel;
+	position += velocity += accel;
+	orient *= orientvel;
 }

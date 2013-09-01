@@ -12,22 +12,28 @@ struct Vertex
 	D3DCOLOR color;
 };
 
-struct MatrixObject
+struct Object
 {
-	D3DXMATRIX spacial;
+	D3DXVECTOR3 position;
 	D3DXVECTOR3 velocity;
 	D3DXVECTOR3 accel;
+	D3DXVECTOR3 scale;
+	D3DXQUATERNION direction;
+	D3DXQUATERNION orient;
 	D3DXQUATERNION orientvel;
 	ULONG libidx;
 
 	void SetSpeed( float Speed );
 	void SetVelocity( D3DXVECTOR3 Velocity );
+	void SetAccel( D3DXVECTOR3 Accel );
 	void SetPosition( D3DXVECTOR3 Position );
-	void SetScale( D3DXVECTOR3 Scale );
+	void SetScale( D3DXVECTOR3 Scaling );
 	void SetAngle( float Theta );
 	void SetAngleEx( D3DXVECTOR3 Axis, float Theta );
-	void SetAngularVelocity( float Theta );
-	void SetAngularVelocityEx( D3DXVECTOR3 Axis, float Theta );
+	void SetRotation( float Theta );
+	void SetRotationEx( D3DXVECTOR3 Axis, float Theta );
+	void SetRotationVelocity( float Theta );
+	void SetRotationVelocityEx( D3DXVECTOR3 Axis, float Theta );
 	void Advance();
 };
 
@@ -39,7 +45,7 @@ private:
 	D3DSURFACE_DESC SurfaceDesc;
 	std::vector< Vertex > vecVertexLibrary;
 	std::vector< Vertex > vecVertices;
-	std::vector< MatrixObject > vecObjects;
+	std::vector< Object > vecObjects;
 	std::vector< unsigned > vecIntermediateLayer;
 	std::vector< unsigned > vecIntermediateLayerGC;
 public:
@@ -49,14 +55,14 @@ public:
 	~ObjMgr();
 	void SetVertexCount( unsigned const Count );
 	void SetTexture( LPDIRECT3DTEXTURE9 pTex );
-	void PushQuadLib( D3DXVECTOR2 TopLeft, D3DXVECTOR2 WidthHeight );
+	void PushQuadLib( RECT Quad, D3DCOLOR Color );
 	void PushVertexLib( std::vector< Vertex > const & VecVerts );
 	unsigned PushObj( unsigned const Index );
 	void EraseObj( unsigned Index );
-	MatrixObject & GetObjRef( unsigned Index );
-	MatrixObject * GetObjPtr( unsigned Index );
+	Object & GetObjRef( unsigned Index );
+	Object * GetObjPtr( unsigned Index );
 	D3DSURFACE_DESC GetSurfaceDesc();
-	void Advance( D3DVIEWPORT9 const ViewPort );
+	void AdvanceTransformed();
 };
 
 class Direct3DEngine
