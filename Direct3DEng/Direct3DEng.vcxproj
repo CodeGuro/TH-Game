@@ -12,10 +12,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="trunk\sources\Direct3DEngine.cpp" />
+    <ClCompile Include="trunk\sources\ObjMgr.cpp" />
     <ClCompile Include="trunk\sources\WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="trunk\headers\Direct3DEngine.h" />
+    <ClInclude Include="trunk\headers\Direct3DEngine.hpp" />
+    <ClInclude Include="trunk\headers\ObjMgr.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6A298186-A243-4049-B2F7-3E57683E6C4D}</ProjectGuid>
@@ -62,7 +64,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;D3D_DEBUG_INFO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

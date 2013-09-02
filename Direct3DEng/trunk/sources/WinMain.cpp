@@ -1,5 +1,5 @@
 #include <Windows.h>
-#include <Direct3DEngine.h>
+#include <Direct3DEngine.hpp>
 
 LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {

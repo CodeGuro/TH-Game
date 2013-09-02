@@ -21,9 +21,15 @@
     <ClCompile Include="trunk\sources\Direct3DEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="trunk\sources\ObjMgr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="trunk\headers\Direct3DEngine.h">
+    <ClInclude Include="trunk\headers\Direct3DEngine.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trunk\headers\ObjMgr.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
