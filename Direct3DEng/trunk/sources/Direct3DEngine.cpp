@@ -2,8 +2,20 @@
 #include <ObjMgr.hpp>
 #include <sstream>
 
-Direct3DEngine::Direct3DEngine() : d3d( Direct3DCreate9( D3D_SDK_VERSION ) ), d3ddev( NULL )
+Direct3DEngine::Battery::Battery() : pDefaultVDeclaration( NULL ), pDefaultVtDeclaration( NULL ), pDefault3DVShader( NULL ), pDefault3DPShader( NULL ), pDefaultConstable( NULL )
 {
+}
+Direct3DEngine::Direct3DEngine() : d3d( Direct3DCreate9( D3D_SDK_VERSION ) ), d3ddev( NULL ), inventory( Battery() )
+{
+}
+Direct3DEngine::Direct3DEngine( Direct3DEngine const & source )
+{
+
+	if( source.d3d ) source.d3d->AddRef();
+	if( source.d3ddev ) source.d3ddev->AddRef();
+
+	d3d = source.d3d;
+	d3ddev = source.d3ddev;
 }
 Direct3DEngine & Direct3DEngine::operator = ( Direct3DEngine const & source )
 {
@@ -17,8 +29,11 @@ Direct3DEngine & Direct3DEngine::operator = ( Direct3DEngine const & source )
 }
 Direct3DEngine::~Direct3DEngine()
 {
-	D3dRelease( d3d );
-	D3dRelease( d3ddev );
+	if( inventory.pDefault3DPShader ) inventory.pDefault3DPShader->Release();
+	if( inventory.pDefault3DVShader ) inventory.pDefault3DVShader->Release();
+	if( inventory.pDefaultConstable ) inventory.pDefaultConstable->Release();
+	if( inventory.pDefaultVDeclaration ) inventory.pDefaultVDeclaration->Release();
+	if( inventory.pDefaultVtDeclaration ) inventory.pDefaultVtDeclaration->Release();
 }
 void Direct3DEngine::InitEng( HWND hWnd, bool windowed )
 {
@@ -51,27 +66,60 @@ void Direct3DEngine::InitEng( HWND hWnd, bool windowed )
 		D3DXMatrixIdentity( &CamSetting.WorldMat );
 		D3DXMatrixLookAtLH( &CamSetting.ViewMat, &D3DXVECTOR3(0, 1,-10), &D3DXVECTOR3(0,1,0), &D3DXVECTOR3(0,1,0) );
 		D3DXMatrixPerspectiveFovLH( &CamSetting.ProjMat, D3DXToRadian(45), 640.f/480.f, 1.0f, 100.0f );
-
-		LPD3DXBUFFER pshaderbuff = NULL;
-		LPD3DXBUFFER pshadererrbuff = NULL;
-		if( D3D_OK != D3DXCompileShaderFromFile( "Default3D.vs", NULL, NULL, "vs_main", "vs_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, &inventory.pDefaultConstable ) )
-			MessageBox( NULL, pshadererrbuff? (LPCSTR)pshadererrbuff->GetBufferPointer() : "Vertex Shader Compiler Error", "DX Shader Error", NULL );
-		d3ddev->CreateVertexShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &inventory.pDefault3DVShader );
-		pshaderbuff->Release();
-		if(pshadererrbuff ) pshadererrbuff->Release();
-		if( D3D_OK != D3DXCompileShaderFromFile( "Default3D.ps", NULL, NULL, "ps_main", "ps_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, NULL ) )
-			MessageBox( NULL, pshadererrbuff? (LPCSTR)pshadererrbuff->GetBufferPointer() : "Pixel Shader Compiler Error", "DX Shader Error", NULL );	
-		d3ddev->CreatePixelShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &inventory.pDefault3DPShader );
-		pshaderbuff->Release();
-		if(pshadererrbuff ) pshadererrbuff->Release();
 		
 		d3ddev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
 		d3ddev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
 		d3ddev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
 		d3ddev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
 
+		InitBattery();
+
 		d3ddev->Clear( 0, 0, D3DCLEAR_TARGET, D3DCOLOR_XRGB( 100, 30, 180 ), 1.f, 0 );
-		d3ddev->Present( NULL, NULL, NULL, NULL );		
+		d3ddev->Present( NULL, NULL, NULL, NULL );
+	}
+}
+void Direct3DEngine::InitBattery()
+{
+
+	LPD3DXBUFFER pshaderbuff = NULL;
+	LPD3DXBUFFER pshadererrbuff = NULL;
+	if( !inventory.pDefaultVDeclaration )
+	{
+		D3DVERTEXELEMENT9 ve[] = 
+		{
+			{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+			{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+			{ 0, 20, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0 },
+			D3DDECL_END()
+		};
+		d3ddev->CreateVertexDeclaration( ve, &inventory.pDefaultVDeclaration );
+	}
+	if( !inventory.pDefaultVtDeclaration )
+	{
+		D3DVERTEXELEMENT9 ve[] = 
+		{
+			{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0 },
+			{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+			{ 0, 20, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0 },
+			D3DDECL_END()
+		};
+		d3ddev->CreateVertexDeclaration( ve, &inventory.pDefaultVtDeclaration );
+	}
+	if( !inventory.pDefault3DVShader && !inventory.pDefaultConstable )
+	{
+		if( D3D_OK != D3DXCompileShaderFromFile( "Default3D.vs", NULL, NULL, "vs_main", "vs_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, &inventory.pDefaultConstable ) )
+			MessageBox( NULL, pshadererrbuff? (LPCSTR)pshadererrbuff->GetBufferPointer() : "Vertex Shader Compiler Error", "DX Shader Error", NULL );
+		d3ddev->CreateVertexShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &inventory.pDefault3DVShader );
+		pshaderbuff->Release();
+		if(pshadererrbuff ) pshadererrbuff->Release();
+	}
+	if( !inventory.pDefault3DPShader )
+	{
+		if( D3D_OK != D3DXCompileShaderFromFile( "Default3D.ps", NULL, NULL, "ps_main", "ps_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, NULL ) )
+			MessageBox( NULL, pshadererrbuff? (LPCSTR)pshadererrbuff->GetBufferPointer() : "Pixel Shader Compiler Error", "DX Shader Error", NULL );	
+		d3ddev->CreatePixelShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &inventory.pDefault3DPShader );
+		pshaderbuff->Release();
+		if(pshadererrbuff ) pshadererrbuff->Release();
 	}
 }
 void Direct3DEngine::ToggleWindowed()
@@ -121,7 +169,6 @@ void Direct3DEngine::RenderFrame( MSG const msg )
 {
 	d3ddev->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB( 100, 30, 180 ), 1.f, 0 );
 	d3ddev->BeginScene();
-
 	DrawGridTerrain( 1000, 1000, 1.f );
 	DrawTexture();
 	DrawFPS();
@@ -134,16 +181,7 @@ void Direct3DEngine::DrawGridTerrain( unsigned Rows, unsigned Columns, float Spa
 	d3ddev->SetTransform( D3DTS_WORLD, &CamSetting.WorldMat );
 	d3ddev->SetTransform( D3DTS_VIEW, &CamSetting.ViewMat );
 	d3ddev->SetTransform( D3DTS_PROJECTION, &CamSetting.ProjMat );
-	LPDIRECT3DVERTEXDECLARATION9 pvd;
 	LPDIRECT3DVERTEXBUFFER9 pvb;
-	D3DVERTEXELEMENT9 ve[] = 
-	{
-		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, 20, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0 },
-		D3DDECL_END()
-	};
-	d3ddev->CreateVertexDeclaration( ve, &pvd );
 	d3ddev->CreateVertexBuffer( 2 * sizeof( Vertex ) * ( Rows + Columns), D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &pvb, NULL );
 
 	void * ptr;
@@ -165,7 +203,7 @@ void Direct3DEngine::DrawGridTerrain( unsigned Rows, unsigned Columns, float Spa
 		*pverts++ = v2;
 	}
 	pvb->Unlock();
-	d3ddev->SetVertexDeclaration( pvd );
+	d3ddev->SetVertexDeclaration( inventory.pDefaultVDeclaration );
 	d3ddev->SetStreamSource( 0, pvb, 0, sizeof( Vertex ) );
 	inventory.pDefaultConstable->SetMatrix( d3ddev, "WorldViewProjMat", &( CamSetting.WorldMat * CamSetting.ViewMat * CamSetting.ProjMat ) );
 	d3ddev->SetVertexShader( inventory.pDefault3DVShader );
@@ -173,24 +211,12 @@ void Direct3DEngine::DrawGridTerrain( unsigned Rows, unsigned Columns, float Spa
 	d3ddev->SetTexture( 0, NULL );
 	d3ddev->DrawPrimitive( D3DPT_LINELIST, 0, Rows + Columns );
 	pvb->Release();
-	pvd->Release();
 }
 void Direct3DEngine::DrawTexture()
 {
-	LPDIRECT3DTEXTURE9 pTexture;
 	LPDIRECT3DVERTEXBUFFER9 pvb;
-	LPDIRECT3DVERTEXDECLARATION9 pvd;
-
-	D3DXCreateTextureFromFile( d3ddev, "tester.png", &pTexture );
-
-	D3DVERTEXELEMENT9 ve[] = 
-	{
-		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, 20, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0 },
-		D3DDECL_END()
-	};
-	d3ddev->CreateVertexDeclaration( ve, &pvd );
+	const char * csTexture = "tester.png";
+	LoadTexture( csTexture );
 	
 	Vertex verts[] =
 	{
@@ -213,19 +239,16 @@ void Direct3DEngine::DrawTexture()
 	D3DXMatrixTranslation( &world, -640.f/4 - 0.5f, 0.f - 0.5f, 0.f );
 	inventory.pDefaultConstable->SetMatrix( d3ddev, "WorldViewProjMat", &(world*view*proj) );
 	//d3ddev->SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
-	d3ddev->SetTexture( 0, pTexture );
+	d3ddev->SetTexture( 0, inventory.mapTextures[ csTexture ] );
 	d3ddev->SetStreamSource( 0, pvb, 0, sizeof( Vertex ) );
-	d3ddev->SetVertexDeclaration( pvd );
+	d3ddev->SetVertexDeclaration( inventory.pDefaultVDeclaration );
 	d3ddev->SetVertexShader( inventory.pDefault3DVShader );
 	d3ddev->SetPixelShader( inventory.pDefault3DPShader );
 	d3ddev->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
 	d3ddev->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
 	d3ddev->SetSamplerState( 0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR );
 	d3ddev->DrawPrimitive( D3DPT_TRIANGLESTRIP, 0, 2 );
-	d3ddev->SetTexture(0, NULL );
 	pvb->Release();
-	pvd->Release();
-	pTexture->Release();
 
 }
 void Direct3DEngine::DrawFPS()

@@ -10,12 +10,15 @@ class ObjMgr;
 class Direct3DEngine
 {
 private:
-	typedef std::vector< ObjMgr > Layer;
 	struct GenCameraSetting
 	{
 		D3DXMATRIX WorldMat;
 		D3DXMATRIX ViewMat;
 		D3DXMATRIX ProjMat;
+	};
+	struct Layer
+	{
+		std::vector< ObjMgr > vObjMgr;
 	};
 	struct Battery
 	{
@@ -24,14 +27,18 @@ private:
 		LPDIRECT3DVERTEXSHADER9 pDefault3DVShader;
 		LPDIRECT3DPIXELSHADER9 pDefault3DPShader;
 		LPD3DXCONSTANTTABLE pDefaultConstable;
-
+		
 		std::map< std::string, LPDIRECT3DTEXTURE9 > mapTextures;
 		std::vector< Layer > vLayers;
+		Battery();
 	};
 	LPDIRECT3D9 d3d;
 	LPDIRECT3DDEVICE9 d3ddev;
 	GenCameraSetting CamSetting;
 	Battery inventory;
+
+	void InitLayers();
+	void InitBattery();
 	template< typename T >
 	void D3dRelease( T *& RefPtr );
 public:
@@ -41,8 +48,7 @@ public:
 	~Direct3DEngine();
 	/* We will probably not need move semantics
 	Direct3DEngine & operator = ( Direct3DEngine && source );
-	Direct3DEngine( Direct3DEngine && source );
-	*/
+	Direct3DEngine( Direct3DEngine && source ); */
 	void InitEng( HWND hWnd, bool windowed );
 	void ToggleWindowed();
 	void LoadTexture( std::string const pathname );
