@@ -176,7 +176,7 @@ D3DSURFACE_DESC ObjMgr::GetSurfaceDesc()
 void ObjMgr::AdvanceTransformedDraw( Direct3DEngine * D3DEng )
 {
 	unsigned s = vecObjects.size();
-	vecVertices.reserve( vecObjects.size() * VertexCount );
+	vecVertices.resize( vecObjects.size() * VertexCount );
 	D3DXMATRIX mat;
 	for( unsigned u = 0; u < s; ++u )
 	{
@@ -195,6 +195,7 @@ void ObjMgr::AdvanceTransformedDraw( Direct3DEngine * D3DEng )
 	}
 	if( VBufferLength < vecVertices.size() * sizeof( Vertex ) )
 	{
+		VBufferLength = vecVertices.size() * sizeof( Vertex );
 		if( VertexBuffer ) VertexBuffer->Release();
 		D3DEng->GetDevice()->CreateVertexBuffer( vecVertices.size() * sizeof( Vertex ), D3DUSAGE_WRITEONLY, 0, D3DPOOL_MANAGED, &VertexBuffer, NULL );
 	}

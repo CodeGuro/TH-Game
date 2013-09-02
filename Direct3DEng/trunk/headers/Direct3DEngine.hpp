@@ -56,12 +56,10 @@ public:
 	void DrawGridTerrain( unsigned Rows, unsigned Columns, float Spacing );
 	void DrawTexture();
 	void DrawFPS();
+	void TestObjMgr();
 	void RenderFrame( MSG const Msg );
 	void ProcUserInput( MSG const Msg );
 	LPDIRECT3DDEVICE9 GetDevice();
 
-	//for the game
-	ObjMgr & GetBulletMgr();
-	ObjMgr & GetBGObjMgr();
 	void SetFog( D3DCOLOR Color, float Near, float Far );
 };

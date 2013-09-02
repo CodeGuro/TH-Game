@@ -81,7 +81,6 @@ void Direct3DEngine::InitEng( HWND hWnd, bool windowed )
 }
 void Direct3DEngine::InitBattery()
 {
-
 	LPD3DXBUFFER pshaderbuff = NULL;
 	LPD3DXBUFFER pshadererrbuff = NULL;
 	if( !inventory.pDefaultVDeclaration )
@@ -143,8 +142,9 @@ void Direct3DEngine::InitLayers()
 		inventory.vLayers[ u ].vObjMgr[ 0 ].SetVertexShader( inventory.pDefault3DVShader );
 		inventory.vLayers[ u ].vObjMgr[ 0 ].SetPixelShader( inventory.pDefault3DPShader );
 		inventory.vLayers[ u ].vObjMgr[ 0 ].SetVShaderConstTable( inventory.pDefaultConstable );
-		inventory.vLayers[ u ].vObjMgr[ 0 ].SetVertexCount( ( u != 1 && u != 6 )? 4 : 0 );
+		inventory.vLayers[ u ].vObjMgr[ 0 ].SetVertexCount( ( u != 1 && u != 6 )? 6 : 0 );
 		inventory.vLayers[ u ].vObjMgr[ 0 ].SetBlendMode( BlendAlpha );
+		inventory.vLayers[ u ].vObjMgr[ 0 ].SetPrimitiveType( D3DPT_TRIANGLELIST );
 	}
 }
 void Direct3DEngine::ToggleWindowed()
@@ -197,6 +197,7 @@ void Direct3DEngine::RenderFrame( MSG const msg )
 	DrawGridTerrain( 1000, 1000, 1.f );
 	DrawTexture();
 	DrawFPS();
+	TestObjMgr();
 	d3ddev->EndScene();
 	d3ddev->Present( NULL, NULL, NULL, NULL );
 	ProcUserInput( msg );
@@ -298,6 +299,28 @@ void Direct3DEngine::DrawFPS()
 	pFont->Release();
 	++Frame;
 	
+}
+void Direct3DEngine::TestObjMgr()
+{
+	static bool HasInitialized = false;
+	ObjMgr & mgr = inventory.vLayers[ 4 ].vObjMgr[ 0 ];
+	const char * csTexture = "etama.png";
+	static float dir = D3DX_PI ;
+	if( !HasInitialized )
+	{
+		RECT r = { 16, 16, 32, 32 };
+		HasInitialized = true;
+		LoadTexture( csTexture );
+		mgr.SetTexture( inventory.mapTextures[ csTexture ] );
+		mgr.PushQuadLib( r, D3DCOLOR_XRGB( 255, 255, 255 ) );
+		mgr.PushObj( 0 );
+		mgr.GetObjRef( 0 ).SetPosition( D3DXVECTOR3( 300.5, 300.5, 0 ) );
+	}
+	mgr.GetObjRef( 0 ).SetVelocity( D3DXVECTOR3( cos( dir ), sin( dir ), 0 ) );
+	mgr.GetObjRef( 0 ).SetAngle( dir + D3DX_PI / 2 );
+	mgr.GetObjRef( 0 ).SetSpeed( 1.f );
+	dir += D3DX_PI / ( 120.f  );
+	mgr.AdvanceTransformedDraw( this );
 }
 void Direct3DEngine::ProcUserInput( MSG const Msg )
 {
