@@ -73,6 +73,7 @@ void Direct3DEngine::InitEng( HWND hWnd, bool windowed )
 		d3ddev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
 
 		InitBattery();
+		InitLayers();
 
 		d3ddev->Clear( 0, 0, D3DCLEAR_TARGET, D3DCOLOR_XRGB( 100, 30, 180 ), 1.f, 0 );
 		d3ddev->Present( NULL, NULL, NULL, NULL );
@@ -120,6 +121,30 @@ void Direct3DEngine::InitBattery()
 		d3ddev->CreatePixelShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &inventory.pDefault3DPShader );
 		pshaderbuff->Release();
 		if(pshadererrbuff ) pshadererrbuff->Release();
+	}
+}
+void Direct3DEngine::InitLayers()
+{
+	//0 - background
+	//1 - 3D
+	//2 - enemy boss
+	//3 - player
+	//4 - enemies
+	//5 - bullets
+	//6 - effects
+	//7 - sprites/text
+	//8 - foreground
+	unsigned LayerCount = 8;
+	inventory.vLayers.resize( LayerCount );
+	for( unsigned u = 0; u < LayerCount; ++u )
+	{
+		inventory.vLayers[ u ].vObjMgr.resize( 1 );
+		inventory.vLayers[ u ].vObjMgr[ 0 ].SetVertexDeclaration( u == 1 ? inventory.pDefaultVDeclaration : inventory.pDefaultVtDeclaration );
+		inventory.vLayers[ u ].vObjMgr[ 0 ].SetVertexShader( inventory.pDefault3DVShader );
+		inventory.vLayers[ u ].vObjMgr[ 0 ].SetPixelShader( inventory.pDefault3DPShader );
+		inventory.vLayers[ u ].vObjMgr[ 0 ].SetVShaderConstTable( inventory.pDefaultConstable );
+		inventory.vLayers[ u ].vObjMgr[ 0 ].SetVertexCount( ( u != 1 && u != 6 )? 4 : 0 );
+		inventory.vLayers[ u ].vObjMgr[ 0 ].SetBlendMode( BlendAlpha );
 	}
 }
 void Direct3DEngine::ToggleWindowed()

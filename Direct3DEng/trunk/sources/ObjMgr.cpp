@@ -38,7 +38,7 @@ ObjMgr & ObjMgr::operator = ( ObjMgr const & source )
 	VShader = source.VShader;
 	PShader = source.PShader;
 	Constable = source.Constable;
-	BlendOp = source.BlendAdd;
+	BlendOp = BlendAdd;
 	SurfaceDesc = source.SurfaceDesc;
 	VertexCount = source.VertexCount;
 	VBufferLength = source.VBufferLength;
@@ -64,22 +64,57 @@ void ObjMgr::SetVertexCount( unsigned const Count )
 }
 void ObjMgr::SetTexture( LPDIRECT3DTEXTURE9 pTex )
 {
-	pTex->AddRef();
+	if( this->pTexture ) pTexture->Release();
+	if( pTex ) pTex->AddRef();
+	if( pTex ) pTex->GetLevelDesc(0, &SurfaceDesc );
 	pTexture = pTex;
-	pTexture->GetLevelDesc(0, &SurfaceDesc );
 };
+void ObjMgr::SetVertexDeclaration( LPDIRECT3DVERTEXDECLARATION9 VDecl )
+{
+	if( VDeclaration ) VDeclaration->Release();
+	if( VDecl ) VDecl->AddRef();
+	VDeclaration = VDecl;
+}
+void ObjMgr::SetVertexShader( LPDIRECT3DVERTEXSHADER9 Shader )
+{
+	if( VShader ) VShader->Release();
+	if( Shader ) Shader->AddRef();
+	VShader = Shader;
+}
+void ObjMgr::SetPixelShader( LPDIRECT3DPIXELSHADER9 Shader )
+{
+	if( PShader ) PShader->Release();
+	if( Shader ) Shader->AddRef();
+	PShader = Shader;
+}
+void ObjMgr::SetVShaderConstTable( LPD3DXCONSTANTTABLE Table )
+{
+	if( Constable ) Constable->Release();
+	if( Table ) Table->AddRef();
+	Constable = Table;
+}
+void ObjMgr::SetPrimitiveType( D3DPRIMITIVETYPE PrimType )
+{
+	PrimitiveType = PrimType;
+}
+void ObjMgr::SetBlendMode( BlendType Blend )
+{
+	BlendOp = Blend;
+}
 void ObjMgr::PushQuadLib( RECT Quad, D3DCOLOR Color )
 {
-	if( VertexCount == 4 )
+	if( VertexCount == 6 )
 	{
-		Vertex v[4] = 
+		Vertex v[6] = 
 		{
 			{ D3DXVECTOR3( -(float)(Quad.right - Quad.left)/2, -(float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.left / (float)SurfaceDesc.Width, (float)Quad.top / (float)SurfaceDesc.Height ), Color },
 			{ D3DXVECTOR3( (float)(Quad.right - Quad.left)/2, -(float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.right / (float)SurfaceDesc.Width, (float)Quad.top / (float)SurfaceDesc.Height ), Color },
 			{ D3DXVECTOR3( -(float)(Quad.right - Quad.left)/2, (float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.left / (float)SurfaceDesc.Width, (float)Quad.bottom / (float)SurfaceDesc.Height ), Color },
+			{ D3DXVECTOR3( (float)(Quad.right - Quad.left)/2, -(float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.right / (float)SurfaceDesc.Width, (float)Quad.top / (float)SurfaceDesc.Height ), Color },
 			{ D3DXVECTOR3( (float)(Quad.right - Quad.left)/2, (float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.right / (float)SurfaceDesc.Width, (float)Quad.bottom / (float)SurfaceDesc.Height ), Color },
+			{ D3DXVECTOR3( -(float)(Quad.right - Quad.left)/2, (float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.left / (float)SurfaceDesc.Width, (float)Quad.bottom / (float)SurfaceDesc.Height ), Color }
 		};
-		for( unsigned u = 0; u < 4; ++u ) vecVertexLibrary.push_back( v[0] );
+		for( unsigned u = 0; u < 6; ++u ) vecVertexLibrary.push_back( v[u] );
 	}
 }
 void ObjMgr::PushVertexLib( std::vector< Vertex > const & VecVerts )

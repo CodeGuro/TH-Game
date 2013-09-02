@@ -37,17 +37,17 @@ struct Object
 	void Advance();
 };
 
+enum BlendType
+{
+	BlendAlpha,	BlendAdd, BlendSub,
+	BlendInvAlph, BlendInvAdd
+};
+
 class ObjMgr
 {
 private:
-	enum BlendType
-	{
-		BlendAlpha,	BlendAdd, BlendSub,
-		BlendInvAlph, BlendInvAdd
-	};
 	BlendType BlendOp;
 	D3DSURFACE_DESC SurfaceDesc;
-
 
 	unsigned VertexCount;
 	unsigned VBufferLength;
@@ -70,6 +70,12 @@ public:
 	~ObjMgr();
 	void SetVertexCount( unsigned const Count );
 	void SetTexture( LPDIRECT3DTEXTURE9 pTex );
+	void SetVertexDeclaration( LPDIRECT3DVERTEXDECLARATION9 VDecl );
+	void SetVertexShader( LPDIRECT3DVERTEXSHADER9 Shader );
+	void SetPixelShader( LPDIRECT3DPIXELSHADER9 Shader );
+	void SetVShaderConstTable( LPD3DXCONSTANTTABLE Table );
+	void SetPrimitiveType( D3DPRIMITIVETYPE PrimType );
+	void SetBlendMode( BlendType Blend );
 	void PushQuadLib( RECT Quad, D3DCOLOR Color );
 	void PushVertexLib( std::vector< Vertex > const & VecVerts );
 	unsigned PushObj( unsigned const Index );
