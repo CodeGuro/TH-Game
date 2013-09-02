@@ -13,14 +13,6 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 
 int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd )
 {
-	ObjMgr om;
-	om.SetVertexCount( 4 );
-	RECT r = { 0, 0, 128, 128 };
-	om.PushQuadLib( r, D3DCOLOR_ARGB( 255, 255, 255, 255 ) );
-	om.PushObj( 0 );
-	om.GetObjRef( 0 ).SetPosition( D3DXVECTOR3( 100, 100, 100 ) );
-	om.AdvanceTransformed();
-
 	WNDCLASS wc;
 	wc.style = CS_HREDRAW | CS_VREDRAW;
 	wc.lpfnWndProc = &WndProc;

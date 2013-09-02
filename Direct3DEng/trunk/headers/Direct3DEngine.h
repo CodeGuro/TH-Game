@@ -5,6 +5,8 @@
 #include <string>
 #include <Windows.h>
 
+class Direct3DEngine;
+
 struct Vertex
 {
 	D3DXVECTOR3 pos;
@@ -40,9 +42,23 @@ struct Object
 class ObjMgr
 {
 private:
-	unsigned VertexCount;
-	LPDIRECT3DTEXTURE9 pTexture;
+	enum BlendType
+	{
+		BlendAlpha,	BlendAdd, BlendSub,
+		BlendInvAlph, BlendInvAdd
+	};
+	BlendType BlendOp;
 	D3DSURFACE_DESC SurfaceDesc;
+
+
+	unsigned VertexCount;
+	D3DPRIMITIVETYPE PrimitiveType;
+	LPDIRECT3DTEXTURE9 pTexture;
+	LPDIRECT3DVERTEXBUFFER9 VertexBuffer;
+	LPDIRECT3DVERTEXDECLARATION9 VDeclaration;
+	LPDIRECT3DVERTEXSHADER9 VShader;
+	LPDIRECT3DPIXELSHADER9 PShader;
+	LPD3DXCONSTANTTABLE Constable;
 	std::vector< Vertex > vecVertexLibrary;
 	std::vector< Vertex > vecVertices;
 	std::vector< Object > vecObjects;
@@ -62,12 +78,13 @@ public:
 	Object & GetObjRef( unsigned Index );
 	Object * GetObjPtr( unsigned Index );
 	D3DSURFACE_DESC GetSurfaceDesc();
-	void AdvanceTransformed();
+	void AdvanceTransformedDraw( Direct3DEngine * D3DEng );
 };
 
 class Direct3DEngine
 {
 private:
+	typedef std::vector< ObjMgr > Layer;
 	struct GenCameraSetting
 	{
 		D3DXMATRIX WorldMat;
@@ -76,12 +93,14 @@ private:
 	};
 	struct Battery
 	{
+		LPDIRECT3DVERTEXDECLARATION9 pDefaultVDeclaration;
+		LPDIRECT3DVERTEXDECLARATION9 pDefaultVtDeclaration;
 		LPDIRECT3DVERTEXSHADER9 pDefault3DVShader;
 		LPDIRECT3DPIXELSHADER9 pDefault3DPShader;
 		LPD3DXCONSTANTTABLE pDefaultConstable;
 
 		std::map< std::string, LPDIRECT3DTEXTURE9 > mapTextures;
-		std::vector< ObjMgr > vecObjManagers;
+		std::vector< Layer > vLayers;
 	};
 	LPDIRECT3D9 d3d;
 	LPDIRECT3DDEVICE9 d3ddev;
@@ -107,4 +126,10 @@ public:
 	void DrawFPS();
 	void RenderFrame( MSG const Msg );
 	void ProcUserInput( MSG const Msg );
+	LPDIRECT3DDEVICE9 GetDevice();
+
+	//for the game
+	ObjMgr & GetBulletMgr();
+	ObjMgr & GetBGObjMgr();
+	void SetFog( D3DCOLOR Color, float Near, float Far );
 };
