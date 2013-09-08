@@ -35,6 +35,7 @@ Direct3DEngine::~Direct3DEngine()
 	if( inventory.pDefaultVDeclaration ) inventory.pDefaultVDeclaration->Release();
 	if( inventory.pDefaultVtDeclaration ) inventory.pDefaultVtDeclaration->Release();
 }
+
 void Direct3DEngine::InitEng( HWND hWnd, bool windowed )
 {
 	if( hWnd && !d3ddev )

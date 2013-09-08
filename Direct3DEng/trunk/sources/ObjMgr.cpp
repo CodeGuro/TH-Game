@@ -135,7 +135,8 @@ unsigned ObjMgr::PushObj( unsigned const Index )
 	}
 	else
 		vecIntermediateLayer.resize( 1 + ( result = vecIntermediateLayer.size() ) );
-	vecIntermediateLayer[ result ] = vecVertices.size();
+	vecIntermediateLayer[ result ].ObjIdx = vecObjects.size();
+	vecIntermediateLayer[ result ].RefCount = 1;
 	vecObjects.resize( 1 + vecObjects.size() );
 	vecVertices.resize( vecVertices.size() + VertexCount );
 	auto & back = vecObjects.back();
@@ -149,25 +150,37 @@ unsigned ObjMgr::PushObj( unsigned const Index )
 	back.SetRotationVelocity( 0.f );
 	return result;
 }
-void ObjMgr::EraseObj( unsigned Index ) //Index to the intermediate layer
+void ObjMgr::AddRef( unsigned const Index )
 {
-	unsigned ObjIndex = vecIntermediateLayer[ Index ];
-	vecIntermediateLayerGC.push_back( Index );
-	for( unsigned i = 0; i < vecIntermediateLayer.size(); ++i )
+	++vecIntermediateLayer[ Index ].RefCount;
+}
+void ObjMgr::EraseObj( unsigned const Index )
+{
+	unsigned ObjIdx = vecIntermediateLayer[ Index ].ObjIdx;
+	vecIntermediateLayer[ Index ].ObjIdx = -1;
+	if( ObjIdx != -1 )
 	{
-		if( vecIntermediateLayer[ i ] > ObjIndex )
-			--(vecIntermediateLayer[ i ]);
+		for( unsigned i = 0; i < vecIntermediateLayer.size(); ++i )
+		{
+			if( vecIntermediateLayer[ i ].ObjIdx > ObjIdx )
+				--(vecIntermediateLayer[ i ].ObjIdx);
+		}
+		vecVertices.erase( vecVertices.begin() + VertexCount * ObjIdx, vecVertices.begin() + VertexCount * ( 1 + ObjIdx ) );
+		vecObjects.erase( vecObjects.begin() + ObjIdx );
 	}
-	vecVertices.erase( vecVertices.end() - VertexCount, vecVertices.end() );
-	vecObjects.erase( vecObjects.begin() + ObjIndex );
 }
-Object & ObjMgr::GetObjRef( unsigned Index )
+void ObjMgr::ReleaseHandle( unsigned const Index )
 {
-	return vecObjects[ vecIntermediateLayer[ Index ] ];
+	if( !(--vecIntermediateLayer[ Index ].RefCount) )
+		vecIntermediateLayerGC.push_back( Index );
 }
-Object * ObjMgr::GetObjPtr( unsigned Index )
+Object & ObjMgr::GetObjRef( unsigned const Index )
 {
-	return &(vecObjects[ vecIntermediateLayer[ Index ] ]);
+	return vecObjects[ Index ];
+}
+Object * ObjMgr::GetObjPtr( unsigned const Index )
+{
+	return &(vecObjects[ Index ]);
 }
 D3DSURFACE_DESC ObjMgr::GetSurfaceDesc()
 {
@@ -244,6 +257,10 @@ void ObjMgr::AdvanceTransformedDraw( Direct3DEngine * D3DEng )
 	d3ddev->SetStreamSource( 0, VertexBuffer, 0, sizeof( Vertex ) );
 	d3ddev->DrawPrimitive( PrimitiveType, 0, PrimitiveType == D3DPT_TRIANGLELIST ? vecObjects.size() * VertexCount / 3 :
 		PrimitiveType == D3DPT_TRIANGLESTRIP ? (VertexCount - 2) * vecObjects.size() : 0 );
+}
+
+ObjMgr::ObjHandle::ObjHandle() : ObjIdx( -1 ), RefCount( 0 )
+{
 }
 
 void Object::SetSpeed( float Speed )

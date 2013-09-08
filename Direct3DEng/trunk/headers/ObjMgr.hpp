@@ -46,6 +46,13 @@ enum BlendType
 class ObjMgr
 {
 private:
+	struct ObjHandle
+	{
+		unsigned ObjIdx;
+		unsigned RefCount;
+		ObjHandle();
+	};
+
 	BlendType BlendOp;
 	D3DSURFACE_DESC SurfaceDesc;
 
@@ -61,8 +68,9 @@ private:
 	std::vector< Vertex > vecVertexLibrary;
 	std::vector< Vertex > vecVertices;
 	std::vector< Object > vecObjects;
-	std::vector< unsigned > vecIntermediateLayer;
+	std::vector< ObjHandle > vecIntermediateLayer;
 	std::vector< unsigned > vecIntermediateLayerGC;
+
 public:
 	ObjMgr();
 	ObjMgr( ObjMgr const & source );
@@ -78,10 +86,12 @@ public:
 	void SetBlendMode( BlendType Blend );
 	void PushQuadLib( RECT Quad, D3DCOLOR Color );
 	void PushVertexLib( std::vector< Vertex > const & VecVerts );
-	unsigned PushObj( unsigned const Index );
-	void EraseObj( unsigned Index );
-	Object & GetObjRef( unsigned Index );
-	Object * GetObjPtr( unsigned Index );
+	unsigned PushObj( unsigned const Index ); //returns an index to the handle
+	void AddRef( unsigned const Index );
+	void EraseObj( unsigned const Index );
+	void ReleaseHandle( unsigned const Index );
+	Object & GetObjRef( unsigned const Index );
+	Object * GetObjPtr( unsigned const Index );
 	D3DSURFACE_DESC GetSurfaceDesc();
 	void AdvanceTransformedDraw( Direct3DEngine * D3DEng );
 };

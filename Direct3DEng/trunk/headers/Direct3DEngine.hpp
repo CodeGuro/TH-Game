@@ -20,6 +20,10 @@ private:
 	{
 		std::vector< ObjMgr > vObjMgr;
 	};
+	struct ObjHandle
+	{
+		unsigned Buffer;
+	};
 	struct Battery
 	{
 		LPDIRECT3DVERTEXDECLARATION9 pDefaultVDeclaration;
@@ -30,13 +34,13 @@ private:
 		
 		std::map< std::string, LPDIRECT3DTEXTURE9 > mapTextures;
 		std::vector< Layer > vLayers;
+		std::vector< ObjHandle > vObjHandles;
 		Battery();
 	};
 	LPDIRECT3D9 d3d;
 	LPDIRECT3DDEVICE9 d3ddev;
 	GenCameraSetting CamSetting;
 	Battery inventory;
-
 	void InitLayers();
 	void InitBattery();
 	template< typename T >
