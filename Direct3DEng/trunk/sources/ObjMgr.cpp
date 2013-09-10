@@ -1,8 +1,9 @@
 #include <ObjMgr.hpp>
 #include <Direct3DEngine.hpp>
 
-ObjMgr::ObjMgr() : VertexCount( 0 ), VBufferLength( 0 ), pTexture( NULL ), VertexBuffer( NULL ), VDeclaration( NULL ), VShader( NULL), PShader( NULL ), Constable( NULL )
+ObjMgr::ObjMgr() : BlendOp( BlendAlpha ), VertexCount( 0 ), VBufferLength( 0 ), PrimitiveType( D3DPT_TRIANGLELIST ), pTexture( NULL ), VertexBuffer( NULL ), VDeclaration( NULL ), VShader( NULL), PShader( NULL ), Constable( NULL )
 {
+	memset( &SurfaceDesc, -1, sizeof( SurfaceDesc ) );
 }
 ObjMgr::ObjMgr( ObjMgr const & source ) : BlendOp( source.BlendOp ), PrimitiveType( source.PrimitiveType ), VertexCount( source.VertexCount ), VBufferLength( source.VBufferLength ), SurfaceDesc( source.SurfaceDesc ),
 	pTexture( source.pTexture ), VertexBuffer( source.VertexBuffer ), VDeclaration( source.VDeclaration ), VShader( source.VShader ), PShader( source.PShader ), Constable( source.Constable ), 
@@ -33,6 +34,7 @@ ObjMgr & ObjMgr::operator = ( ObjMgr const & source )
 	source.Constable->AddRef();
 
 	pTexture = source.pTexture;
+	PrimitiveType = source.PrimitiveType;
 	VertexBuffer = source.VertexBuffer;
 	VDeclaration = source.VDeclaration;
 	VShader = source.VShader;
@@ -125,6 +127,15 @@ void ObjMgr::PushVertexLib( std::vector< Vertex > const & VecVerts )
 			vecVertexLibrary.push_back( VecVerts[ u ] );
 	}
 }
+void ObjMgr::ResizeVertexLib( unsigned VCount )
+{
+	VertexCount = VCount;
+	vecVertexLibrary.resize( VCount );
+}
+unsigned ObjMgr::GetVertexCountLib()
+{
+	return vecVertexLibrary.size();
+}
 unsigned ObjMgr::PushObj( unsigned const Index )
 {
 	unsigned result;
@@ -136,7 +147,6 @@ unsigned ObjMgr::PushObj( unsigned const Index )
 	else
 		vecIntermediateLayer.resize( 1 + ( result = vecIntermediateLayer.size() ) );
 	vecIntermediateLayer[ result ].ObjIdx = vecObjects.size();
-	vecIntermediateLayer[ result ].RefCount = 1;
 	vecObjects.resize( 1 + vecObjects.size() );
 	vecVertices.resize( vecVertices.size() + VertexCount );
 	auto & back = vecObjects.back();
@@ -150,37 +160,25 @@ unsigned ObjMgr::PushObj( unsigned const Index )
 	back.SetRotationVelocity( 0.f );
 	return result;
 }
-void ObjMgr::AddRef( unsigned const Index )
-{
-	++vecIntermediateLayer[ Index ].RefCount;
-}
 void ObjMgr::EraseObj( unsigned const Index )
 {
 	unsigned ObjIdx = vecIntermediateLayer[ Index ].ObjIdx;
-	vecIntermediateLayer[ Index ].ObjIdx = -1;
-	if( ObjIdx != -1 )
+	vecIntermediateLayerGC.push_back( Index );
+	for( unsigned i = 0; i < vecIntermediateLayer.size(); ++i )
 	{
-		for( unsigned i = 0; i < vecIntermediateLayer.size(); ++i )
-		{
-			if( vecIntermediateLayer[ i ].ObjIdx > ObjIdx )
-				--(vecIntermediateLayer[ i ].ObjIdx);
-		}
-		vecVertices.erase( vecVertices.begin() + VertexCount * ObjIdx, vecVertices.begin() + VertexCount * ( 1 + ObjIdx ) );
-		vecObjects.erase( vecObjects.begin() + ObjIdx );
+		if( vecIntermediateLayer[ i ].ObjIdx > ObjIdx )
+			--(vecIntermediateLayer[ i ].ObjIdx);
 	}
-}
-void ObjMgr::ReleaseHandle( unsigned const Index )
-{
-	if( !(--vecIntermediateLayer[ Index ].RefCount) )
-		vecIntermediateLayerGC.push_back( Index );
+	vecVertices.erase( vecVertices.begin() + VertexCount * ObjIdx, vecVertices.begin() + VertexCount * ( 1 + ObjIdx ) );
+	vecObjects.erase( vecObjects.begin() + ObjIdx );
 }
 Object & ObjMgr::GetObjRef( unsigned const Index )
 {
-	return vecObjects[ Index ];
+	return vecObjects[ vecIntermediateLayer[ Index ].ObjIdx ];
 }
 Object * ObjMgr::GetObjPtr( unsigned const Index )
 {
-	return &(vecObjects[ Index ]);
+	return &(vecObjects[ vecIntermediateLayer[ Index ].ObjIdx ]);
 }
 D3DSURFACE_DESC ObjMgr::GetSurfaceDesc()
 {
@@ -191,76 +189,79 @@ void ObjMgr::AdvanceTransformedDraw( Direct3DEngine * D3DEng )
 	unsigned s = vecObjects.size();
 	vecVertices.resize( vecObjects.size() * VertexCount );
 	D3DXMATRIX mat;
-	for( unsigned u = 0; u < s; ++u )
+	if( vecVertexLibrary.size() )
 	{
-		Vertex * dst = &vecVertices[ u * VertexCount ];
-		Vertex * src = &vecVertexLibrary[ vecObjects[ u ].libidx ];
-		D3DXMatrixTransformation( &mat, NULL, NULL, &vecObjects[ u ].scale, NULL, &( vecObjects[ u ].direction * vecObjects[ u ].orient ), &vecObjects[ u ].position );
-		for( unsigned v = 0; v < VertexCount; ++v )
+		for( unsigned u = 0; u < s; ++u )
 		{
-			D3DXVec3TransformCoord( &dst->pos, &src->pos, &mat );
-			dst->tex = src->tex;
-			dst->color = src->color;
-			++dst;
-			++src;
-		};
-		vecObjects[ u ].Advance();
+			Vertex * dst = &vecVertices[ u * VertexCount ];
+			Vertex * src = &vecVertexLibrary[ vecObjects[ u ].libidx ];
+			D3DXMatrixTransformation( &mat, NULL, NULL, &vecObjects[ u ].scale, NULL, &( vecObjects[ u ].direction * vecObjects[ u ].orient ), &vecObjects[ u ].position );
+			for( unsigned v = 0; v < VertexCount; ++v )
+			{
+				D3DXVec3TransformCoord( &dst->pos, &src->pos, &mat );
+				dst->tex = src->tex;
+				dst->color = src->color;
+				++dst;
+				++src;
+			};
+			vecObjects[ u ].Advance();
+		}
+		if( VBufferLength < vecVertices.size() * sizeof( Vertex ) )
+		{
+			VBufferLength = vecVertices.size() * sizeof( Vertex );
+			if( VertexBuffer ) VertexBuffer->Release();
+			D3DEng->GetDevice()->CreateVertexBuffer( vecVertices.size() * sizeof( Vertex ), D3DUSAGE_WRITEONLY, 0, D3DPOOL_MANAGED, &VertexBuffer, NULL );
+		}
+		void * ptr;
+		VertexBuffer->Lock( 0, 0, &ptr, NULL );
+		memcpy( ptr, &vecVertices[ 0 ], sizeof( Vertex ) * vecVertices.size() );
+		VertexBuffer->Unlock();
+		LPDIRECT3DDEVICE9 d3ddev = D3DEng->GetDevice();
+		d3ddev->SetTexture( 0, pTexture );
+		d3ddev->SetVertexDeclaration( VDeclaration );
+		d3ddev->SetVertexShader( VShader );
+		d3ddev->SetPixelShader( PShader );
+		switch( BlendOp )
+		{
+		case BlendAlpha:
+			d3ddev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+			d3ddev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+			d3ddev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+			d3ddev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
+			break;
+		case BlendAdd:
+			d3ddev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+			d3ddev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+			d3ddev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_DESTALPHA );
+			d3ddev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
+			break;
+		case BlendSub:
+			d3ddev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+			d3ddev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+			d3ddev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+			d3ddev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_SUBTRACT );
+			break;
+		case BlendInvAlph:
+			d3ddev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+			d3ddev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_INVSRCALPHA );
+			d3ddev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_SRCALPHA );
+			d3ddev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
+			break;
+		case BlendInvAdd:
+			d3ddev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+			d3ddev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_INVDESTALPHA );
+			d3ddev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_DESTALPHA );
+			d3ddev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
+			break;
+		}
+		d3ddev->SetStreamSource( 0, VertexBuffer, 0, sizeof( Vertex ) );
+		d3ddev->DrawPrimitive( PrimitiveType, 0, PrimitiveType == D3DPT_TRIANGLELIST ? vecObjects.size() * VertexCount / 3 :
+			PrimitiveType == D3DPT_TRIANGLESTRIP ? (VertexCount - 2) * vecObjects.size() : 0 );
 	}
-	if( VBufferLength < vecVertices.size() * sizeof( Vertex ) )
-	{
-		VBufferLength = vecVertices.size() * sizeof( Vertex );
-		if( VertexBuffer ) VertexBuffer->Release();
-		D3DEng->GetDevice()->CreateVertexBuffer( vecVertices.size() * sizeof( Vertex ), D3DUSAGE_WRITEONLY, 0, D3DPOOL_MANAGED, &VertexBuffer, NULL );
-	}
-	void * ptr;
-	VertexBuffer->Lock( 0, 0, &ptr, NULL );
-	memcpy( ptr, &vecVertices[ 0 ], sizeof( Vertex ) * vecVertices.size() );
-	VertexBuffer->Unlock();
-	LPDIRECT3DDEVICE9 d3ddev = D3DEng->GetDevice();
-	d3ddev->SetTexture( 0, pTexture );
-	d3ddev->SetVertexDeclaration( VDeclaration );
-	d3ddev->SetVertexShader( VShader );
-	d3ddev->SetPixelShader( PShader );
-	switch( BlendOp )
-	{
-	case BlendAlpha:
-		d3ddev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-		d3ddev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
-		d3ddev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
-		d3ddev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
-		break;
-	case BlendAdd:
-		d3ddev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-		d3ddev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
-		d3ddev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_DESTALPHA );
-		d3ddev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
-		break;
-	case BlendSub:
-		d3ddev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-		d3ddev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
-		d3ddev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
-		d3ddev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_SUBTRACT );
-		break;
-	case BlendInvAlph:
-		d3ddev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-		d3ddev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_INVSRCALPHA );
-		d3ddev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_SRCALPHA );
-		d3ddev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
-		break;
-	case BlendInvAdd:
-		d3ddev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-		d3ddev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_INVDESTALPHA );
-		d3ddev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_DESTALPHA );
-		d3ddev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
-		break;
-	}
-	d3ddev->SetStreamSource( 0, VertexBuffer, 0, sizeof( Vertex ) );
-	d3ddev->DrawPrimitive( PrimitiveType, 0, PrimitiveType == D3DPT_TRIANGLELIST ? vecObjects.size() * VertexCount / 3 :
-		PrimitiveType == D3DPT_TRIANGLESTRIP ? (VertexCount - 2) * vecObjects.size() : 0 );
 }
-
-ObjMgr::ObjHandle::ObjHandle() : ObjIdx( -1 ), RefCount( 0 )
+unsigned ObjMgr::GetObjCount()
 {
+	return vecObjects.size();
 }
 
 void Object::SetSpeed( float Speed )

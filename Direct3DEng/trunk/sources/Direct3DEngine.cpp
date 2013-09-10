@@ -365,3 +365,44 @@ void Direct3DEngine::D3dRelease( T *& RefPtr )
 	}
 }
 
+unsigned Direct3DEngine::CreateObject( unsigned short Layer )
+{
+	unsigned Result;
+	if( Layer <= inventory.vLayers.size() )
+	{
+		if( inventory.vObjHandlesGC.size() )
+		{
+			Result = inventory.vObjHandlesGC.back();
+			inventory.vObjHandlesGC.pop_back();
+		}
+		else
+			Result = inventory.vObjHandles.size();
+		if( inventory.vObjHandles.size() <= Result )
+			inventory.vObjHandles.resize( 1 + Result );
+		inventory.vObjHandles[ Result ].Layer = Layer;
+		inventory.vObjHandles[ Result ].RefCount = 1;
+		inventory.vObjHandles[ Result ].MgrIdx = inventory.vLayers[ Layer ].vObjMgr.size();
+		inventory.vLayers[ Layer ].vObjMgr.push_back( ObjMgr() );
+		inventory.vLayers[ Layer ].vObjMgr[ inventory.vObjHandles[ Result ].MgrIdx ].PushObj( 0 );
+	}
+	else
+		Result = -1;
+	return Result;
+}
+void Direct3DEngine::AddRefObjHandle( unsigned HandleIdx )
+{
+	++inventory.vObjHandles[ HandleIdx ].RefCount;
+}
+void Direct3DEngine::ReleaseObjHandle( unsigned HandleIdx )
+{
+	if( !--inventory.vObjHandles[ HandleIdx ].RefCount )
+		inventory.vObjHandlesGC.push_back( HandleIdx );
+}
+void Direct3DEngine::ReleaseObject( unsigned HandleIdx )
+{
+	ObjHandle & handle = inventory.vObjHandles[ HandleIdx ];
+	inventory.vLayers[ handle.Layer ].vObjMgr[ handle.MgrIdx ].EraseObj( handle.ObjIdx );
+	if( !inventory.vLayers[ handle.Layer ].vObjMgr[ handle.MgrIdx ].GetObjCount() )
+		inventory.vLayers[ handle.Layer ].vObjMgr.erase( inventory.vLayers[ handle.Layer ].vObjMgr.begin() + handle.MgrIdx );
+	handle.ObjIdx = -1;
+}

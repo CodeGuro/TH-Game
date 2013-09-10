@@ -49,8 +49,6 @@ private:
 	struct ObjHandle
 	{
 		unsigned ObjIdx;
-		unsigned RefCount;
-		ObjHandle();
 	};
 
 	BlendType BlendOp;
@@ -86,12 +84,13 @@ public:
 	void SetBlendMode( BlendType Blend );
 	void PushQuadLib( RECT Quad, D3DCOLOR Color );
 	void PushVertexLib( std::vector< Vertex > const & VecVerts );
+	void ResizeVertexLib( unsigned VCount );
+	unsigned GetVertexCountLib();
 	unsigned PushObj( unsigned const Index ); //returns an index to the handle
-	void AddRef( unsigned const Index );
 	void EraseObj( unsigned const Index );
-	void ReleaseHandle( unsigned const Index );
 	Object & GetObjRef( unsigned const Index );
 	Object * GetObjPtr( unsigned const Index );
 	D3DSURFACE_DESC GetSurfaceDesc();
 	void AdvanceTransformedDraw( Direct3DEngine * D3DEng );
+	unsigned GetObjCount();
 };

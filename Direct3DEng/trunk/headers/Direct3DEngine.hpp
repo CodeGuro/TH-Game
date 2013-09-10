@@ -7,6 +7,15 @@
 #include <Windows.h>
 
 class ObjMgr;
+
+struct ObjHandle
+{
+	unsigned ObjIdx;
+	unsigned MgrIdx;
+	unsigned short Layer;
+	unsigned short RefCount;
+};
+
 class Direct3DEngine
 {
 private:
@@ -20,10 +29,6 @@ private:
 	{
 		std::vector< ObjMgr > vObjMgr;
 	};
-	struct ObjHandle
-	{
-		unsigned Buffer;
-	};
 	struct Battery
 	{
 		LPDIRECT3DVERTEXDECLARATION9 pDefaultVDeclaration;
@@ -35,6 +40,7 @@ private:
 		std::map< std::string, LPDIRECT3DTEXTURE9 > mapTextures;
 		std::vector< Layer > vLayers;
 		std::vector< ObjHandle > vObjHandles;
+		std::vector< unsigned > vObjHandlesGC;
 		Battery();
 	};
 	LPDIRECT3D9 d3d;
@@ -66,4 +72,8 @@ public:
 	LPDIRECT3DDEVICE9 GetDevice();
 
 	void SetFog( D3DCOLOR Color, float Near, float Far );
+	unsigned CreateObject( unsigned short Layer );
+	void AddRefObjHandle( unsigned HandleIdx );
+	void ReleaseObjHandle( unsigned HandleIdx );
+	void ReleaseObject( unsigned HandleIdx );
 };
