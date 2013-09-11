@@ -148,7 +148,6 @@ unsigned ObjMgr::PushObj( unsigned const Index )
 		vecIntermediateLayer.resize( 1 + ( result = vecIntermediateLayer.size() ) );
 	vecIntermediateLayer[ result ].ObjIdx = vecObjects.size();
 	vecObjects.resize( 1 + vecObjects.size() );
-	vecVertices.resize( vecVertices.size() + VertexCount );
 	auto & back = vecObjects.back();
 	back.libidx = Index;
 	back.SetPosition( D3DXVECTOR3( 0, 0, 0 ) );
@@ -160,6 +159,21 @@ unsigned ObjMgr::PushObj( unsigned const Index )
 	back.SetRotationVelocity( 0.f );
 	return result;
 }
+unsigned ObjMgr::PushEmptyObj()
+{
+	unsigned result;
+	if( vecIntermediateLayerGC.size() )
+	{
+		result = vecIntermediateLayerGC.back();
+		vecIntermediateLayerGC.pop_back();
+	}
+	else
+		vecIntermediateLayer.resize( 1 + ( result = vecIntermediateLayer.size() ) );
+	vecIntermediateLayer[ result ].ObjIdx = vecObjects.size();
+	Object obj = { D3DXVECTOR3( 0, 0, 0 ), D3DXVECTOR3( 0, 0, 0 ), D3DXVECTOR3( 0, 0, 0 ), D3DXVECTOR3( 1, 1, 1 ), D3DXQUATERNION( 0, 0, 0, 1 ), D3DXQUATERNION( 0, 0, 0, 1 ), D3DXQUATERNION( 0, 0, 0, 1 ), 0 };
+	vecObjects.push_back( obj );
+	return result;
+}
 void ObjMgr::EraseObj( unsigned const Index )
 {
 	unsigned ObjIdx = vecIntermediateLayer[ Index ].ObjIdx;
@@ -169,7 +183,6 @@ void ObjMgr::EraseObj( unsigned const Index )
 		if( vecIntermediateLayer[ i ].ObjIdx > ObjIdx )
 			--(vecIntermediateLayer[ i ].ObjIdx);
 	}
-	vecVertices.erase( vecVertices.begin() + VertexCount * ObjIdx, vecVertices.begin() + VertexCount * ( 1 + ObjIdx ) );
 	vecObjects.erase( vecObjects.begin() + ObjIdx );
 }
 Object & ObjMgr::GetObjRef( unsigned const Index )
@@ -180,17 +193,29 @@ Object * ObjMgr::GetObjPtr( unsigned const Index )
 {
 	return &(vecObjects[ vecIntermediateLayer[ Index ].ObjIdx ]);
 }
+Vertex * ObjMgr::GetLibVertexPtr( unsigned const Index )
+{
+	return &vecVertexLibrary[ Index ];
+}
 D3DSURFACE_DESC ObjMgr::GetSurfaceDesc()
 {
 	return SurfaceDesc;
 }
 void ObjMgr::AdvanceTransformedDraw( Direct3DEngine * D3DEng )
 {
-	unsigned s = vecObjects.size();
-	vecVertices.resize( vecObjects.size() * VertexCount );
-	D3DXMATRIX mat;
 	if( vecVertexLibrary.size() )
 	{
+
+		LPDIRECT3DDEVICE9 d3ddev = D3DEng->GetDevice();
+		unsigned s = vecObjects.size();
+		vecVertices.resize( vecObjects.size() * VertexCount );
+		D3DXMATRIX mat;
+		if( VBufferLength < vecVertices.size() * sizeof( Vertex ) )
+		{
+			VBufferLength = vecVertices.size() * sizeof( Vertex );
+			if( VertexBuffer ) VertexBuffer->Release();
+			d3ddev->CreateVertexBuffer( vecVertices.size() * sizeof( Vertex ), D3DUSAGE_WRITEONLY, 0, D3DPOOL_MANAGED, &VertexBuffer, NULL );
+		}
 		for( unsigned u = 0; u < s; ++u )
 		{
 			Vertex * dst = &vecVertices[ u * VertexCount ];
@@ -206,21 +231,17 @@ void ObjMgr::AdvanceTransformedDraw( Direct3DEngine * D3DEng )
 			};
 			vecObjects[ u ].Advance();
 		}
-		if( VBufferLength < vecVertices.size() * sizeof( Vertex ) )
-		{
-			VBufferLength = vecVertices.size() * sizeof( Vertex );
-			if( VertexBuffer ) VertexBuffer->Release();
-			D3DEng->GetDevice()->CreateVertexBuffer( vecVertices.size() * sizeof( Vertex ), D3DUSAGE_WRITEONLY, 0, D3DPOOL_MANAGED, &VertexBuffer, NULL );
-		}
 		void * ptr;
+		DWORD ZSet;
 		VertexBuffer->Lock( 0, 0, &ptr, NULL );
 		memcpy( ptr, &vecVertices[ 0 ], sizeof( Vertex ) * vecVertices.size() );
 		VertexBuffer->Unlock();
-		LPDIRECT3DDEVICE9 d3ddev = D3DEng->GetDevice();
 		d3ddev->SetTexture( 0, pTexture );
 		d3ddev->SetVertexDeclaration( VDeclaration );
 		d3ddev->SetVertexShader( VShader );
 		d3ddev->SetPixelShader( PShader );
+		d3ddev->GetRenderState( D3DRS_ZENABLE, &ZSet );
+		d3ddev->SetRenderState( D3DRS_ZENABLE, FALSE );
 		switch( BlendOp )
 		{
 		case BlendAlpha:
@@ -257,6 +278,7 @@ void ObjMgr::AdvanceTransformedDraw( Direct3DEngine * D3DEng )
 		d3ddev->SetStreamSource( 0, VertexBuffer, 0, sizeof( Vertex ) );
 		d3ddev->DrawPrimitive( PrimitiveType, 0, PrimitiveType == D3DPT_TRIANGLELIST ? vecObjects.size() * VertexCount / 3 :
 			PrimitiveType == D3DPT_TRIANGLESTRIP ? (VertexCount - 2) * vecObjects.size() : 0 );
+		d3ddev->SetRenderState( D3DRS_ZENABLE, ZSet );
 	}
 }
 unsigned ObjMgr::GetObjCount()

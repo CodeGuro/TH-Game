@@ -309,18 +309,23 @@ void Direct3DEngine::TestObjMgr()
 	static float dir = D3DX_PI ;
 	if( !HasInitialized )
 	{
-		RECT r = { 16, 16, 32, 32 };
 		HasInitialized = true;
 		LoadTexture( csTexture );
 		mgr.SetTexture( inventory.mapTextures[ csTexture ] );
-		mgr.PushQuadLib( r, D3DCOLOR_XRGB( 255, 255, 255 ) );
-		mgr.PushObj( 0 );
+		mgr.PushEmptyObj();
+		mgr.ResizeVertexLib( 6 );
+		Vertex * vp = mgr.GetLibVertexPtr( 0 );
+		vp[ 0 ].pos = D3DXVECTOR3( -8, -8, 0 );	vp[ 0 ].tex = D3DXVECTOR2( 16.f / 256, 16.f / 256 ); vp[ 0 ].color = D3DCOLOR_XRGB( 255, 255, 255 );
+		vp[ 1 ].pos = D3DXVECTOR3( 8, -8, 0 );	vp[ 1 ].tex = D3DXVECTOR2( 32.f / 256, 16.f / 256 ); vp[ 1 ].color = D3DCOLOR_XRGB( 255, 255, 255 );
+		vp[ 2 ].pos = D3DXVECTOR3( -8, 8, 0 );	vp[ 2 ].tex = D3DXVECTOR2( 16.f / 256, 32.f / 256 ); vp[ 2 ].color = D3DCOLOR_XRGB( 255, 255, 255 );
+		vp[ 3 ].pos = D3DXVECTOR3( -8, 8, 0 );	vp[ 3 ].tex = D3DXVECTOR2( 16.f / 256, 32.f / 256 ); vp[ 3 ].color = D3DCOLOR_XRGB( 255, 255, 255 );
+		vp[ 4 ].pos = D3DXVECTOR3( 8, -8, 0 );	vp[ 4 ].tex = D3DXVECTOR2( 32.f / 256, 16.f / 256 ); vp[ 4 ].color = D3DCOLOR_XRGB( 255, 255, 255 );
+		vp[ 5 ].pos = D3DXVECTOR3( 8, 8, 0 );	vp[ 5 ].tex = D3DXVECTOR2( 32.f / 256, 32.f / 256 ); vp[ 5 ].color = D3DCOLOR_XRGB( 255, 255, 255 );
 		mgr.GetObjRef( 0 ).SetPosition( D3DXVECTOR3( 300.5, 300.5, 0 ) );
 	}
 	mgr.GetObjRef( 0 ).SetVelocity( D3DXVECTOR3( cos( dir ), sin( dir ), 0 ) );
 	mgr.GetObjRef( 0 ).SetAngle( dir + D3DX_PI / 2 );
-	mgr.GetObjRef( 0 ).SetSpeed( 1.f );
-	dir += D3DX_PI / ( 120.f  );
+	dir += D3DX_PI / ( 120.f );
 	mgr.AdvanceTransformedDraw( this );
 }
 void Direct3DEngine::ProcUserInput( MSG const Msg )

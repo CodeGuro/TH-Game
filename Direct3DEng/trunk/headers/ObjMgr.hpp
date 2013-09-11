@@ -87,9 +87,11 @@ public:
 	void ResizeVertexLib( unsigned VCount );
 	unsigned GetVertexCountLib();
 	unsigned PushObj( unsigned const Index ); //returns an index to the handle
+	unsigned PushEmptyObj(); //returns an index to the handle
 	void EraseObj( unsigned const Index );
 	Object & GetObjRef( unsigned const Index );
 	Object * GetObjPtr( unsigned const Index );
+	Vertex * GetLibVertexPtr( unsigned const Index );
 	D3DSURFACE_DESC GetSurfaceDesc();
 	void AdvanceTransformedDraw( Direct3DEngine * D3DEng );
 	unsigned GetObjCount();
