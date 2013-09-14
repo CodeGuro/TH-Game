@@ -47,6 +47,46 @@ bool script_machine::advance( script_engine & eng )
 	code const & current_code = eng.getBlock( env.blockIndex ).vecCodes[ env.codeIndex++ ];
 	switch( current_code.command )
 	{
+	case vc_assign:
+		{
+			script_environment * e = &env;
+			for( unsigned u = 0; u < current_code.variableLevel; ++u )
+				e = &eng.getScriptEnvironment( e->parentIndex );
+			eng.scriptDataAssign( e->stack[ current_code.variableIndex ], env.stack[ env.stack.size() - 1 ] );
+			eng.releaseScriptData( env.stack[ env.stack.size() - 1 ] );
+			env.stack.pop_back();
+		}
+		break;
+	case vc_overWrite:
+		{
+			script_environment * e = &env;
+			for( unsigned u = 0; u < current_code.variableLevel; ++u )
+				e = &eng.getScriptEnvironment( e->parentIndex );
+			eng.uniqueizeScriptData( env.stack[ env.stack.size() - 1 ] );
+			eng.copyScriptData( e->stack[ current_code.variableIndex ], env.stack[ env.stack.size() - 1 ] );
+			eng.releaseScriptData( env.stack[ env.stack.size() - 1 ] );
+			env.stack.pop_back();
+		}
+		break;
+	case vc_pushVal:
+		{
+			env.stack.push_back( invalidIndex );
+			eng.scriptDataAssign( env.stack[ env.stack.size() - 1 ], current_code.scriptDataIndex );
+		}
+		break;
+	case vc_pushVar:
+		{
+			script_environment * e = &env;
+			for( unsigned u = 0; u < current_code.variableLevel; ++u )
+				e = &eng.getScriptEnvironment( e->parentIndex );
+			env.stack.push_back( invalidIndex );
+			eng.scriptDataAssign( env.stack[ env.stack.size() - 1 ], e->stack[ current_code.variableIndex ] );
+		}
+		break;
+	case vc_callFunction:
+	case vc_callFunctionPush:
+	case vc_callTask:
+		break;
 	default:
 		assert( false );
 	}

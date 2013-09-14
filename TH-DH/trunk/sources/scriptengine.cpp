@@ -129,7 +129,7 @@ script_data & script_engine::getScriptData( size_t index )
 {
 	return battery.vecScriptData[ index ];
 }
-void script_engine::addRefScriptData( size_t & index ) //interface function
+void script_engine::addRefScriptData( size_t index ) //interface function
 {
 	if( index != invalidIndex )
 		++getScriptData( index ).refCount;
@@ -148,7 +148,7 @@ void script_engine::releaseScriptData( size_t & index ) //interface function
 		index = invalidIndex;
 	}
 }
-void script_engine::scriptDataAssign( size_t & dst, size_t & src ) //index copy
+void script_engine::scriptDataAssign( size_t & dst, size_t src ) //index copy
 {
 	addRefScriptData( src );
 	releaseScriptData( dst );
@@ -259,7 +259,7 @@ script_environment & script_engine::getScriptEnvironment( size_t index )
 {
 	return battery.vecScriptEnvironment[ index ];
 }
-void script_engine::addRefScriptEnvironment( size_t & index )
+void script_engine::addRefScriptEnvironment( size_t index )
 {
 	if( index != invalidIndex )
 		++getScriptEnvironment( index ).refCount;
