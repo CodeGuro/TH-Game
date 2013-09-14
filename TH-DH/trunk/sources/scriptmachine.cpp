@@ -52,6 +52,8 @@ bool script_machine::advance( script_engine & eng )
 			script_environment * e = &env;
 			for( unsigned u = 0; u < current_code.variableLevel; ++u )
 				e = &eng.getScriptEnvironment( e->parentIndex );
+			if( e->stack.size() < 1 + current_code.variableIndex )
+				e->stack.resize( 3 + 2 * e->stack.size(), invalidIndex );
 			eng.scriptDataAssign( e->stack[ current_code.variableIndex ], env.stack[ env.stack.size() - 1 ] );
 			eng.releaseScriptData( env.stack[ env.stack.size() - 1 ] );
 			env.stack.pop_back();
@@ -86,6 +88,38 @@ bool script_machine::advance( script_engine & eng )
 	case vc_callFunction:
 	case vc_callFunctionPush:
 	case vc_callTask:
+		{
+			block & b = eng.getBlock( current_code.subIndex );
+			if( b.nativeCallBack ) //always functional
+			{
+				if( current_code.command == vc_callFunctionPush )
+					env.stack.push_back( invalidIndex );
+					b.nativeCallBack( &eng, &env.stack[ env.stack.size() - ( 1 + current_code.argc ) ] );
+					for( unsigned u = 0; u < current_code.argc; ++ u )
+					{
+						eng.releaseScriptData( env.stack.back() );
+						env.stack.pop_back();
+					}
+			}
+			else
+			{
+				size_t envIdx = eng.fetchScriptEnvironment( current_code.subIndex );
+				script_environment & current_env = eng.getScriptEnvironment( threads[ current_thread_index ] );
+				script_environment & new_env = eng.getScriptEnvironment( envIdx );
+				new_env.hasResult = ( current_code.command == vc_callFunctionPush );
+				new_env.parentIndex = threads[ current_thread_index ];
+				++current_env.refCount;
+				for( unsigned u = 0; u < current_code.argc; ++ u )
+				{
+					new_env.stack.push_back( env.stack[ *(env.stack.end() - current_code.argc + u ) ] );
+					eng.addRefScriptData( *(env.stack.end() - current_code.argc + u ) );
+				}
+				if( current_code.command != vc_callTask )
+					threads[ current_thread_index ] = envIdx;
+				else
+					threads.insert( threads.begin() + ++current_thread_index, envIdx );
+			}
+		}
 		break;
 	default:
 		assert( false );

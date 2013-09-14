@@ -80,6 +80,7 @@ struct code
 };
 
 class script_engine;
+
 struct block
 {
 	enum block_kind
@@ -110,4 +111,35 @@ struct script_container
 	size_t MainLoopBlock;
 	size_t FinalizeBlock;
 	size_t BackGroundBlock;
+};
+
+struct natives
+{
+private:
+	friend class parser;
+	static void _add( script_engine * eng, size_t * argv );
+	static void _subtract( script_engine * eng, size_t * argv );
+	static void _multiply( script_engine * eng, size_t * argv );
+	static void _divide( script_engine * eng, size_t * argv );
+	static void _negative( script_engine * eng, size_t * argv );
+	static void _power( script_engine * eng, size_t * argv );
+	static void _concatenate( script_engine * eng, size_t * argv );
+	static void _absolute( script_engine * eng, size_t * argv );
+	static void _not( script_engine * eng, size_t * argv );
+	static void _compareEqual( script_engine * eng, size_t * argv );
+	static void _compareNotEqual( script_engine * eng, size_t * argv );
+	static void _compareGreater( script_engine * eng, size_t * argv );
+	static void _compareGreaterEqual( script_engine * eng, size_t * argv );
+	static void _compareLess( script_engine * eng, size_t * argv );
+	static void _compareLessEqual( script_engine * eng, size_t * argv );
+	static void _logicOr( script_engine * eng, size_t * argv );
+	static void _logicAnd( script_engine * eng, size_t * argv );
+	static void _roof( script_engine * eng, size_t * argv );
+	static void _floor( script_engine * eng, size_t * argv );
+	static void _index( script_engine * eng, size_t * argv );
+	static void _appendArray( script_engine * eng, size_t * argv );
+	static void _uniqueize( script_engine * eng, size_t * argv );
+	static void _rand( script_engine * eng, size_t * argv );
+	static void _rand_int( script_engine * eng, size_t * argv );
+	static void _print( script_engine * eng, size_t * argv );
 };
