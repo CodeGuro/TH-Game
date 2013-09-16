@@ -226,14 +226,37 @@ void script_engine::uniqueizeScriptData( size_t & dst )
 }
 std::string script_engine::getStringScriptData( size_t index )
 {
-	script_data const & dat = getScriptData( index );
-	unsigned size = dat.vec.size();
 	std::string result;
-	for( unsigned i = 0; i < size; ++i)
-		result += getScriptData( dat.vec[ i ] ).character;
+	if( index != invalidIndex )
+	{
+		script_data const & dat = getScriptData( index );
+		unsigned size = dat.vec.size();
+		for( unsigned i = 0; i < size; ++i)
+			result += getScriptData( dat.vec[ i ] ).character;
+		return result;
+	}
+	else result = "(INVALID SCRIPT DATA INDEX)";
 	return result;
 }
+float script_engine::getRealScriptData( size_t index ) const
+{
+	if( index != invalidIndex )
+		return battery.vecScriptData[ index ].real;
+	return -1;
+}
+bool script_engine::getBooleanScriptData( size_t index ) const
+{
+	if( index != invalidIndex )
+		return battery.vecScriptData[ index ].real != 0;
+	return true;
 
+}
+char script_engine::getCharacterScriptData( size_t index ) const
+{
+	if( index != invalidIndex )
+		return battery.vecScriptData[ index ].character;
+	return -1;
+}
 
 //script engine - script environment - related functions
 size_t script_engine::fetchScriptEnvironment( size_t blockIndex )

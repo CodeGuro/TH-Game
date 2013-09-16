@@ -1043,8 +1043,9 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 		{
 			if( lexicon.advance() == tk_lparen )
 			{
-				parseParentheses();
+			
 				unsigned loopBackIndex = getBlock().vecCodes.size();
+				parseParentheses();
 				pushCode( code::code( vc_loopIf ) );
 				parseInlineBlock( block::bk_loop );
 				pushCode( code::loop( vc_loopBack, loopBackIndex ) );

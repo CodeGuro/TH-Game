@@ -121,6 +121,56 @@ bool script_machine::advance( script_engine & eng )
 			}
 		}
 		break;
+	case vc_breakRoutine:
+		{
+			bool BaseRoutine = false; //task/function returns
+			script_environment * e = &env;
+			do
+			{
+				block const & b = eng.getBlock( e->blockIndex );
+				e->codeIndex = b.vecCodes.size();
+				if( !(b.kind == block::bk_function || b.kind == block::bk_task || b.kind == block::bk_sub) && e->parentIndex != invalidIndex )
+					e = &eng.getScriptEnvironment( e->parentIndex );
+				else
+					BaseRoutine = true;
+			}while( !BaseRoutine );
+		}
+		break;
+	case vc_loopIfDecr:
+		{
+			float real = eng.getRealScriptData( env.stack.back() );
+			if( real <= 0 )
+			{
+				eng.releaseScriptData( env.stack.back() );
+				env.stack.pop_back();
+				do
+					++env.codeIndex;
+				while( eng.getBlock( env.blockIndex ).vecCodes[ env.codeIndex - 1 ].command != vc_loopBack );
+			}
+			else
+			{
+				eng.scriptDataAssign( env.stack.back(), eng.fetchScriptData( real - 1 ) );
+			}
+		}
+		break;
+	case vc_loopIf:
+		{
+			if( eng.getRealScriptData( env.stack.back() ) <= 0 )
+			{
+				do
+					++env.codeIndex;
+				while( eng.getBlock( env.blockIndex ).vecCodes[ env.codeIndex - 1 ].command != vc_loopBack );
+			}
+				eng.releaseScriptData( env.stack.back() );
+				env.stack.pop_back();
+		}
+		break;
+	case vc_loopBack:
+		env.codeIndex = eng.getBlock( env.blockIndex ).vecCodes[ env.codeIndex ].loopBackIndex;
+		break;
+	case vc_yield:
+		current_thread_index = ( current_thread_index ? threads.size() : current_thread_index ) - 1;
+		break;
 	default:
 		assert( false );
 	}
