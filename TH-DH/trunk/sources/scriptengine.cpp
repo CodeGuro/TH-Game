@@ -143,6 +143,7 @@ void script_engine::releaseScriptData( size_t & index ) //interface function
 		{
 			for( unsigned i = 0; i < dat.vec.size(); ++i )
 				releaseScriptData( dat.vec[i] );
+			dat.vec.resize( 0 );
 			battery.vecScriptDataGarbage.push_back( index );
 		}
 		index = invalidIndex;
@@ -300,10 +301,9 @@ void script_engine::releaseScriptEnvironment( size_t & index )
 		if( !( --env.refCount ) )
 		{
 			for( unsigned i = 0; i < env.stack.size(); ++i )
-			{
 				releaseScriptData( env.stack[i] );
-				releaseScriptData( env.values[ i ] );
-			}
+			for( unsigned u = 0; u < env.values.size(); ++u )
+				releaseScriptData( env.values[ u ] );
 			env.stack.resize( 0 );
 			env.values.resize( 0 );
 			battery.vecRoutinesGabage.push_back( index );

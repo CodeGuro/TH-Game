@@ -87,14 +87,14 @@ bool script_machine::advance( script_engine & eng )
 			block & b = eng.getBlock( current_code.subIndex );
 			if( b.nativeCallBack ) //always functional
 			{
-				if( current_code.command == vc_callFunctionPush )
-					env.stack.push_back( invalidIndex );
-					b.nativeCallBack( &eng, &env.stack[ env.stack.size() - ( 1 + current_code.argc ) ] );
-					for( unsigned u = 0; u < current_code.argc; ++ u )
-					{
-						eng.releaseScriptData( env.stack.back() );
-						env.stack.pop_back();
-					}
+				env.stack.push_back( invalidIndex );
+				b.nativeCallBack( &eng, &env.stack[ env.stack.size() - ( 1 + current_code.argc ) ] );
+				unsigned popCount = current_code.argc + (current_code.command != vc_callFunctionPush ? 1 : 0 );
+				for( unsigned u = 0; u < popCount; ++ u )
+				{
+					eng.releaseScriptData( env.stack.back() );
+					env.stack.pop_back();
+				}
 			}
 			else
 			{
@@ -144,7 +144,8 @@ bool script_machine::advance( script_engine & eng )
 			}
 			else
 			{
-				eng.scriptDataAssign( env.stack.back(), eng.fetchScriptData( real - 1 ) );
+				eng.releaseScriptData( env.stack.back() );
+				env.stack.back() = eng.fetchScriptData( real - 1 );
 			}
 		}
 		break;
@@ -161,7 +162,7 @@ bool script_machine::advance( script_engine & eng )
 		}
 		break;
 	case vc_loopBack:
-		env.codeIndex = eng.getBlock( env.blockIndex ).vecCodes[ env.codeIndex ].loopBackIndex;
+		env.codeIndex = current_code.loopBackIndex;
 		break;
 	case vc_yield:
 		current_thread_index = ( current_thread_index ? threads.size() : current_thread_index ) - 1;

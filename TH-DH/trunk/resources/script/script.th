@@ -9,8 +9,9 @@ script_main main_script //main routine
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
 	{
-		let val = ["hello world", "hi there"]; //push("hello world"), uniquize, assign
-		val[0][2] = 's'; //push(val), push(0), index, push(2), index, push('s'),overwrite
+		bar;
+//		let val = ["hello world", "hi there"]; //push("hello world"), uniquize, assign
+//		val[0][2] = 's'; //push(val), push(0), index, push(2), index, push('s'),overwrite
 		
 	}
 	@MainLoop //routine called every frame post-Initialize
@@ -39,6 +40,11 @@ function foo( let a, let b ) //args optional
 
 function bar
 {
-	return;
+	let h = 3;
+	let i = 2;
+	loop( h )
+	{
+		print( "bar test" );
+	}
 }
 //okay

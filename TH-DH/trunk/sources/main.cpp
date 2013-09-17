@@ -1,7 +1,8 @@
 #include <iostream>
 #include <scriptengine.hpp>
 #include <array>
-int main( int const argc, char const * const * argv )
+
+int main( int const argc, char const * const * const argv )
 {
 	std::cout << "Hello, world!\n";
 	script_engine engine;

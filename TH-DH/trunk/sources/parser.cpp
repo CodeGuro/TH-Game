@@ -385,37 +385,42 @@ void parser::parseLogic()
 }
 void parser::parseComparison()
 {
-	parseSum();
 	std::string operation;
-	switch( lexicon.getToken() )
+	parseSum();
+	do
 	{
-	case tk_assign:
-		raiseError( "\"=\" is not a comparison operator, did you mean \"==\"?", error::er_syntax );
-		break;
-	case tk_compare_equal:
-		operation = "compareEqual";
-		break;
-	case tk_compare_notequal:
-		operation = "compareNotEqual";
-		break;
-	case tk_compare_greater:
-		operation = "compareGreater";
-		break;
-	case tk_compare_greaterequal:
-		operation = "compareGreaterEqual";
-		break;
-	case tk_compare_less:
-		operation = "compareLess";
-		break;
-	case tk_compare_lessequal:
-		operation = "compareLessEqual";
-		break;
-	}
-	if( operation.size() )
-	{
-		lexicon.advance();
-		writeOperation( operation );
-	}
+		operation.clear();
+		switch( lexicon.getToken() )
+		{
+		case tk_assign:
+			raiseError( "\"=\" is not a comparison operator, did you mean \"==\"?", error::er_syntax );
+			break;
+		case tk_compare_equal:
+			operation = "compareEqual";
+			break;
+		case tk_compare_notequal:
+			operation = "compareNotEqual";
+			break;
+		case tk_compare_greater:
+			operation = "compareGreater";
+			break;
+		case tk_compare_greaterequal:
+			operation = "compareGreaterEqual";
+			break;
+		case tk_compare_less:
+			operation = "compareLess";
+			break;
+		case tk_compare_lessequal:
+			operation = "compareLessEqual";
+			break;
+		}
+		if( operation.size() )
+		{
+			lexicon.advance();
+			parseSum();
+			writeOperation( operation );
+		}
+	}while( operation.size() );
 }
 void parser::parseSum()
 {
@@ -552,14 +557,14 @@ unsigned parser::parseArguments()
 	{
 		do
 		{
-			if( lexicon.advance() == tk_rparen )
-			{
-				lexicon.advance();
-				break;
-			}
+			lexicon.advance();
 			parseExpression();
 			++argc;
-		}while( !(lexicon.getToken() == tk_comma || lexicon.getToken() == tk_rparen) );
+		}while( lexicon.getToken() == tk_comma );
+
+		if( lexicon.getToken() != tk_rparen )
+			raiseError( "\"(\" Expected", error::er_syntax );
+		lexicon.advance();
 	}
 	return argc;
 }
@@ -705,7 +710,7 @@ void parser::parseInlineBlock( block::block_kind const bk_kind )
 	inlineBlock.nativeCallBack = 0;
 	inlineBlock.name = "inlinedBlock";
 	symbol virtualSymbol;
-	virtualSymbol.blockIndex = vecScope[ vecScope.size() - 1 ].blockIndex;
+	virtualSymbol.blockIndex = blockIndex;
 	virtualSymbol.level = vecScope.size() + 1;
 	virtualSymbol.id = (size_t)-1;
 	parseBlock( virtualSymbol, vector< std::string >() );
@@ -1006,7 +1011,6 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 				writeOperation( "uniqueize" ); 
 				loopBackIndex = getBlock().vecCodes.size(); 
 				pushCode( code::code( vc_loopIfDecr ) );
-
 			}
 			else
 			{
@@ -1058,6 +1062,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 				}
 				pushCode( code::code( vc_gotoEnd ) );
 			}while( !fin );
+			pushCode( code::code( vc_caseNext ) );
 			pushCode( code::code( vc_caseEnd ) );
 			needSemicolon = false;
 		}
