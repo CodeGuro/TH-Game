@@ -11,7 +11,6 @@ void script_machine::initialize( script_engine & eng, size_t script_index )
 	threads.push_back( eng.fetchScriptEnvironment( eng.getScript( script_index ).ScriptBlock ) );
 	eng.getScriptEnvironment( threads[ 0 ] ).parentIndex = invalidIndex;
 	eng.getScriptEnvironment( threads[ 0 ] ).hasResult = false;
-	while( !advance( eng ) );
 }
 bool script_machine::advance( script_engine & eng )
 {
@@ -35,11 +34,11 @@ bool script_machine::advance( script_engine & eng )
 
 		do
 		{
-			if( !(--eng.getScriptEnvironment( disposing ).refCount ) )
-				break;
-			
+			unsigned refs = eng.getScriptEnvironment( disposing ).refCount;
 			size_t next = eng.getScriptEnvironment( disposing ).parentIndex;
 			eng.releaseScriptEnvironment( disposing );
+			if( refs > 1 )
+				break;
 			disposing = next;
 		}while( true );
 		return false;
@@ -52,28 +51,24 @@ bool script_machine::advance( script_engine & eng )
 			script_environment * e = &env;
 			for( unsigned u = 0; u < current_code.variableLevel; ++u )
 				e = &eng.getScriptEnvironment( e->parentIndex );
-			if( e->stack.size() < 1 + current_code.variableIndex )
-				e->stack.resize( 3 + 2 * e->stack.size(), invalidIndex );
-			eng.scriptDataAssign( e->stack[ current_code.variableIndex ], env.stack[ env.stack.size() - 1 ] );
-			eng.releaseScriptData( env.stack[ env.stack.size() - 1 ] );
+			if( e->values.size() <= current_code.variableIndex )
+				e->values.resize( 4 + 2 * e->values.size(), invalidIndex );
+			eng.scriptDataAssign( e->values[ current_code.variableIndex ], env.stack.back() );
+			eng.releaseScriptData( env.stack.back() );
 			env.stack.pop_back();
 		}
 		break;
 	case vc_overWrite:
 		{
-			script_environment * e = &env;
-			for( unsigned u = 0; u < current_code.variableLevel; ++u )
-				e = &eng.getScriptEnvironment( e->parentIndex );
-			eng.uniqueizeScriptData( env.stack[ env.stack.size() - 1 ] );
-			eng.copyScriptData( e->stack[ current_code.variableIndex ], env.stack[ env.stack.size() - 1 ] );
-			eng.releaseScriptData( env.stack[ env.stack.size() - 1 ] );
+			eng.copyScriptData( env.stack[ env.stack.size() - 2 ], env.stack.back() );
+			eng.releaseScriptData( env.stack.back() );
 			env.stack.pop_back();
 		}
 		break;
 	case vc_pushVal:
 		{
 			env.stack.push_back( invalidIndex );
-			eng.scriptDataAssign( env.stack[ env.stack.size() - 1 ], current_code.scriptDataIndex );
+			eng.scriptDataAssign( env.stack.back(), current_code.scriptDataIndex );
 		}
 		break;
 	case vc_pushVar:
@@ -82,7 +77,7 @@ bool script_machine::advance( script_engine & eng )
 			for( unsigned u = 0; u < current_code.variableLevel; ++u )
 				e = &eng.getScriptEnvironment( e->parentIndex );
 			env.stack.push_back( invalidIndex );
-			eng.scriptDataAssign( env.stack[ env.stack.size() - 1 ], e->stack[ current_code.variableIndex ] );
+			eng.scriptDataAssign( env.stack.back(), e->values[ current_code.variableIndex ] );
 		}
 		break;
 	case vc_callFunction:
@@ -111,8 +106,8 @@ bool script_machine::advance( script_engine & eng )
 				++current_env.refCount;
 				for( unsigned u = 0; u < current_code.argc; ++ u )
 				{
-					new_env.stack.push_back( env.stack[ *(env.stack.end() - current_code.argc + u ) ] );
-					eng.addRefScriptData( *(env.stack.end() - current_code.argc + u ) );
+					new_env.stack.push_back( env.stack[ *(env.stack.end() - 1 - u) ] );
+					eng.addRefScriptData( *(env.stack.end() - 1 - u) );
 				}
 				if( current_code.command != vc_callTask )
 					threads[ current_thread_index ] = envIdx;
@@ -161,8 +156,8 @@ bool script_machine::advance( script_engine & eng )
 					++env.codeIndex;
 				while( eng.getBlock( env.blockIndex ).vecCodes[ env.codeIndex - 1 ].command != vc_loopBack );
 			}
-				eng.releaseScriptData( env.stack.back() );
-				env.stack.pop_back();
+			eng.releaseScriptData( env.stack.back() );
+			env.stack.pop_back();
 		}
 		break;
 	case vc_loopBack:
@@ -171,6 +166,33 @@ bool script_machine::advance( script_engine & eng )
 	case vc_yield:
 		current_thread_index = ( current_thread_index ? threads.size() : current_thread_index ) - 1;
 		break;
+	case vc_checkIf:
+		{
+			float real = eng.getRealScriptData( env.stack.back() );
+			eng.releaseScriptData( env.stack.back() );
+			env.stack.pop_back();
+			if( real <= 0 )
+			{
+				do
+					++env.codeIndex;
+				while( eng.getBlock( env.blockIndex ).vecCodes[ env.codeIndex - 1 ].command != vc_caseNext );
+			}
+		}
+		break;
+	case vc_caseBegin:
+	case vc_caseNext:
+	case vc_caseEnd:
+		break;
+	case vc_gotoEnd:
+			for( block const & b = eng.getBlock( env.blockIndex );
+				b.vecCodes[ env.codeIndex - 1 ].command != vc_caseEnd;
+				++env.codeIndex );
+		break;
+	case vc_dup:
+		env.stack.push_back( env.stack.back() );
+		eng.addRefScriptData( env.stack.back() );
+		break;
+	case vc_invalid:
 	default:
 		assert( false );
 	}

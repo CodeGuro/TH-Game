@@ -264,6 +264,8 @@ parser::token parser::lexer::advance()
 			}
 			++current;
 			word = str;
+			if( word.size() )
+				character = word[0];
 			if( str.size() > 1 && tok == tk_character )
 				next = tk_invalid;
 			else
@@ -502,7 +504,7 @@ void parser::parseClause()
 				pushCode( code::subArg( vc_callFunctionPush, sym->blockIndex, argc ) );
 			}
 			else
-				pushCode( code::varLev( vc_pushVar, sym->id, sym->level - vecScope.size() ) );
+				pushCode( code::varLev( vc_pushVar, sym->id, vecScope.size() - 1 - sym->level ) );
 
 		}
 		break;
@@ -591,32 +593,6 @@ void parser::raiseError( std::string errmsg, error::errReason reason)
 	}
 
 	throw err;
-}
-/*deprecated*/void parser::mapScriptPaths( std::string const & pathStart )
-{
-	WIN32_FIND_DATA findDat;
-	HANDLE hFile = FindFirstFile( ( pathStart + "\\*" ).c_str(), &findDat );
-	do
-	{
-		std::string const fullPath = pathStart + "\\" + findDat.cFileName;
-		if( findDat.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
-		{
-			if( !( std::string( findDat.cFileName ) == "." || std::string( findDat.cFileName ) == ".." ) )
-			{
-				mapScriptPaths( fullPath );
-			}
-		}
-		else
-		{
-			HANDLE _hFile = CreateFile( fullPath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
-			char buff[512] = "#TouhouDanmaku";
-			std::string scriptHeader = buff;
-			DWORD readBytes;
-			ReadFile( _hFile, buff, sizeof( buff ), &readBytes, NULL );
-			CloseHandle( _hFile );
-		}
-	}while( FindNextFile( hFile, &findDat ) );
-	FindClose( hFile );
 }
 parser::symbol * parser::search( std::string const & name )
 {
@@ -712,7 +688,7 @@ void parser::parseBlock( symbol const symSub, vector< std::string > const & args
 	vecScope[ vecScope.size() - 1 ].blockIndex = symSub.blockIndex;
 	scanCurrentScope( engine.getBlock( symSub.blockIndex ).kind, args );
 	for( unsigned i = 0; i < args.size(); ++i )
-		engine.getBlock( symSub.blockIndex ).vecCodes.push_back( code::varLev( vc_assign, search( args[i] )->id, 0 ) );
+		pushCode( code::varLev( vc_assign, search( args[i] )->id, 0 ) );
 	parseStatements();
 	vecScope.pop_back();
 
@@ -733,7 +709,7 @@ void parser::parseInlineBlock( block::block_kind const bk_kind )
 	virtualSymbol.level = vecScope.size() + 1;
 	virtualSymbol.id = (size_t)-1;
 	parseBlock( virtualSymbol, vector< std::string >() );
-	getBlock().vecCodes.push_back( code::subArg( vc_callFunction, blockIndex, 0 ) );
+	pushCode( code::subArg( vc_callFunction, blockIndex, 0 ) );
 }
 void parser::scanCurrentScope( block::block_kind kind, vector< std::string > const & args )
 {
@@ -756,6 +732,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 		arg.id = id++;
 		arg.level = level;
 		vecScope[ level ][ args[i] ] = arg;
+		pushCode( code::varLev( vc_assign, arg.id, 0 ) );
 	}
 
 	lexer anchorpoint = lexicon;
@@ -955,7 +932,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 				symbol * res = searchResult();
 				if( !res )
 					raiseError( "\"return\" not nested within a functional scope", error::er_syntax );
-				pushCode( code::varLev( vc_assign, res->id, vecScope.size() - res->level ) );
+				pushCode( code::varLev( vc_assign, res->id, vecScope.size() - 1 - res->level ) );
 			}
 			pushCode( code::code( vc_breakRoutine )  );
 		}
@@ -971,7 +948,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			{
 				lexicon.advance();
 				parseExpression();
-				pushCode( code::varLev( vc_assign, declsym->id, vecScope.size() - declsym->level ) );
+				pushCode( code::varLev( vc_assign, declsym->id, vecScope.size() - 1 - declsym->level ) );
 			}
 		}
 		
@@ -985,10 +962,11 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			{
 				lexicon.advance();
 				parseExpression();
-				pushCode( code::varLev( vc_assign, sym->id, vecScope.size() - sym->level ) );
+				pushCode( code::varLev( vc_assign, sym->id, vecScope.size() - 1 - sym->level ) );
 			}
 			else if( lexicon.getToken() == tk_openbra )
 			{
+				pushCode( code::varLev( vc_pushVar, sym->id, vecScope.size() - 1 - sym->level ) );
 				while( lexicon.getToken() == tk_openbra && sym->id != invalidIndex ) //word[32][32]='5';
 				{
 					lexicon.advance();
@@ -1078,6 +1056,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 						fin = true;
 					}
 				}
+				pushCode( code::code( vc_gotoEnd ) );
 			}while( !fin );
 			pushCode( code::code( vc_caseEnd ) );
 			needSemicolon = false;
@@ -1160,5 +1139,5 @@ void parser::writeOperation( std::string const & nativeFunc )
 	block & blockFunc = engine.getBlock( func->blockIndex );
 	if( !(blockFunc.kind == block::bk_function && blockFunc.nativeCallBack != 0) )
 		raiseError( "parser::writeOperation", error::er_internal );
-	blockFunc.vecCodes.push_back( code::subArg( vc_callFunctionPush, func->blockIndex, blockFunc.argc ) );
+	pushCode( code::subArg( vc_callFunctionPush, func->blockIndex, blockFunc.argc ) );
 }

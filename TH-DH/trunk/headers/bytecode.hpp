@@ -6,8 +6,9 @@ enum instruction
 {
 	//virtual commands
 	vc_assign, vc_overWrite, vc_pushVal, vc_pushVar, vc_callFunction, vc_callFunctionPush, vc_callTask, vc_breakRoutine, 
-	vc_loopIfDecr, vc_loopIf, vc_loopBack, vc_yield, vc_checkIf,
-	vc_caseBegin, vc_caseNext, vc_gotoEnd, vc_caseEnd,
+	vc_loopIfDecr, vc_loopIf, vc_loopBack, vc_yield,
+	vc_checkIf, vc_caseBegin, vc_caseNext, vc_caseEnd, vc_gotoEnd,
+	vc_dup,
 	vc_invalid, 
 };
 
@@ -97,6 +98,7 @@ struct block
 struct script_environment
 {
 	vector< size_t > stack;
+	vector< size_t > values;
 	size_t codeIndex;
 	size_t blockIndex;
 	size_t parentIndex;

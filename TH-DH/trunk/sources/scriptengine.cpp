@@ -193,32 +193,37 @@ void script_engine::uniqueizeScriptData( size_t & dst )
 {
 	if( dst != invalidIndex )
 	{
-		script_data & destDat = getScriptData( dst );
-
-		if( destDat.refCount > 1 )
+		if( getScriptData( dst ).refCount > 1 )
 		{
-			releaseScriptData( dst );
-			dst = fetchScriptData(); //unique
-			script_data & uniqDat = getScriptData( dst );
-			switch( (uniqDat.type = destDat.type).get_kind() )
+			size_t tmpDst = dst;
+			releaseScriptData( dst ); //dst has more than 1 ref count, so we'll continue using
+			size_t uni = fetchScriptData();
+			switch( ( getScriptData( uni ).type = getScriptData( tmpDst ).type ).get_kind() )
 			{
 			case type_data::tk_real:
 			case type_data::tk_boolean:
-				uniqDat.real = destDat.real;
+				getScriptData( uni ).real = getScriptData( tmpDst ).real;
 				break;
 			case type_data::tk_char:
-				uniqDat.character = destDat.character;
+				getScriptData( uni ).character = getScriptData( tmpDst ).character;
 				break;
 			case type_data::tk_object:
-				uniqDat.objIndex = destDat.objIndex;
+				getScriptData( uni ).objIndex = getScriptData( tmpDst ).objIndex;
 				break;
 			case type_data::tk_array:
 				{
-					for( unsigned i = 0; i < destDat.vec.size(); ++i )
-						uniqueizeScriptData( destDat.vec[i] );
+					for( unsigned i = 0; i < getScriptData( tmpDst ).vec.size(); ++i )
+					{
+						addRefScriptData( getScriptData( tmpDst ).vec[ i ] );
+						getScriptData( uni ).vec.push_back( getScriptData( tmpDst ).vec[ i ] );
+						size_t buff = getScriptData( uni ).vec[ i ];
+						uniqueizeScriptData( buff );
+						getScriptData( uni ).vec[ i ] = buff;
+					}
 				}
 				break;
 			}
+			dst = uni;
 		}
 	}
 	else
@@ -292,10 +297,15 @@ void script_engine::releaseScriptEnvironment( size_t & index )
 	if( index != invalidIndex )
 	{
 		script_environment & env = getScriptEnvironment( index );
-		if( !(--env.refCount) )
+		if( !( --env.refCount ) )
 		{
 			for( unsigned i = 0; i < env.stack.size(); ++i )
+			{
 				releaseScriptData( env.stack[i] );
+				releaseScriptData( env.values[ i ] );
+			}
+			env.stack.resize( 0 );
+			env.values.resize( 0 );
 			battery.vecRoutinesGabage.push_back( index );
 		}
 		index = invalidIndex;
@@ -327,6 +337,23 @@ void script_engine::releaseScriptMachine( size_t & index )
 	if( index != invalidIndex )
 		battery.vecMachinesGarbage.push_back( index );
 	index = invalidIndex;
+}
+void script_engine::callInitialize( size_t machineIndex )
+{
+	unsigned prevMachine = currentRunningMachine;
+	currentRunningMachine = machineIndex;
+	script_machine & m = getScriptMachine( machineIndex );
+	assert( !m.current_thread_index );
+	++getScriptEnvironment( m.threads[ m.current_thread_index ] ).refCount;
+	size_t calledEnv = fetchScriptEnvironment( battery.vecScripts[ m.current_script_index ].InitializeBlock );
+	script_environment & e = getScriptEnvironment( calledEnv );
+	e.parentIndex = m.threads[ m.current_thread_index ];
+	e.hasResult = 0;
+	m.threads[ m.current_thread_index ] = calledEnv;
+
+	while( !m.advance( *this ) );
+
+	currentRunningMachine = prevMachine;
 }
 
 //script engine - public functions, called from the outside
@@ -364,8 +391,8 @@ void script_engine::start()
 	if( scriptIdx == invalidIndex )
 		return;
 	machine.initialize( *this, scriptIdx );
-/*	for( unsigned u = 0; u < 15; ++u )
-		advance();*/
+	callInitialize( currentRunningMachine );
+	while( machine.advance( *this ) );
 }
 script_engine::~script_engine()
 {

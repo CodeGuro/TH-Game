@@ -6,6 +6,7 @@ class script_engine;
 /*executes the bytecode*/
 class script_machine
 {
+friend class ::script_engine;
 private:
 	vector< size_t > threads;
 	size_t current_thread_index;
