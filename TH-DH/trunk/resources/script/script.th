@@ -9,7 +9,12 @@ script_main main_script //main routine
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
 	{
-		bar;
+		
+		printfunc( "Hello World!","Test for printfunc!" );
+		let first = 5;
+		let second = 3;
+		let third = foo( first, second );
+//		bar;
 //		let val = ["hello world", "hi there"]; //push("hello world"), uniquize, assign
 //		val[0][2] = 's'; //push(val), push(0), index, push(2), index, push('s'),overwrite
 		
@@ -24,6 +29,11 @@ script_main main_script //main routine
 	@BackGround //routine called when the script is a stage
 	{
 	}
+}
+function printfunc( let val1, let val2 )
+{
+	print( val1 );
+	print( val2 );
 }
 
 script_enemy youkai //entity routine

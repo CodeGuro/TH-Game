@@ -737,7 +737,6 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 		arg.id = id++;
 		arg.level = level;
 		vecScope[ level ][ args[i] ] = arg;
-		pushCode( code::varLev( vc_assign, arg.id, 0 ) );
 	}
 
 	lexer anchorpoint = lexicon;

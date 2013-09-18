@@ -26,8 +26,8 @@ bool script_machine::advance( script_engine & eng )
 
 		if( disposing_env.hasResult )
 		{
-			eng.addRefScriptData( disposing_env.stack[ 0 ] );
-			eng.getScriptEnvironment( disposing_env.parentIndex ).stack.push_back( disposing_env.stack[ 0 ] );
+			eng.addRefScriptData( disposing_env.values[ 0 ] );
+			eng.getScriptEnvironment( disposing_env.parentIndex ).stack.push_back( disposing_env.values[ 0 ] );
 		}
 		else if( eng.getBlock( disposing_env.blockIndex ).kind == block::bk_task )
 			threads.erase( threads.begin() + current_thread_index-- );
@@ -105,10 +105,8 @@ bool script_machine::advance( script_engine & eng )
 				new_env.parentIndex = threads[ current_thread_index ];
 				++current_env.refCount;
 				for( unsigned u = 0; u < current_code.argc; ++ u )
-				{
-					new_env.stack.push_back( env.stack[ *(env.stack.end() - 1 - u) ] );
-					eng.addRefScriptData( *(env.stack.end() - 1 - u) );
-				}
+					new_env.stack.push_back( *(current_env.stack.end() - 1 - u) );
+				current_env.stack.erase( current_env.stack.end() - current_code.argc, current_env.stack.end() );
 				if( current_code.command != vc_callTask )
 					threads[ current_thread_index ] = envIdx;
 				else
