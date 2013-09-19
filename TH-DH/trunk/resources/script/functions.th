@@ -1,6 +1,6 @@
 //functions.th
 
-function addfunc( let a, let b, let c )
+function addfunc( let a, let b)
 {
-	return a + b + c;
+	return a + b;
 }

@@ -149,5 +149,6 @@ private:
 	static void _rand_int( script_engine * eng, size_t * argv );
 	static void _print( script_engine * eng, size_t * argv );
 	static void _true( script_engine * eng, size_t * argv );
-	static void _false( script_engine *eng, size_t * argv );
+	static void _false( script_engine * eng, size_t * argv );
+	static void _ToString( script_engine * eng, size_t * argv );
 };

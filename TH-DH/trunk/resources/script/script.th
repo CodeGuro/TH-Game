@@ -5,28 +5,20 @@
 
 script_main main_script //main routine
 {
-
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
 	{
-		printfunc( "Hello World!","Test for printfunc!" );
-		let first = 5;
-		let second = 3;
-		let third = foo( first, second );
-		bar;
-		let val = ["hello world", "hi there"]; //push("hello world"), uniquize, assign
-		val[0][2] = 's'; //push(val), push(0), index, push(2), index, push('s'),overwrite
-		let v = ten + eleven;
-		let array = [3.14159, 5.7, 10.2];
-		let truthtable = [ true, false, 0 == 0, 0 != 0 ];
-		print( "Hello world!" );
-		print( array );
-		print( truthtable );
-		truthtable[0] = array;
-		print(truthtable);
-		whileLoop(first,second);
-		firstTask;
-		secondTask;
+		let v1 = [32,29];
+		let v2 = [ 33, 54];
+		v2[ 0 ] = v1;
+		tesTask( v2 );
+
+		let arr = [ 0, 0, 0 ];
+		sta;
+		Player( "Bob", 6, arr, 0 );
+		Player( "Suzy", 6, arr, 1 );
+		Player( "Steve", 6, arr, 2 );
+		fin( arr, 6 );
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{
@@ -40,67 +32,36 @@ script_main main_script //main routine
 	{
 	}
 }
-function printfunc( let val1, let val2 )
+task tesTask( let v )
 {
-	print( val1 );
-	print( val2 );
+	print( "testTask indexing test begin" );
+	print( "Array is... " ~ ToString( v ) );
+	print( "First element is... " ~ ToString( v[0] ) );
+	print( "First element of first element is... " ~ ToString( v[0][0] ) ); 
+	print( "Indexing test end" );
 }
-function ten
+task fin( let arr, let yieldnum )
 {
-	return 10;
-}
-function eleven
-{
-	return 11;
-}
-script_enemy youkai //entity routine
-{
-	@Initialize{}
-	@MainLoop{}
-	@Finalize{}
-}
+	loop( yieldnum ) { yield; }
+	print( "game over..." );
 
-function foo( let a, let b ) //args optional
-{
-	return a + b; //return optional
 }
-task firstTask
+task sta
 {
+	print( "Game start!" );
+}
+task Player( let playername, let rollcount, let array, let arrayindex )
+{
+	print( playername ~ " has entered the game!" );
 	yield;
-	loop(20)
+	loop( rollcount )
 	{
-		print( "first!" );
+		let val = rand_int( 1, 6 );
+		print( playername ~ " rolled " ~ ToString( val ) );
+		array[ arrayindex ] = addfunc( array[ arrayindex ], val );
 		yield;
 	}
-}
-task secondTask
-{
+	print( playername ~ "has played " ~ ToString( array[arrayindex] ) );
 	yield;
-	loop(10)
-	{
-		print( "second!" );
-		loop(2){ yield; }
-	}
+	print( playername ~ " has left the game" );
 }
-function whileLoop(let first, let second)
-{
-	print( first );
-	print( second );
-	print("Starting at 5!");
-	let i = 5;
-	while( i )
-	{
-		print( i );
-		i = i - 1;
-	}
-}
-function bar
-{
-	let h = 3;
-	let i = 2;
-	loop( h )
-	{
-		print( "bar test" );
-	}
-}
-//okay

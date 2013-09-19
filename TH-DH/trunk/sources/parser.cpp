@@ -473,11 +473,14 @@ void parser::parsePrefix()
 void parser::parseSuffix()
 {
 	parseClause();
-	if( lexicon.getToken() == tk_caret )
+	while( lexicon.getToken() == tk_caret || lexicon.getToken() == tk_openbra )
 	{
+		token tok = lexicon.getToken();
 		lexicon.advance();
 		parseSuffix();
-		writeOperation( std::string( "power" ) );
+		writeOperation( std::string( tok == tk_caret ? "power" : "index" ) );
+		if( tok == tk_openbra )
+			lexicon.getToken() != tk_closebra ? raiseError( "\"]\" is missing for array indexing", error::er_syntax ) : lexicon.advance();
 	}
 }
 void parser::parseClause()
@@ -1125,7 +1128,8 @@ void parser::importNativeSymbols()
 		{ "rand_int", &natives::_rand_int, 2 },
 		{ "print", &natives::_print, 1 },
 		{ "true", &natives::_true, 0 },
-		{ "false", &natives::_false, 0 }
+		{ "false", &natives::_false, 0 },
+		{ "ToString", &natives::_ToString, 1 }
 	};
 	for( unsigned i = 0; i <  sizeof( funcs ) / sizeof( native_function ); ++i )
 	{
