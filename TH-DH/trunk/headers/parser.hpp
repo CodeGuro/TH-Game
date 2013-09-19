@@ -108,5 +108,4 @@ private:
 	void importNativeSymbols(); //in the topmost scope
 public:
 	parser( script_engine & eng ); //automatic parsing, feed data to the engine's battery
-
 };

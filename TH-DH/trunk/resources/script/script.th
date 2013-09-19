@@ -9,18 +9,28 @@ script_main main_script //main routine
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
 	{
-		
 		printfunc( "Hello World!","Test for printfunc!" );
 		let first = 5;
 		let second = 3;
 		let third = foo( first, second );
-//		bar;
-//		let val = ["hello world", "hi there"]; //push("hello world"), uniquize, assign
-//		val[0][2] = 's'; //push(val), push(0), index, push(2), index, push('s'),overwrite
-		
+		bar;
+		let val = ["hello world", "hi there"]; //push("hello world"), uniquize, assign
+		val[0][2] = 's'; //push(val), push(0), index, push(2), index, push('s'),overwrite
+		let v = ten + eleven;
+		let array = [3.14159, 5.7, 10.2];
+		let truthtable = [ true, false, 0 == 0, 0 != 0 ];
+		print( "Hello world!" );
+		print( array );
+		print( truthtable );
+		truthtable[0] = array;
+		print(truthtable);
+		whileLoop(first,second);
+		firstTask;
+		secondTask;
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{
+		yield;
 	}
 	@Finalize //routine called when the script machine terminates this script
 	{
@@ -35,7 +45,14 @@ function printfunc( let val1, let val2 )
 	print( val1 );
 	print( val2 );
 }
-
+function ten
+{
+	return 10;
+}
+function eleven
+{
+	return 11;
+}
 script_enemy youkai //entity routine
 {
 	@Initialize{}
@@ -47,7 +64,36 @@ function foo( let a, let b ) //args optional
 {
 	return a + b; //return optional
 }
-
+task firstTask
+{
+	yield;
+	loop(20)
+	{
+		print( "first!" );
+		yield;
+	}
+}
+task secondTask
+{
+	yield;
+	loop(10)
+	{
+		print( "second!" );
+		loop(2){ yield; }
+	}
+}
+function whileLoop(let first, let second)
+{
+	print( first );
+	print( second );
+	print("Starting at 5!");
+	let i = 5;
+	while( i )
+	{
+		print( i );
+		i = i - 1;
+	}
+}
 function bar
 {
 	let h = 3;

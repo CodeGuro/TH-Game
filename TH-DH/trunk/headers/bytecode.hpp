@@ -108,6 +108,10 @@ struct script_environment
 
 struct script_container
 {
+	enum sub
+	{
+		AtInitialize, AtMainLoop, AtFinalize, AtBackGround
+	};
 	size_t ScriptBlock;
 	size_t InitializeBlock;
 	size_t MainLoopBlock;
@@ -144,4 +148,6 @@ private:
 	static void _rand( script_engine * eng, size_t * argv );
 	static void _rand_int( script_engine * eng, size_t * argv );
 	static void _print( script_engine * eng, size_t * argv );
+	static void _true( script_engine * eng, size_t * argv );
+	static void _false( script_engine *eng, size_t * argv );
 };

@@ -325,6 +325,8 @@ parser::token parser::lexer::advance()
 					next = tk_TASK;
 				else if( word == "return" )
 					next = tk_RETURN;
+				else if( word == "yield" )
+					next = tk_YIELD;
 				else if( word == "script_main" )
 					next = tk_SCRIPT_MAIN;
 				else if( word == "script_enemy" )
@@ -497,12 +499,15 @@ void parser::parseClause()
 		break;
 	case tk_word:
 		{
-			symbol * sym = search( lexicon.getWord() );
+			std::string name = lexicon.getWord();
+			symbol * sym = search( name );
 			if( !sym )
 				raiseError( lexicon.getWord(), error::er_symbol );
 			lexicon.advance();
 			if( sym->blockIndex != invalidIndex )
 			{
+				if( engine.getBlock( sym->blockIndex ).kind != block::bk_function )
+					raiseError( std::string() + "\"" + name + "\"" + " is not a function", error::er_syntax );
 				int argc;
 				if( (argc = parseArguments()) != engine.getBlock( sym->blockIndex ).argc )
 					raiseError( "wrong number of arguments", error::er_syntax );
@@ -557,9 +562,11 @@ unsigned parser::parseArguments()
 	{
 		do
 		{
-			lexicon.advance();
-			parseExpression();
-			++argc;
+			if( lexicon.advance() != tk_rparen )
+			{
+				parseExpression();
+				++argc;
+			}
 		}while( lexicon.getToken() == tk_comma );
 
 		if( lexicon.getToken() != tk_rparen )
@@ -794,8 +801,12 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 						do
 						{
 							if( lexicon.advance() == tk_LET )
+							{
 								if( lexicon.advance() == tk_word )
 									++blockRoutine.argc;
+							}
+							else if( lexicon.getToken() == tk_rparen )
+								break;
 						}while( lexicon.advance() == tk_comma );
 						if( lexicon.getToken() != tk_rparen )
 							raiseError( "\")\" expected", error::er_syntax );
@@ -986,18 +997,15 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 				parseExpression();
 				pushCode( code::code( vc_overWrite ) );
 			}
-			else if( sym->blockIndex != invalidIndex )
+			else
 			{
+				if( sym->blockIndex == invalidIndex )
+					raiseError( std::string() + "\"" + lexicon.getWord() + "\" is not a routine", error::er_syntax );
 				unsigned argc = parseArguments();
 				if( argc != engine.getBlock( sym->blockIndex ).argc )
 					raiseError( "wrong number of arguments", error::er_syntax );
 				instruction callInst = ( (engine.getBlock( sym->blockIndex ).kind == block::bk_task)? vc_callTask : vc_callFunction );
 				pushCode( code::subArg( callInst, sym->blockIndex, argc ) );
-
-			}
-			else
-			{
-				raiseError( "parser::parseStatements() lextok == tk_word ", error::er_parser );
 			}
 		}
 		
@@ -1115,7 +1123,9 @@ void parser::importNativeSymbols()
 		{ "uniqueize", &natives::_uniqueize, 1 },
 		{ "rand", &natives::_rand, 2 },
 		{ "rand_int", &natives::_rand_int, 2 },
-		{ "print", &natives::_print, 1 }
+		{ "print", &natives::_print, 1 },
+		{ "true", &natives::_true, 0 },
+		{ "false", &natives::_false, 0 }
 	};
 	for( unsigned i = 0; i <  sizeof( funcs ) / sizeof( native_function ); ++i )
 	{

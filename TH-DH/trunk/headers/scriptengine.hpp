@@ -76,9 +76,7 @@ private:
 	void registerScript( std::string const scriptName );
 	script_container * getScript( std::string const & scriptName );
 	script_container & getScript( size_t index );
-	void callInitialize( size_t machineIndex );
-	void callMainLoop( size_t machineIndex );
-	void callFinalize( size_t machineIndex );
+	void callSub( size_t machineIndex, script_container::sub AtSub );
 public:
 	script_engine();
 	script_engine( script_engine const & source );

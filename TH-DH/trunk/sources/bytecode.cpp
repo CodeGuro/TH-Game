@@ -220,3 +220,15 @@ void natives::_print( script_engine * eng, size_t * argv )
 	std::string str = eng->getStringScriptData( argv[0] );
 	std::cout << str << std::endl;
 }
+void natives::_true( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( true );
+	eng->scriptDataAssign( argv[0], tmp );
+	eng->releaseScriptData( tmp );
+}
+void natives::_false( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( false );
+	eng->scriptDataAssign( argv[0], tmp );
+	eng->releaseScriptData( tmp );
+}

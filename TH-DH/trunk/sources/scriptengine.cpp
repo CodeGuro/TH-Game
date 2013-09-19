@@ -1,6 +1,7 @@
 #include <scriptengine.hpp>
 #include <parser.hpp>
 #include <iostream>
+#include <sstream>
 #include <assert.h>
 
 //script type manager, script_engine::getScriptTypeManager
@@ -62,7 +63,9 @@ block & script_engine::getBlock( size_t index )
 void script_engine::registerScript( std::string const scriptName )
 {
 	battery.mappedScriptBlocks[ scriptName ] = battery.vecScripts.size();
-	battery.vecScripts.push_back( script_container() );
+	script_container new_cont;
+	memset( &new_cont, invalidIndex, sizeof( new_cont) );
+	battery.vecScripts.push_back( new_cont );
 }
 script_container * script_engine::getScript( std::string const & scriptName )
 {
@@ -236,9 +239,43 @@ std::string script_engine::getStringScriptData( size_t index )
 	if( index != invalidIndex )
 	{
 		script_data const & dat = getScriptData( index );
-		unsigned size = dat.vec.size();
-		for( unsigned i = 0; i < size; ++i)
-			result += getScriptData( dat.vec[ i ] ).character;
+		switch( dat.type.get_kind() )
+		{
+			case type_data::tk_array:
+			{
+				if( dat.type.get_element() != typeManager.getStringType().get_element() )
+					result += "[ ";
+				unsigned size = dat.vec.size();
+				for( unsigned i = 0; i < size; ++i )
+				{
+					result += getStringScriptData( dat.vec[ i ] );
+					if( getScriptData( dat.vec[ i ] ).type.kind != typeManager.getCharacterType().kind && i + 1 < size )
+						result += " , ";
+				}
+				if( dat.type.get_element() != typeManager.getStringType().get_element()  )
+					result += " ]";
+			}
+			break;
+			case type_data::tk_boolean:
+				result = ( getBooleanScriptData( index ) ? "TRUE" : "FALSE" );
+			break;
+			case type_data::tk_char:
+				result = getCharacterScriptData( index );
+				break;
+			case type_data::tk_real:
+				{
+					std::stringstream ss;
+					ss << getRealScriptData( index );
+					result = ss.str();
+				}
+				break;
+			case type_data::tk_object:
+				result = "(OBJECT TYPE)";
+				break;
+			case type_data::tk_invalid:
+			default:
+				assert( 0 );
+		}
 		return result;
 	}
 	else result = "(INVALID SCRIPT DATA INDEX)";
@@ -338,20 +375,39 @@ void script_engine::releaseScriptMachine( size_t & index )
 		battery.vecMachinesGarbage.push_back( index );
 	index = invalidIndex;
 }
-void script_engine::callInitialize( size_t machineIndex )
+void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 {
 	unsigned prevMachine = currentRunningMachine;
 	currentRunningMachine = machineIndex;
 	script_machine & m = getScriptMachine( machineIndex );
 	assert( !m.current_thread_index );
-	++getScriptEnvironment( m.threads[ m.current_thread_index ] ).refCount;
-	size_t calledEnv = fetchScriptEnvironment( battery.vecScripts[ m.current_script_index ].InitializeBlock );
-	script_environment & e = getScriptEnvironment( calledEnv );
-	e.parentIndex = m.threads[ m.current_thread_index ];
-	e.hasResult = 0;
-	m.threads[ m.current_thread_index ] = calledEnv;
-
-	while( !m.advance( *this ) );
+	size_t blockIndex = invalidIndex;
+	script_container & sc = battery.vecScripts[ m.current_script_index ];
+	switch( AtSub )
+	{
+	case script_container::AtInitialize:
+		blockIndex = sc.InitializeBlock;
+		break;
+	case script_container::AtFinalize:
+		blockIndex = sc.FinalizeBlock;
+		break;
+	case script_container::AtMainLoop:
+		blockIndex = sc.MainLoopBlock;
+		break;
+	case script_container::AtBackGround:
+		blockIndex = sc.BackGroundBlock;
+		break;
+	}
+	if( blockIndex != invalidIndex )
+	{
+		++getScriptEnvironment( m.threads[ m.current_thread_index ] ).refCount;
+		size_t calledEnv = fetchScriptEnvironment( blockIndex );
+		script_environment & e = getScriptEnvironment( calledEnv );
+		e.parentIndex = m.threads[ m.current_thread_index ];
+		e.hasResult = 0;
+		m.threads[ m.current_thread_index ] = calledEnv;
+		while( !m.advance( *this ) );
+	}
 
 	currentRunningMachine = prevMachine;
 }
@@ -391,8 +447,10 @@ void script_engine::start()
 	if( scriptIdx == invalidIndex )
 		return;
 	machine.initialize( *this, scriptIdx );
-	callInitialize( currentRunningMachine );
-	while( machine.advance( *this ) );
+	callSub( currentRunningMachine, script_container::AtInitialize );
+
+	while( true )
+		callSub( currentRunningMachine, script_container::AtMainLoop );
 }
 script_engine::~script_engine()
 {

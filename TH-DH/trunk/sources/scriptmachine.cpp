@@ -163,7 +163,7 @@ bool script_machine::advance( script_engine & eng )
 		env.codeIndex = current_code.loopBackIndex;
 		break;
 	case vc_yield:
-		current_thread_index = ( current_thread_index ? threads.size() : current_thread_index ) - 1;
+		current_thread_index = ( current_thread_index ? current_thread_index : threads.size() ) - 1;
 		break;
 	case vc_checkIf:
 		{
