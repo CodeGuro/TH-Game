@@ -1063,16 +1063,17 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 				}
 				else if( tok == tk_ELSE )
 				{
-					pushCode( code::code( vc_caseNext ) );
 					if( lexicon.getToken() != tk_IF )
 					{
 						parseInlineBlock( block::bk_normal );
 						fin = true;
 					}
+					else
+						continue;
 				}
 				pushCode( code::code( vc_gotoEnd ) );
+				pushCode( code::code( vc_caseNext ) );
 			}while( !fin );
-			pushCode( code::code( vc_caseNext ) );
 			pushCode( code::code( vc_caseEnd ) );
 			needSemicolon = false;
 		}

@@ -8,17 +8,18 @@ script_main main_script //main routine
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
 	{
-		let v1 = [32,29];
-		let v2 = [ 33, 54];
-		v2[ 0 ] = v1;
-		tesTask( v2 );
-
-		let arr = [ 0, 0, 0 ];
-		sta;
-		Player( "Bob", 6, arr, 0 );
-		Player( "Suzy", 6, arr, 1 );
-		Player( "Steve", 6, arr, 2 );
-		fin( arr, 6 );
+		let val = 2;
+		if( val == 0 ){
+			print( "ZeroVal" );
+		}
+		else if( val == 1 ){
+			print( "Oneval" );
+		}
+		else if( val == 2 ){
+			print( "Twoval" );
+		}
+		else{
+			print( "Otherval" );
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{
@@ -31,37 +32,4 @@ script_main main_script //main routine
 	@BackGround //routine called when the script is a stage
 	{
 	}
-}
-task tesTask( let v )
-{
-	print( "testTask indexing test begin" );
-	print( "Array is... " ~ ToString( v ) );
-	print( "First element is... " ~ ToString( v[0] ) );
-	print( "First element of first element is... " ~ ToString( v[0][0] ) ); 
-	print( "Indexing test end" );
-}
-task fin( let arr, let yieldnum )
-{
-	loop( yieldnum ) { yield; }
-	print( "game over..." );
-
-}
-task sta
-{
-	print( "Game start!" );
-}
-task Player( let playername, let rollcount, let array, let arrayindex )
-{
-	print( playername ~ " has entered the game!" );
-	yield;
-	loop( rollcount )
-	{
-		let val = rand_int( 1, 6 );
-		print( playername ~ " rolled " ~ ToString( val ) );
-		array[ arrayindex ] = addfunc( array[ arrayindex ], val );
-		yield;
-	}
-	print( playername ~ "has played " ~ ToString( array[arrayindex] ) );
-	yield;
-	print( playername ~ " has left the game" );
 }
