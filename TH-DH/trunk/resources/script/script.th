@@ -8,18 +8,19 @@ script_main main_script //main routine
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
 	{
-		let val = 2;
-		if( val == 0 ){
-			print( "ZeroVal" );
+		loop
+		{
+			let val = 0;
+			while( val < 11 )
+			{
+				print( val );
+				if( val == 5 )
+				{
+					break;
+				}
+				val = val + 1;
+			}
 		}
-		else if( val == 1 ){
-			print( "Oneval" );
-		}
-		else if( val == 2 ){
-			print( "Twoval" );
-		}
-		else{
-			print( "Otherval" );
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{

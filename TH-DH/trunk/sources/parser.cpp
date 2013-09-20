@@ -1084,6 +1084,24 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			pushCode( code::code( vc_yield ) );
 		}
 
+		else if( lexicon.getToken() == tk_BREAK )
+		{
+			bool isBreakable = false;
+			for( unsigned u = vecScope.size() - 1 ; u != (unsigned)-1; --u )
+			{
+				if( vecScope[ u ].blockIndex != invalidIndex )
+					if( engine.getBlock( vecScope[ u ].blockIndex ).kind == block::bk_loop )
+					{
+						isBreakable = true;
+						break;
+					}
+			}
+			if( !isBreakable )
+				raiseError( "\"break\" can only be break from loops.. use \"return\" instead", error::er_syntax );
+			lexicon.advance();
+			pushCode( code::code( vc_breakLoop ) );
+		}
+
 		if( needSemicolon && lexicon.getToken() != tk_semicolon )
 			finished = true;
 		if( lexicon.getToken() == tk_semicolon )

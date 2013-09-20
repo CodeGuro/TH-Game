@@ -5,10 +5,10 @@
 enum instruction
 {
 	//virtual commands
-	vc_assign, vc_overWrite, vc_pushVal, vc_pushVar, vc_callFunction, vc_callFunctionPush, vc_callTask, vc_breakRoutine, 
+	vc_assign, vc_overWrite, vc_pushVal, vc_pushVar, vc_callFunction, vc_callFunctionPush, vc_callTask,
 	vc_loopIfDecr, vc_loopIf, vc_loopBack, vc_yield,
 	vc_checkIf, vc_caseBegin, vc_caseNext, vc_caseEnd, vc_gotoEnd,
-	vc_dup,
+	vc_breakRoutine, vc_breakLoop,
 	vc_invalid, 
 };
 

@@ -129,6 +129,28 @@ bool script_machine::advance( script_engine & eng )
 			}while( !BaseRoutine );
 		}
 		break;
+	case vc_breakLoop:
+		{
+			bool BaseRoutine = false; //loops
+			script_environment * e = &env;
+			do
+			{
+				block const & b = eng.getBlock( e->blockIndex );
+				e->codeIndex = b.vecCodes.size();
+				e = &eng.getScriptEnvironment( e->parentIndex );
+				if( b.kind == block::bk_loop )
+				{
+					BaseRoutine = true;
+					for( unsigned u = 0; u < e->stack.size(); ++u )
+						eng.releaseScriptData( e->stack[ u ] );
+					e->stack.resize( 0 );
+					do
+						++(e->codeIndex);
+					while( eng.getBlock( e->blockIndex ).vecCodes[ e->codeIndex - 1 ].command != vc_loopBack );
+				}
+			}while( !BaseRoutine );
+		}
+		break;
 	case vc_loopIfDecr:
 		{
 			float real = eng.getRealScriptData( env.stack.back() );
@@ -186,10 +208,6 @@ bool script_machine::advance( script_engine & eng )
 			for( block const & b = eng.getBlock( env.blockIndex );
 				b.vecCodes[ env.codeIndex - 1 ].command != vc_caseEnd;
 				++env.codeIndex );
-		break;
-	case vc_dup:
-		env.stack.push_back( env.stack.back() );
-		eng.addRefScriptData( env.stack.back() );
 		break;
 	case vc_invalid:
 	default:
