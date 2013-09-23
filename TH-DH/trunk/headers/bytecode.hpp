@@ -151,4 +151,5 @@ private:
 	static void _true( script_engine * eng, size_t * argv );
 	static void _false( script_engine * eng, size_t * argv );
 	static void _ToString( script_engine * eng, size_t * argv );
+	static void _CreateEnemy( script_engine * eng, size_t * argv );
 };

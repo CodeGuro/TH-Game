@@ -78,6 +78,13 @@ script_container & script_engine::getScript( size_t index )
 {
 	return battery.vecScripts[ index ];
 }
+size_t script_engine::findScript( std::string const & scriptName )
+{
+	std::map< std::string, unsigned >::iterator it = battery.mappedScriptBlocks.find( scriptName );
+	if( it != battery.mappedScriptBlocks.end() )
+		return it->second;
+	return invalidIndex;
+}
 
 //script engine - script data - related functions
 size_t script_engine::fetchScriptData()
@@ -378,11 +385,20 @@ void script_engine::releaseScriptMachine( size_t & index )
 void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 {
 	unsigned prevMachine = currentRunningMachine;
-	currentRunningMachine = machineIndex;
 	script_machine & m = getScriptMachine( machineIndex );
-	assert( !m.current_thread_index );
+	assert( m.current_thread_index != invalidIndex && m.current_script_index != invalidIndex );
 	size_t blockIndex = invalidIndex;
 	script_container & sc = battery.vecScripts[ m.current_script_index ];
+	//initializing
+	if( !m.threads.size() )
+	{
+		m.threads.push_back( fetchScriptEnvironment( getScript( m.current_script_index ).ScriptBlock ) );
+		getScriptEnvironment( m.threads[ 0 ] ).parentIndex = invalidIndex;
+		getScriptEnvironment( m.threads[ 0 ] ).hasResult = false;
+		m.current_thread_index = 0;
+		while( !m.advance( *this ) );
+		callSub( machineIndex, script_container::AtInitialize );
+	}
 	switch( AtSub )
 	{
 	case script_container::AtInitialize:
@@ -447,10 +463,18 @@ void script_engine::start()
 	if( scriptIdx == invalidIndex )
 		return;
 	machine.initialize( *this, scriptIdx );
-	callSub( currentRunningMachine, script_container::AtInitialize );
-
-	while( true )
-		callSub( currentRunningMachine, script_container::AtMainLoop );
+}
+bool script_engine::advance()
+{
+	unsigned saved = currentRunningMachine;
+	for( unsigned u = 0; u < battery.vecMachines.size(); ++u )
+	{
+		currentRunningMachine = u;
+		if( battery.vecMachines[ u ].isOperable() )
+			callSub( u, script_container::AtMainLoop );
+	}
+	currentRunningMachine = saved;
+	return true;
 }
 script_engine::~script_engine()
 {

@@ -1148,7 +1148,8 @@ void parser::importNativeSymbols()
 		{ "print", &natives::_print, 1 },
 		{ "true", &natives::_true, 0 },
 		{ "false", &natives::_false, 0 },
-		{ "ToString", &natives::_ToString, 1 }
+		{ "ToString", &natives::_ToString, 1 },
+		{ "CreateEnemy", &natives::_CreateEnemy, 1 }
 	};
 	for( unsigned i = 0; i <  sizeof( funcs ) / sizeof( native_function ); ++i )
 	{

@@ -7,6 +7,8 @@ int main( int const argc, char const * const * const argv )
 	std::cout << "Hello, world!\n";
 	script_engine engine;
 	engine.start();
+	while( true )
+		engine.advance();
 	std::cin.get();
 	return EXIT_SUCCESS;
 }

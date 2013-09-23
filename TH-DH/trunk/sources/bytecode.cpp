@@ -238,3 +238,13 @@ void natives::_ToString( script_engine * eng, size_t * argv )
 	eng->scriptDataAssign( argv[0], tmp );
 	eng->releaseScriptData( tmp );
 }
+void natives::_CreateEnemy( script_engine * eng, size_t * argv )
+{
+	size_t scriptIndex = eng->findScript( eng->getStringScriptData( argv[ 0 ] ) );
+	if( scriptIndex != invalidIndex )
+	{
+		size_t machineIndex = eng->fetchScriptMachine();
+		script_machine & enemy = eng->getScriptMachine( machineIndex );
+		enemy.initialize( *eng, scriptIndex );
+	}
+}

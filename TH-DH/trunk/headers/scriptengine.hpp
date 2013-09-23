@@ -76,6 +76,7 @@ private:
 	void registerScript( std::string const scriptName );
 	script_container * getScript( std::string const & scriptName );
 	script_container & getScript( size_t index );
+	size_t findScript( std::string const & scriptName );
 	void callSub( size_t machineIndex, script_container::sub AtSub );
 public:
 	script_engine();

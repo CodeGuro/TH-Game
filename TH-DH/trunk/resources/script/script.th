@@ -8,23 +8,12 @@ script_main main_script //main routine
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
 	{
-		loop
-		{
-			let val = 0;
-			while( val < 11 )
-			{
-				print( val );
-				if( val == 5 )
-				{
-					break;
-				}
-				val = val + 1;
-			}
-		}
+		print( "script start!" );
+	//	CreateEnemy( "youkai" );
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{
-		yield;
+		print( "script advances!" );
 	}
 	@Finalize //routine called when the script machine terminates this script
 	{
@@ -32,5 +21,18 @@ script_main main_script //main routine
 	//@DrawLoop omitted, SetEnemyGraphic() functions will be used to call that
 	@BackGround //routine called when the script is a stage
 	{
+	}
+}
+
+
+script_enemy youkai
+{
+	@Initialize
+	{
+		print( "Hey, a youkai got called!" );
+	}
+	@MainLooop
+	{
+		print( "Hey a youkai advances!" );
 	}
 }

@@ -7,10 +7,12 @@ void script_machine::initialize( script_engine & eng, size_t script_index )
 {
 	assert( !threads.size() );
 	current_script_index = script_index;
-	current_thread_index = 0;
-	threads.push_back( eng.fetchScriptEnvironment( eng.getScript( script_index ).ScriptBlock ) );
-	eng.getScriptEnvironment( threads[ 0 ] ).parentIndex = invalidIndex;
-	eng.getScriptEnvironment( threads[ 0 ] ).hasResult = false;
+}
+void script_machine::prepareFinal( script_engine & eng )
+{
+	do
+		eng.getScriptEnvironment( threads[ current_thread_index ] ).codeIndex = invalidIndex;
+	while( !advance( eng ) );
 }
 bool script_machine::advance( script_engine & eng )
 {
@@ -217,11 +219,16 @@ bool script_machine::advance( script_engine & eng )
 }
 void script_machine::clean( script_engine & eng )
 {
-	for( unsigned i = 0; i < threads.size(); ++i )
-	{
-		script_environment & env = eng.getScriptEnvironment( threads[i] );
-		for( unsigned j = 0; j < env.stack.size(); ++j )
-			eng.releaseScriptData( env.stack[j] );
-		eng.releaseScriptEnvironment( threads[i] );
-	}
+	do
+		eng.getScriptEnvironment( threads[ current_thread_index ] ).codeIndex = invalidIndex;
+	while( !advance( eng ) );
+	eng.releaseScriptEnvironment( threads[ current_thread_index ] );
+	threads.pop_back();
+	current_script_index = invalidIndex;
+	current_thread_index = invalidIndex;
+	assert( !threads.size() );
+}
+bool script_machine::isOperable()
+{
+	return current_script_index != invalidIndex;
 }
