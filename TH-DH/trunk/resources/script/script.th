@@ -9,7 +9,7 @@ script_main main_script //main routine
 	@Initialize //routine called when the script machine initializes a new script
 	{
 		print( "script start!" );
-	//	CreateEnemy( "youkai" );
+		CreateEnemy( "youkai" );
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{
@@ -31,7 +31,7 @@ script_enemy youkai
 	{
 		print( "Hey, a youkai got called!" );
 	}
-	@MainLooop
+	@MainLoop
 	{
 		print( "Hey a youkai advances!" );
 	}

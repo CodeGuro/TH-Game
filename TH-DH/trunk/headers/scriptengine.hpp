@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <string>
+
 #include "defstypedefs.hpp"
 #include "bytecode.hpp"
 #include "scriptmachine.hpp"
@@ -25,6 +26,7 @@ private:
 		vector< size_t > vecMachinesGarbage;
 		vector< script_container > vecScripts;
 		std::map< std::string, unsigned > mappedScriptBlocks;
+		vector< size_t > vecQueuedScripts;
 	};
 	class script_type_manager
 	{
@@ -71,6 +73,7 @@ private:
 	script_machine & getScriptMachine( size_t index );
 	void terminateMachine( size_t index ); //Finalize runs
 	void terminateImmediateMachine( size_t index ); //Finalize doesn't run (usually for off-screen termination)
+	void setQueueScriptMachine( size_t index );
 	void releaseScriptMachine( size_t & index );
 	size_t getBlockFromScript( std::string const & filePath, std::string const & scriptName );
 	void registerScript( std::string const scriptName );

@@ -398,6 +398,8 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 		m.current_thread_index = 0;
 		while( !m.advance( *this ) );
 		callSub( machineIndex, script_container::AtInitialize );
+		currentRunningMachine = prevMachine;
+		return;
 	}
 	switch( AtSub )
 	{
@@ -426,6 +428,10 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 	}
 
 	currentRunningMachine = prevMachine;
+}
+void script_engine::setQueueScriptMachine( size_t index )
+{
+	battery.vecQueuedScripts.push_back( index );
 }
 
 //script engine - public functions, called from the outside
@@ -472,6 +478,9 @@ bool script_engine::advance()
 		currentRunningMachine = u;
 		if( battery.vecMachines[ u ].isOperable() )
 			callSub( u, script_container::AtMainLoop );
+		for( unsigned u = 0; u < battery.vecQueuedScripts.size(); ++u )
+			getScriptMachine( fetchScriptMachine() ).initialize( *this, battery.vecQueuedScripts[ u ] );
+		battery.vecQueuedScripts.resize( 0 );
 	}
 	currentRunningMachine = saved;
 	return true;

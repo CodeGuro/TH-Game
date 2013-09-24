@@ -926,7 +926,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			}
 			if( ( routineDeclToken == tk_SCRIPT_MAIN || routineDeclToken == tk_SCRIPT_ENEMY) && args.size() )
 				raiseError( "script_main and script_enemy routine types have zero parameters", error::er_syntax );
-			if( subname == "Initialize" || subname == "MainLoop" || subname == "Finalize" || subname == "BackGround" )
+			if( routineDeclToken == tk_at )
 			{
 				if( engine.getBlock( subsym->blockIndex ).kind == block::bk_function )
 					raiseError( std::string() + "\"" + subname + "\" must be prefixed with \"@\"", error::er_syntax );
@@ -936,7 +936,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 				else if( subname == "MainLoop" ) s_cont->MainLoopBlock = subsym->blockIndex;
 				else if( subname == "Finalize" ) s_cont->FinalizeBlock = subsym->blockIndex;
 				else if( subname == "BackGround" ) s_cont->BackGroundBlock = subsym->blockIndex;
-				else raiseError( "Parser::ParseStatements unexpected error at parsing @routins", error::er_parser );
+				else raiseError( "Parser::ParseStatements unexpected error at parsing @routines", error::er_parser );
 			}
 			parseBlock( *subsym, args );
 			needSemicolon = false;
