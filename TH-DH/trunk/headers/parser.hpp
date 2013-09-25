@@ -1,9 +1,9 @@
 #pragma once
-#include "scriptengine.hpp"
 #include "bytecode.hpp"
 #include <string>
 #include <map>
 
+class script_engine;
 /*To parse the script into bytecode*/
 class parser
 {
@@ -108,4 +108,6 @@ private:
 	void importNativeSymbols(); //in the topmost scope
 public:
 	parser( script_engine & eng ); //automatic parsing, feed data to the engine's battery
+	bool start();
+	std::string getCurrentScriptPath() const;
 };

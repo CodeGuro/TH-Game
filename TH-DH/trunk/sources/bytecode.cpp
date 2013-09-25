@@ -17,7 +17,6 @@ size_t type_data::get_element() const
 	return element;
 }
 
-
 script_data::script_data() : type( type_data::tk_invalid, invalidIndex )
 {
 }
@@ -66,7 +65,6 @@ code code::dat( instruction c, size_t scriptDataIdx )
 	res.variableIndex = scriptDataIdx;
 	return res;
 }
-
 
 void natives::_add( script_engine * eng, size_t * argv )
 {

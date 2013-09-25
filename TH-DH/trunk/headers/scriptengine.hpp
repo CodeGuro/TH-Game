@@ -5,6 +5,7 @@
 #include "defstypedefs.hpp"
 #include "bytecode.hpp"
 #include "scriptmachine.hpp"
+#include "parser.hpp"
 
 /*manages all script-related things*/
 class script_engine
@@ -25,8 +26,9 @@ private:
 		vector< size_t > vecRoutinesGabage;
 		vector< size_t > vecMachinesGarbage;
 		vector< script_container > vecScripts;
-		std::map< std::string, unsigned > mappedScriptBlocks;
-		vector< size_t > vecQueuedScripts;
+		std::map< std::string, size_t > mappedScripts;
+		std::map< std::string, size_t > mappedMainScripts;
+		vector< size_t > vecQueuedScripts; //queued for script_machines
 	};
 	class script_type_manager
 	{
@@ -45,6 +47,7 @@ private:
 
 	inventory battery;
 	script_type_manager typeManager;
+	parser scriptParser;
 	size_t currentRunningMachine;
 
 	size_t fetchBlock();
@@ -77,9 +80,11 @@ private:
 	void releaseScriptMachine( size_t & index );
 	size_t getBlockFromScript( std::string const & filePath, std::string const & scriptName );
 	void registerScript( std::string const scriptName );
+	void registerMainScript( std::string const scriptPath, std::string const scriptName );
 	script_container * getScript( std::string const & scriptName );
 	script_container & getScript( size_t index );
 	size_t findScript( std::string const & scriptName );
+	size_t findScriptFromFile( std::string const & scriptPath );
 	void callSub( size_t machineIndex, script_container::sub AtSub );
 public:
 	script_engine();

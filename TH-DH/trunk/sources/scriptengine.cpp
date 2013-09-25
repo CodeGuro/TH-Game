@@ -62,15 +62,20 @@ block & script_engine::getBlock( size_t index )
 }
 void script_engine::registerScript( std::string const scriptName )
 {
-	battery.mappedScriptBlocks[ scriptName ] = battery.vecScripts.size();
+	battery.mappedScripts[ scriptName ] = battery.vecScripts.size();
 	script_container new_cont;
 	memset( &new_cont, invalidIndex, sizeof( new_cont) );
 	battery.vecScripts.push_back( new_cont );
 }
+void script_engine::registerMainScript( std::string const scriptPath, std::string const scriptName )
+{
+	battery.mappedMainScripts[ scriptPath ] = battery.vecScripts.size();
+	registerScript( scriptName );
+}
 script_container * script_engine::getScript( std::string const & scriptName )
 {
-	std::map< std::string, unsigned >::iterator it = battery.mappedScriptBlocks.find( scriptName );
-	if( it != battery.mappedScriptBlocks.end() )
+	std::map< std::string, unsigned >::iterator it = battery.mappedScripts.find( scriptName );
+	if( it != battery.mappedScripts.end() )
 		return &(battery.vecScripts[ it->second ]);
 	return 0;
 }
@@ -80,8 +85,15 @@ script_container & script_engine::getScript( size_t index )
 }
 size_t script_engine::findScript( std::string const & scriptName )
 {
-	std::map< std::string, unsigned >::iterator it = battery.mappedScriptBlocks.find( scriptName );
-	if( it != battery.mappedScriptBlocks.end() )
+	std::map< std::string, unsigned >::iterator it = battery.mappedScripts.find( scriptName );
+	if( it != battery.mappedScripts.end() )
+		return it->second;
+	return invalidIndex;
+}
+size_t script_engine::findScriptFromFile( std::string const & scriptPath )
+{
+	std::map< std::string, unsigned >::iterator it = battery.mappedMainScripts.find( scriptPath );
+	if( it != battery.mappedMainScripts.end() )
 		return it->second;
 	return invalidIndex;
 }
@@ -435,7 +447,7 @@ void script_engine::setQueueScriptMachine( size_t index )
 }
 
 //script engine - public functions, called from the outside
-script_engine::script_engine() : currentRunningMachine( invalidIndex )
+script_engine::script_engine() : scriptParser( *this ), currentRunningMachine( invalidIndex )
 {
 }
 void script_engine::cleanEngine()
@@ -446,28 +458,13 @@ void script_engine::cleanEngine()
 }
 void script_engine::start()
 {
-	parser p(*this);
-
-	//temporary for testing purposes
-	currentRunningMachine = fetchScriptMachine();
-	script_machine & machine = getScriptMachine( currentRunningMachine );
-	size_t scriptIdx = invalidIndex;
-	for( unsigned i = 0; i < 3; ++i )
-	{
-		std::string name;
-		std::cout << "Scripts\n";
-		for( unsigned j = 0; j < battery.vecScripts.size(); ++j )
-			std::cout << "\t" << getBlock( battery.vecScripts[ j ].ScriptBlock ).name << "\n";
-		std::cout << "Enter Script: ";
-		std::getline( std::cin, name );
-		if( getScript( name ) )
-		{
-			scriptIdx = battery.mappedScriptBlocks[ name ];
-			break;
-		}
-	}
+	if( !scriptParser.start() )
+		return;
+	size_t scriptIdx = findScriptFromFile( scriptParser.getCurrentScriptPath() );
 	if( scriptIdx == invalidIndex )
 		return;
+	currentRunningMachine = fetchScriptMachine();
+	script_machine & machine = getScriptMachine( currentRunningMachine );
 	machine.initialize( *this, scriptIdx );
 }
 bool script_engine::advance()
