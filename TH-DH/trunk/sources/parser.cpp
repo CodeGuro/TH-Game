@@ -948,6 +948,13 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 				parseExpression();
 				pushCode( code::code( vc_overWrite ) );
 			}
+			else if( lexicon.getToken() == tk_increment || lexicon.getToken() == tk_decrement )
+			{
+				pushCode( code::varLev( vc_pushVar, sym->id, vecScope.size() - 1 - sym->level ) );
+				writeOperation( std::string() + (lexicon.getToken() == tk_increment ? "increment" : "decrement" ) );
+				pushCode( code::varLev( vc_assign, sym->id, vecScope.size() - 1 - sym->level ) );
+				lexicon.advance();
+			}
 			else
 			{
 				if( sym->blockIndex == invalidIndex )
@@ -1155,6 +1162,8 @@ void parser::importNativeSymbols()
 		{ "print", &natives::_print, 1 },
 		{ "true", &natives::_true, 0 },
 		{ "false", &natives::_false, 0 },
+		{ "increment", &natives::_increment, 1 },
+		{ "decrement", &natives::_decrement, 1 },
 		{ "ToString", &natives::_ToString, 1 },
 		{ "CreateEnemy", &natives::_CreateEnemy, 1 }
 	};

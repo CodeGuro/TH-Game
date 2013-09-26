@@ -8,6 +8,11 @@ script_main main_script //main routine
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
 	{
+		let v = 0;
+		v++;
+		print( v );
+		v--;
+		print( v );
 		print( "script start!" );
 		CreateEnemy( "youkai" );
 	}

@@ -230,6 +230,18 @@ void natives::_false( script_engine * eng, size_t * argv )
 	eng->scriptDataAssign( argv[0], tmp );
 	eng->releaseScriptData( tmp );
 }
+void natives::_increment( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( 1.f + eng->getRealScriptData( argv[0] ) );
+	eng->scriptDataAssign( argv[0], tmp );
+	eng->releaseScriptData( tmp );	
+}
+void natives::_decrement( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( -1.f + eng->getRealScriptData( argv[0] ) );
+	eng->scriptDataAssign( argv[0], tmp );
+	eng->releaseScriptData( tmp );	
+}
 void natives::_ToString( script_engine * eng, size_t * argv )
 {
 	size_t tmp = eng->fetchScriptData( eng->getStringScriptData( argv[0] ) );
