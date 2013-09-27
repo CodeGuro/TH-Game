@@ -8,13 +8,9 @@ script_main main_script //main routine
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
 	{
-		let v = 0;
-		v++;
-		print( v );
-		v--;
-		print( v );
 		print( "script start!" );
-		CreateEnemy( "youkai" );
+		CreateEnemyFromScript( "youkai" );
+		CreateEnemyFromFile( "C:\Users\Administrator\Documents\Visual Studio 2010\Projects\TH-DH\TH-DH\trunk\resources\script\fairy.th" );
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{
@@ -34,10 +30,10 @@ script_enemy youkai
 {
 	@Initialize
 	{
-		print( "Hey, a youkai got called!" );
+		print( "youkai got called!" );
 	}
 	@MainLoop
 	{
-		print( "Hey a youkai advances!" );
+		print( "youkai advances!" );
 	}
 }

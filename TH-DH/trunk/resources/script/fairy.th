@@ -1,0 +1,17 @@
+#TouhouDanmaku[ single ]
+
+
+script_main fairy
+{
+	@Initialize
+	{
+		print( "fairy got called!" );
+	}
+	@MainLoop
+	{
+		print( "fairy advances!" );
+	}
+	@Finalize
+	{
+	}
+}

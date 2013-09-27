@@ -94,4 +94,5 @@ public:
 	void cleanEngine(); //remove all cache
 	void start();
 	bool advance(); //true if finished (i.e. no script executers left to run)
+	void parseScriptFromFile( std::string const & scriptPath );
 };

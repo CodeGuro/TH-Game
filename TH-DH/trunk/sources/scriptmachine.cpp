@@ -90,8 +90,8 @@ bool script_machine::advance( script_engine & eng )
 			if( b.nativeCallBack ) //always functional
 			{
 				env.stack.push_back( invalidIndex );
-				b.nativeCallBack( &eng, &env.stack[ env.stack.size() - ( 1 + current_code.argc ) ] );
 				unsigned popCount = current_code.argc + (current_code.command != vc_callFunctionPush ? 1 : 0 );
+				b.nativeCallBack( &eng, &env.stack[ env.stack.size() - ( 1 + current_code.argc ) ] );
 				for( unsigned u = 0; u < popCount; ++ u )
 				{
 					eng.releaseScriptData( env.stack.back() );

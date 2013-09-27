@@ -629,19 +629,53 @@ parser::parser( script_engine & eng ) : engine( eng )
 	vecScope[ 0 ].blockIndex = invalidIndex;
 	importNativeSymbols();
 }
-void parser::parseScript( std::string const & scriptPath )
+bool parser::parseScript( std::string const & scriptPath )
 {
-	if( vecScope.size() != 1 )
-		raiseError( "The scope has not been cleared for new parse", error::er_parser );
-	scriptMgr.currentScriptPath = scriptPath;
-	scriptMgr.scriptString = std::string( (std::istreambuf_iterator< char >( std::ifstream( scriptPath ) )), std::istreambuf_iterator< char >() );
-	if( !scriptMgr.scriptString.size() )
-		raiseError( std::string() + "Invalid document \"" + scriptMgr.currentScriptPath + "\"", error::er_parser );
-	lexicon = lexer( scriptMgr.scriptString.c_str() );
-	scanCurrentScope( block::bk_normal, vector< std::string >() );
-	parseStatements();
-	if( lexicon.getToken() != tk_end )
-		raiseError( "Parser did not completely parse the script", error::er_parser );
+	try
+	{
+		if( vecScope.size() != 1 )
+			raiseError( "The scope has not been cleared for new parse", error::er_parser );
+		scriptMgr.currentScriptPath = scriptPath;
+		scriptMgr.scriptString = std::string( (std::istreambuf_iterator< char >( std::ifstream( scriptPath ) )), std::istreambuf_iterator< char >() );
+		if( !scriptMgr.scriptString.size() )
+			raiseError( std::string() + "Invalid document \"" + scriptMgr.currentScriptPath + "\"", error::er_parser );
+		lexicon = lexer( scriptMgr.scriptString.c_str() );
+		scanCurrentScope( block::bk_normal, vector< std::string >() );
+		parseStatements();
+		if( lexicon.getToken() != tk_end )
+			raiseError( "Parser did not completely parse the script", error::er_parser );
+		if( engine.findScriptFromFile( scriptMgr.currentScriptPath ) == invalidIndex )
+			raiseError( std::string() + "\"" + scriptMgr.currentScriptPath + "\" did not contain \"script_main\"", error::er_parser );
+	}
+	catch( error const & err )
+	{
+		std::stringstream sstr;
+		std::stringstream sstrAdditional;
+		std::string title;
+		switch( err.reason )
+		{
+		case error::er_internal:
+			title = "INTERNAL PARSER ERROR";
+			break;
+		case error::er_parser:
+		case error::er_syntax:
+			title = ( err.reason == error::er_parser? "Parser Error" : "Syntax Error" );
+			sstrAdditional << err.errmsg;
+			break;
+		case error::er_symbol:
+			title = "Syntax / Linkage Error";
+			sstrAdditional << "\"" << err.errmsg << "\"" << " has already been defined";
+			break;
+		case error::er_usymbol:
+			title = "Syntax Error";
+			sstrAdditional << "\"" << err.errmsg << "\"" << " undefined symbol";
+		}
+		sstr << err.pathDoc << "\n\n" << "line " << err.line << "\n\n"
+			<< sstrAdditional.str() << "\n\n" << err.fivelines << "\n" << "....." << std::endl;
+		MessageBoxA( NULL, sstr.str().c_str(), title.c_str(), NULL );
+		return false;
+	}
+	return true;
 }
 void parser::parseBlock( symbol const symSub, vector< std::string > const & args )
 {
@@ -1063,61 +1097,6 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			lexicon.advance();
 	}while( !finished );
 }
-bool parser::start()
-{
-	try
-	{
-		//map the scripts to individual units to be parsed
-		char buff[512] = { 0 };
-		GetCurrentDirectory( sizeof( buff ), buff );
-		std::string const path = std::string( buff ) + "\\script";
-		/*deprecated*///mapScriptPaths( path );
-
-		std::string scriptPath;
-		OPENFILENAMEA ofn ={ 0 };
-		char buff2[1024] ={ 0 };
-		ofn.lStructSize = sizeof( OPENFILENAMEA );
-		ofn.lpstrFilter = "All Files\0*.*\0\0";
-		ofn.lpstrFile = buff2;
-		ofn.nMaxFile = sizeof( buff2 );
-		ofn.lpstrTitle = "Open script...";
-		ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_FORCESHOWHIDDEN | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST ;
-		GetOpenFileNameA( &ofn );
-		scriptPath= ofn.lpstrFile;
-		if( !scriptPath.size() )
-			raiseError( std::string() + "Parser failed to open the file \"" + scriptPath + "\" in constructor", error::er_parser );
-		parseScript( scriptPath );
-	}
-	catch( error const & err )
-	{
-		std::stringstream sstr;
-		std::stringstream sstrAdditional;
-		std::string title;
-		switch( err.reason )
-		{
-		case error::er_internal:
-			title = "INTERNAL PARSER ERROR";
-			break;
-		case error::er_parser:
-		case error::er_syntax:
-			title = ( err.reason == error::er_parser? "Parser Error" : "Syntax Error" );
-			sstrAdditional << err.errmsg;
-			break;
-		case error::er_symbol:
-			title = "Syntax / Linkage Error";
-			sstrAdditional << "\"" << err.errmsg << "\"" << " has already been defined";
-			break;
-		case error::er_usymbol:
-			title = "Syntax Error";
-			sstrAdditional << "\"" << err.errmsg << "\"" << " undefined symbol";
-		}
-		sstr << err.pathDoc << "\n\n" << "line " << err.line << "\n\n"
-			<< sstrAdditional.str() << "\n\n" << err.fivelines << "\n" << "....." << std::endl;
-		MessageBoxA( NULL, sstr.str().c_str(), title.c_str(), NULL );
-		return false;
-	}
-	return true;
-}
 std::string parser::getCurrentScriptPath() const
 {
 	return scriptMgr.currentScriptPath;
@@ -1165,7 +1144,8 @@ void parser::importNativeSymbols()
 		{ "increment", &natives::_increment, 1 },
 		{ "decrement", &natives::_decrement, 1 },
 		{ "ToString", &natives::_ToString, 1 },
-		{ "CreateEnemy", &natives::_CreateEnemy, 1 }
+		{ "CreateEnemyFromScript", &natives::_CreateEnemyFromScript, 1 },
+		{ "CreateEnemyFromFile", &natives::_CreateEnemyFromFile, 1 }
 	};
 	for( unsigned i = 0; i <  sizeof( funcs ) / sizeof( native_function ); ++i )
 	{

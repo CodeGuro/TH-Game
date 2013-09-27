@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <assert.h>
+#include <Windows.h>
 
 //script type manager, script_engine::getScriptTypeManager
 script_engine::script_type_manager::script_type_manager()
@@ -458,8 +459,31 @@ void script_engine::cleanEngine()
 }
 void script_engine::start()
 {
-	if( !scriptParser.start() )
+
+	//map the scripts to individual units to be parsed
+	char buff[512] = { 0 };
+	GetCurrentDirectory( sizeof( buff ), buff );
+	std::string const path = std::string( buff ) + "\\script";
+
+	std::string scriptPath;
+	OPENFILENAMEA ofn ={ 0 };
+	char buff2[1024] ={ 0 };
+	ofn.lStructSize = sizeof( OPENFILENAMEA );
+	ofn.lpstrFilter = "All Files\0*.*\0\0";
+	ofn.lpstrFile = buff2;
+	ofn.nMaxFile = sizeof( buff2 );
+	ofn.lpstrTitle = "Open script...";
+	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_FORCESHOWHIDDEN | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST ;
+	GetOpenFileNameA( &ofn );
+	scriptPath= ofn.lpstrFile;
+	if( !scriptPath.size() )
+	{
+		MessageBox( NULL, "File not selected", "script_engine::start", NULL );
 		return;
+	}
+	if( !scriptParser.parseScript( scriptPath ) )
+		return;
+
 	size_t scriptIdx = findScriptFromFile( scriptParser.getCurrentScriptPath() );
 	if( scriptIdx == invalidIndex )
 		return;
@@ -481,6 +505,11 @@ bool script_engine::advance()
 	}
 	currentRunningMachine = saved;
 	return true;
+}
+void script_engine::parseScriptFromFile( std::string const & scriptPath )
+{
+	if( findScriptFromFile( scriptPath ) == invalidIndex )
+		scriptParser.parseScript( scriptPath );
 }
 script_engine::~script_engine()
 {

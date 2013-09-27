@@ -248,9 +248,17 @@ void natives::_ToString( script_engine * eng, size_t * argv )
 	eng->scriptDataAssign( argv[0], tmp );
 	eng->releaseScriptData( tmp );
 }
-void natives::_CreateEnemy( script_engine * eng, size_t * argv )
+void natives::_CreateEnemyFromScript( script_engine * eng, size_t * argv )
 {
 	size_t scriptIndex = eng->findScript( eng->getStringScriptData( argv[ 0 ] ) );
 	if( scriptIndex != invalidIndex )
+		eng->setQueueScriptMachine( scriptIndex );
+}
+void natives::_CreateEnemyFromFile( script_engine * eng, size_t * argv )
+{
+	std::string scriptPath = eng->getStringScriptData( argv[ 0 ] );
+	eng->parseScriptFromFile( scriptPath );
+	size_t scriptIndex;
+	if( (scriptIndex = eng->findScriptFromFile( scriptPath )) != invalidIndex )
 		eng->setQueueScriptMachine( scriptIndex );
 }

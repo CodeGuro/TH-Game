@@ -98,7 +98,6 @@ private:
 	void parseBlock( symbol const symSub, vector< std::string > const & args );
 	void scanCurrentScope( block::block_kind kind, vector< std::string > const & args );
 	void parsePreProcess();
-	void parseScript( std::string const & scriptPath );
 	block & getBlock(); //get the current working block
 	void pushCode( code const & val ); //on the current working block
 	void mapScriptPaths( std::string const & pathStart );
@@ -108,6 +107,6 @@ private:
 	void importNativeSymbols(); //in the topmost scope
 public:
 	parser( script_engine & eng ); //automatic parsing, feed data to the engine's battery
-	bool start();
+	bool parseScript( std::string const & scriptPath );
 	std::string getCurrentScriptPath() const;
 };

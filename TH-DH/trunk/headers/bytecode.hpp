@@ -153,5 +153,6 @@ private:
 	static void _increment( script_engine * eng, size_t * argv );
 	static void _decrement( script_engine * eng, size_t * argv );
 	static void _ToString( script_engine * eng, size_t * argv );
-	static void _CreateEnemy( script_engine * eng, size_t * argv );
+	static void _CreateEnemyFromScript( script_engine * eng, size_t * argv );
+	static void _CreateEnemyFromFile( script_engine * eng, size_t * argv );
 };
