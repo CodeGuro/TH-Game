@@ -516,7 +516,7 @@ void parser::parseClause()
 				pushCode( code::subArg( vc_callFunctionPush, sym->blockIndex, argc ) );
 			}
 			else
-				pushCode( code::varLev( vc_pushVar, sym->id, vecScope.size() - 1 - sym->level ) );
+				pushCode( code::varLev( vc_pushVar, sym->id, vecScope.size() - sym->level ) );
 
 		}
 		break;
@@ -630,16 +630,15 @@ void parser::parseScript( std::string const & scriptPath )
 		vecScope.resize( 1 );
 		vecScope.back().clear();
 		vecScope.back().blockIndex = invalidIndex;
-		parseInclude( std::string( "[natives]" ), std::string() );
+		parseDocument( std::string( "[natives]" ), std::string() );
+		vecScope.push_back( scope() );
+		vecScope.back().blockIndex = invalidIndex;
 		scriptMgr.currentScriptPath = scriptPath;
 		scriptMgr.scriptString = std::string( (std::istreambuf_iterator< char >( std::ifstream( scriptPath ) )), std::istreambuf_iterator< char >() );
 		if( !scriptMgr.scriptString.size() )
 			raiseError( std::string() + "Invalid document \"" + scriptMgr.currentScriptPath + "\"", error::er_parser );
 		lexicon = lexer( scriptMgr.scriptString.c_str() );
-		scanCurrentScope( block::bk_normal, vector< std::string >() );
-		parseStatements();
-		if( lexicon.getToken() != tk_end )
-			raiseError( "Parser did not completely parse the script", error::er_parser );
+		parseDocument( scriptPath, scriptMgr.scriptString );
 		if( engine.findScriptFromFile( scriptMgr.currentScriptPath ) == invalidIndex )
 			engine.registerInvalidMainScript( scriptMgr.currentScriptPath );
 		scriptMgr.pragmaFiles.pop_back();
@@ -711,7 +710,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 {
 	//if it's a function, allow a result
 	unsigned id = 0;
-	unsigned level = vecScope.size() - 1;
+	unsigned level = vecScope.size();
 	scope & currentScope = vecScope[ vecScope.size() -1 ];
 	if( kind == block::bk_function )
 	{
@@ -719,7 +718,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 		result.blockIndex = -1;
 		result.id = id++;
 		result.level = level;
-		vecScope[ vecScope.size() - 1 ][ CSTRFUNCRESULT ] = result;
+		currentScope[ CSTRFUNCRESULT ] = result;
 	}
 	for( unsigned i = 0; i < args.size(); ++i )
 	{
@@ -727,7 +726,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 		arg.blockIndex = -1;
 		arg.id = id++;
 		arg.level = level;
-		vecScope[ level ][ args[i] ] = arg;
+		currentScope[ args[i] ] = arg;
 	}
 
 	lexer anchorpoint = lexicon;
@@ -853,7 +852,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 					if( !scriptstr.size() )
 						raiseError( "File does not exist or is an invalid document", error::er_syntax );
 					lexicon.advance();
-					parseInclude( fullPath, scriptstr );
+					parseDocument( fullPath, scriptstr );
 				}
 			}
 			needSemicolon = false;
@@ -913,7 +912,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 				symbol * res = searchResult();
 				if( !res )
 					raiseError( "\"return\" not nested within a functional scope", error::er_syntax );
-				pushCode( code::varLev( vc_assign, res->id, vecScope.size() - 1 - res->level ) );
+				pushCode( code::varLev( vc_assign, res->id, vecScope.size() - res->level ) );
 			}
 			pushCode( code::code( vc_breakRoutine )  );
 		}
@@ -929,7 +928,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			{
 				lexicon.advance();
 				parseExpression();
-				pushCode( code::varLev( vc_assign, declsym->id, vecScope.size() - 1 - declsym->level ) );
+				pushCode( code::varLev( vc_assign, declsym->id, vecScope.size() - declsym->level ) );
 			}
 		}
 		
@@ -943,11 +942,11 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			{
 				lexicon.advance();
 				parseExpression();
-				pushCode( code::varLev( vc_assign, sym->id, vecScope.size() - 1 - sym->level ) );
+				pushCode( code::varLev( vc_assign, sym->id, vecScope.size() - sym->level ) );
 			}
 			else if( lexicon.getToken() == tk_openbra )
 			{
-				pushCode( code::varLev( vc_pushVar, sym->id, vecScope.size() - 1 - sym->level ) );
+				pushCode( code::varLev( vc_pushVar, sym->id, vecScope.size() - sym->level ) );
 				while( lexicon.getToken() == tk_openbra && sym->id != invalidIndex ) //word[32][32]='5';
 				{
 					lexicon.advance();
@@ -965,9 +964,9 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			}
 			else if( lexicon.getToken() == tk_increment || lexicon.getToken() == tk_decrement )
 			{
-				pushCode( code::varLev( vc_pushVar, sym->id, vecScope.size() - 1 - sym->level ) );
+				pushCode( code::varLev( vc_pushVar, sym->id, vecScope.size() - sym->level ) );
 				writeOperation( std::string() + (lexicon.getToken() == tk_increment ? "increment" : "decrement" ) );
-				pushCode( code::varLev( vc_assign, sym->id, vecScope.size() - 1 - sym->level ) );
+				pushCode( code::varLev( vc_assign, sym->id, vecScope.size() - sym->level ) );
 				lexicon.advance();
 			}
 			else
@@ -1078,7 +1077,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			lexicon.advance();
 	}while( !finished );
 }
-void parser::parseInclude( std::string const & scriptPath, std::string const & scriptString )
+void parser::parseDocument( std::string const & scriptPath, std::string const & scriptString )
 {
 	if( scriptMgr.includeSymbols.find( scriptPath ) == scriptMgr.includeSymbols.end() )
 	{

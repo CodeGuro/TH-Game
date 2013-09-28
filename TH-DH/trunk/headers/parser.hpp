@@ -106,7 +106,7 @@ private:
 	void raiseError( std::string errmsg, error::errReason reason );
 	void importSymbolsFromFile( std::string const & filePath );
 	void importNativeSymbols(); //in the topmost scope
-	void parseInclude( std::string const & scriptPath, std::string const & scriptString );
+	void parseDocument( std::string const & scriptPath, std::string const & scriptString );
 public:
 	parser( script_engine & eng ); //automatic parsing, feed data to the engine's battery
 	void parseScript( std::string const & scriptPath );
