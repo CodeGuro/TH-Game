@@ -32,7 +32,7 @@ private:
 
 	public:
 		lexer( char const * strstart );
-		lexer( char const * strstart, unsigned line );
+		lexer( char const * strstart, unsigned lineStart, token tokStart );
 		lexer();
 		void skip(); //whitespace
 		token advance(); //get the next token
@@ -55,6 +55,7 @@ private:
 		std::string currentScriptPath; //currently working on
 		std::string scriptString; //current
 		vector< std::string > pragmaFiles; //for the current unit
+		std::map< std::string, std::map< std::string, symbol > > includeSymbols;
 	};
 	struct scope : std::map< std::string, symbol >
 	{
@@ -103,10 +104,11 @@ private:
 	void mapScriptPaths( std::string const & pathStart );
 	void registerScript( std::string const & fullPath );
 	void raiseError( std::string errmsg, error::errReason reason );
-	void importExportSymbols( std::string const & fullPath );
+	void importSymbolsFromFile( std::string const & filePath );
 	void importNativeSymbols(); //in the topmost scope
+	void parseInclude( std::string const & scriptPath, std::string const & scriptString );
 public:
 	parser( script_engine & eng ); //automatic parsing, feed data to the engine's battery
-	bool parseScript( std::string const & scriptPath );
+	void parseScript( std::string const & scriptPath );
 	std::string getCurrentScriptPath() const;
 };

@@ -14,9 +14,8 @@ parser::lexer::lexer( char const * strstart ) : current( strstart ), line( 1 )
 {
 	advance();
 }
-parser::lexer::lexer( char const * strstart, unsigned lineStart ) : current( strstart ), line( lineStart )
+parser::lexer::lexer( char const * strstart, unsigned lineStart, token tokStart ) : current( strstart ), next( tokStart), line( lineStart )
 {
-	advance();
 }
 void parser::lexer::skip()
 {
@@ -623,18 +622,15 @@ parser::symbol * parser::searchResult()
 	std::string str = CSTRFUNCRESULT;
 	return search( str );
 }
-parser::parser( script_engine & eng ) : engine( eng )
-{
-	vecScope.push_back( scope() );
-	vecScope[ 0 ].blockIndex = invalidIndex;
-	importNativeSymbols();
-}
-bool parser::parseScript( std::string const & scriptPath )
+void parser::parseScript( std::string const & scriptPath )
 {
 	try
 	{
-		if( vecScope.size() != 1 )
-			raiseError( "The scope has not been cleared for new parse", error::er_parser );
+		scriptMgr.pragmaFiles.push_back( scriptPath );
+		vecScope.resize( 1 );
+		vecScope.back().clear();
+		vecScope.back().blockIndex = invalidIndex;
+		parseInclude( std::string( "[natives]" ), std::string() );
 		scriptMgr.currentScriptPath = scriptPath;
 		scriptMgr.scriptString = std::string( (std::istreambuf_iterator< char >( std::ifstream( scriptPath ) )), std::istreambuf_iterator< char >() );
 		if( !scriptMgr.scriptString.size() )
@@ -645,10 +641,13 @@ bool parser::parseScript( std::string const & scriptPath )
 		if( lexicon.getToken() != tk_end )
 			raiseError( "Parser did not completely parse the script", error::er_parser );
 		if( engine.findScriptFromFile( scriptMgr.currentScriptPath ) == invalidIndex )
-			raiseError( std::string() + "\"" + scriptMgr.currentScriptPath + "\" did not contain \"script_main\"", error::er_parser );
+			engine.registerInvalidMainScript( scriptMgr.currentScriptPath );
+		scriptMgr.pragmaFiles.pop_back();
 	}
 	catch( error const & err )
 	{
+		engine.registerInvalidMainScript( scriptMgr.pragmaFiles[ 0 ] );
+		scriptMgr.pragmaFiles.resize( 0 );
 		std::stringstream sstr;
 		std::stringstream sstrAdditional;
 		std::string title;
@@ -673,9 +672,8 @@ bool parser::parseScript( std::string const & scriptPath )
 		sstr << err.pathDoc << "\n\n" << "line " << err.line << "\n\n"
 			<< sstrAdditional.str() << "\n\n" << err.fivelines << "\n" << "....." << std::endl;
 		MessageBoxA( NULL, sstr.str().c_str(), title.c_str(), NULL );
-		return false;
+		engine.raiseError( "Parser did not finish properly" );
 	}
-	return true;
 }
 void parser::parseBlock( symbol const symSub, vector< std::string > const & args )
 {
@@ -838,8 +836,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 						std::string::iterator it2 = scriptMgr.currentScriptPath.end() - 1;
 						do
 						{
-							while( *(--it2) != '\\' )
-								--it2;
+							while( *(--it2) != '\\' );
 						}while( *(++it) == '.' );
 						fullPath = std::string( scriptMgr.currentScriptPath.begin(), it2 ) + std::string( it, path.end() );
 					}
@@ -855,24 +852,8 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 					std::string scriptstr = std::string( std::istreambuf_iterator< char >( std::ifstream( fullPath ) ), std::istreambuf_iterator< char >() );
 					if( !scriptstr.size() )
 						raiseError( "File does not exist or is an invalid document", error::er_syntax );
-					//save
-					unsigned lexLine = lexicon.getLine();
-					unsigned lexPlace = lexicon.getCurrent() - scriptMgr.scriptString.c_str();
-					scriptMgr.pragmaFiles.push_back( fullPath );
-					std::string currentPath = scriptMgr.currentScriptPath;
-					std::string currentScriptStr = scriptMgr.scriptString;
-
-					//parse the new document
-					scriptMgr.currentScriptPath = fullPath;
-					scriptMgr.scriptString = scriptstr;
-					lexicon = lexer( scriptMgr.scriptString.c_str() );
-					scanCurrentScope( block::bk_normal, vector< std::string >() );
-					parseStatements();
-
-					//restore
-					scriptMgr.currentScriptPath = currentPath;
-					scriptMgr.scriptString = currentScriptStr;
-					lexicon = lexer( scriptMgr.scriptString.c_str() + lexPlace, lexLine );
+					lexicon.advance();
+					parseInclude( fullPath, scriptstr );
 				}
 			}
 			needSemicolon = false;
@@ -1097,6 +1078,50 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			lexicon.advance();
 	}while( !finished );
 }
+void parser::parseInclude( std::string const & scriptPath, std::string const & scriptString )
+{
+	if( scriptMgr.includeSymbols.find( scriptPath ) == scriptMgr.includeSymbols.end() )
+	{
+		scope prev_scope = vecScope.back();
+
+		//save
+		unsigned lexLine = lexicon.getLine();
+		unsigned lexPlace = lexicon.getCurrent() - scriptMgr.scriptString.c_str();
+		token tokPlace = lexicon.getToken();
+
+		scriptMgr.pragmaFiles.push_back( scriptPath );
+		std::string currentPath = scriptMgr.currentScriptPath;
+		std::string currentScriptStr = scriptMgr.scriptString;
+
+		//parse the new document
+		scriptMgr.currentScriptPath = scriptPath;
+		scriptMgr.scriptString = scriptString;
+
+		lexicon = lexer( scriptMgr.scriptString.c_str() );
+		scanCurrentScope( block::bk_normal, vector< std::string >() );
+		parseStatements();
+		if( lexicon.getToken() != tk_end )
+			raiseError( std::string() + "\"" + scriptMgr.pragmaFiles.back() + "\" did not parse fully", error::er_parser );
+
+		//restore
+		scriptMgr.currentScriptPath = currentPath;
+		scriptMgr.scriptString = currentScriptStr;
+		lexicon = lexer( scriptMgr.scriptString.c_str() + lexPlace, lexLine, tokPlace );
+		scriptMgr.pragmaFiles.pop_back();
+
+		for( auto it = vecScope.back().begin(); it != vecScope.back().end(); ++it ) //save recently parsed file symbols
+		{
+			if( prev_scope.find( it->first ) == prev_scope.end() )
+				scriptMgr.includeSymbols[ scriptPath ][it->first] = it->second;
+		}
+	}
+	else
+	{
+		auto & include = scriptMgr.includeSymbols[ scriptPath ];
+		for( auto it = include.begin(); it != include.end(); ++it )
+			( vecScope.back().find( it->first ) != vecScope.back().end() ) ? raiseError( it->first, error::er_symbol ) : vecScope.back()[ it->first ] = it->second;
+	}
+}
 std::string parser::getCurrentScriptPath() const
 {
 	return scriptMgr.currentScriptPath;
@@ -1109,11 +1134,8 @@ struct native_function
 	unsigned argc;
 };
 
-//native symbols defined here
-void parser::importNativeSymbols()
+parser::parser( script_engine & eng ) : engine( eng )
 {
-	if( vecScope.size() != 1 )
-		raiseError( "Natives can be imported only in the file scope", error::er_parser );
 	native_function funcs[] =
 	{
 		{ "add", &natives::_add, 2 },
@@ -1149,9 +1171,6 @@ void parser::importNativeSymbols()
 	};
 	for( unsigned i = 0; i <  sizeof( funcs ) / sizeof( native_function ); ++i )
 	{
-		symbol * s = search( funcs[i].name );
-		if( s )
-			raiseError( std::string() + "\"" + funcs[i].name +"\" "+ "has already been defined" , error::er_syntax );
 		unsigned blockIndex = engine.fetchBlock();
 		block & b = engine.getBlock( blockIndex );
 		b.kind = block::bk_function;
@@ -1162,9 +1181,10 @@ void parser::importNativeSymbols()
 		sym.blockIndex = blockIndex;
 		sym.id = invalidIndex;
 		sym.level = 0;
-		vecScope[0][ funcs[i].name ] = sym;
+		scriptMgr.includeSymbols[ "[natives]" ][funcs[i].name] = sym;
 	}
 }
+
 void parser::writeOperation( std::string const & nativeFunc )
 {
 	symbol * func;

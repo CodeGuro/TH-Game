@@ -44,7 +44,9 @@ private:
 		type_data getArrayType() const;
 		type_data getArrayType( size_t element ); //an array of some type
 	};
-
+	
+	bool error;
+	std::string errorMessage;
 	inventory battery;
 	script_type_manager typeManager;
 	parser scriptParser;
@@ -81,11 +83,13 @@ private:
 	size_t getBlockFromScript( std::string const & filePath, std::string const & scriptName );
 	void registerScript( std::string const scriptName );
 	void registerMainScript( std::string const scriptPath, std::string const scriptName );
+	void registerInvalidMainScript( std::string const scriptPath );
 	script_container * getScript( std::string const & scriptName );
 	script_container & getScript( size_t index );
 	size_t findScript( std::string const & scriptName );
 	size_t findScriptFromFile( std::string const & scriptPath );
 	void callSub( size_t machineIndex, script_container::sub AtSub );
+	void raiseError( std::string const errorMsg );
 public:
 	script_engine();
 	script_engine( script_engine const & source );

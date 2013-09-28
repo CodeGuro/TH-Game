@@ -73,6 +73,10 @@ void script_engine::registerMainScript( std::string const scriptPath, std::strin
 	battery.mappedMainScripts[ scriptPath ] = battery.vecScripts.size();
 	registerScript( scriptName );
 }
+void script_engine::registerInvalidMainScript( std::string const scriptPath )
+{
+	battery.mappedMainScripts[ scriptPath ] = invalidIndex;
+}
 script_container * script_engine::getScript( std::string const & scriptName )
 {
 	std::map< std::string, unsigned >::iterator it = battery.mappedScripts.find( scriptName );
@@ -448,7 +452,7 @@ void script_engine::setQueueScriptMachine( size_t index )
 }
 
 //script engine - public functions, called from the outside
-script_engine::script_engine() : scriptParser( *this ), currentRunningMachine( invalidIndex )
+script_engine::script_engine() : error( false ), scriptParser( *this ), currentRunningMachine( invalidIndex )
 {
 }
 void script_engine::cleanEngine()
@@ -459,7 +463,6 @@ void script_engine::cleanEngine()
 }
 void script_engine::start()
 {
-
 	//map the scripts to individual units to be parsed
 	char buff[512] = { 0 };
 	GetCurrentDirectory( sizeof( buff ), buff );
@@ -481,12 +484,10 @@ void script_engine::start()
 		MessageBox( NULL, "File not selected", "script_engine::start", NULL );
 		return;
 	}
-	if( !scriptParser.parseScript( scriptPath ) )
-		return;
-
+	parseScriptFromFile( scriptPath );
+	if( error ) return;
 	size_t scriptIdx = findScriptFromFile( scriptParser.getCurrentScriptPath() );
-	if( scriptIdx == invalidIndex )
-		return;
+	if( scriptIdx == invalidIndex ) return;
 	currentRunningMachine = fetchScriptMachine();
 	script_machine & machine = getScriptMachine( currentRunningMachine );
 	machine.initialize( *this, scriptIdx );
@@ -496,6 +497,7 @@ bool script_engine::advance()
 	unsigned saved = currentRunningMachine;
 	for( unsigned u = 0; u < battery.vecMachines.size(); ++u )
 	{
+		if( error ) return false;
 		currentRunningMachine = u;
 		if( battery.vecMachines[ u ].isOperable() )
 			callSub( u, script_container::AtMainLoop );
@@ -508,9 +510,24 @@ bool script_engine::advance()
 }
 void script_engine::parseScriptFromFile( std::string const & scriptPath )
 {
-	if( findScriptFromFile( scriptPath ) == invalidIndex )
-		scriptParser.parseScript( scriptPath );
+	try
+	{
+		if( battery.mappedMainScripts.find( scriptPath ) == battery.mappedMainScripts.end() )
+			scriptParser.parseScript( scriptPath );
+	}
+	catch( ... )
+	{
+	}
 }
 script_engine::~script_engine()
 {
+}
+
+//script engine - miscellanious functions
+void script_engine::raiseError( std::string const errMsg )
+{
+	errorMessage = errMsg;
+	error = true;
+	MessageBox( NULL, errorMessage.c_str(), "script_engine", NULL );
+	throw;
 }
