@@ -1,6 +1,13 @@
 //functions.th
+#include ".\script.th"
 
 function addfunc( let a, let b)
 {
 	return a + b;
+}
+
+function bar( let val )
+{
+	print( "bar!" );
+	foo( val );
 }

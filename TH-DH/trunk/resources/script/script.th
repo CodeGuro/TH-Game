@@ -3,14 +3,20 @@
                           //optional : [single] anonymous is a script enemy, [stage] anonymous is a stage, []/void - assumed [single]
 #include ".\functions.th" //preprocessor for including external scripts
 
+function foo( let val )
+{
+	print( "Foo!" );
+	print( val );
+}
 script_main main_script //main routine
 {
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
 	{
+		foo( "calling foo" );
+		bar( "calling bar" );
 		print( "script start!" );
 		CreateEnemyFromScript( "youkai" );
-		CreateEnemyFromFile( "C:\Users\Administrator\Documents\Visual Studio 2010\Projects\TH-DH\TH-DH\trunk\resources\script\fairy.th" );
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{

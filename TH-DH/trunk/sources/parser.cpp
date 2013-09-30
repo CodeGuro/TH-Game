@@ -626,7 +626,6 @@ void parser::parseScript( std::string const & scriptPath )
 {
 	try
 	{
-		scriptMgr.pragmaFiles.push_back( scriptPath );
 		vecScope.resize( 1 );
 		vecScope.back().clear();
 		vecScope.back().blockIndex = invalidIndex;
@@ -641,7 +640,6 @@ void parser::parseScript( std::string const & scriptPath )
 		parseDocument( scriptPath, scriptMgr.scriptString );
 		if( engine.findScriptFromFile( scriptMgr.currentScriptPath ) == invalidIndex )
 			engine.registerInvalidMainScript( scriptMgr.currentScriptPath );
-		scriptMgr.pragmaFiles.pop_back();
 	}
 	catch( error const & err )
 	{
@@ -1081,37 +1079,50 @@ void parser::parseDocument( std::string const & scriptPath, std::string const & 
 {
 	if( scriptMgr.includeSymbols.find( scriptPath ) == scriptMgr.includeSymbols.end() )
 	{
-		scope prev_scope = vecScope.back();
-
-		//save
-		unsigned lexLine = lexicon.getLine();
-		unsigned lexPlace = lexicon.getCurrent() - scriptMgr.scriptString.c_str();
-		token tokPlace = lexicon.getToken();
-
-		scriptMgr.pragmaFiles.push_back( scriptPath );
-		std::string currentPath = scriptMgr.currentScriptPath;
-		std::string currentScriptStr = scriptMgr.scriptString;
-
-		//parse the new document
-		scriptMgr.currentScriptPath = scriptPath;
-		scriptMgr.scriptString = scriptString;
-
-		lexicon = lexer( scriptMgr.scriptString.c_str() );
-		scanCurrentScope( block::bk_normal, vector< std::string >() );
-		parseStatements();
-		if( lexicon.getToken() != tk_end )
-			raiseError( std::string() + "\"" + scriptMgr.pragmaFiles.back() + "\" did not parse fully", error::er_parser );
-
-		//restore
-		scriptMgr.currentScriptPath = currentPath;
-		scriptMgr.scriptString = currentScriptStr;
-		lexicon = lexer( scriptMgr.scriptString.c_str() + lexPlace, lexLine, tokPlace );
-		scriptMgr.pragmaFiles.pop_back();
-
-		for( auto it = vecScope.back().begin(); it != vecScope.back().end(); ++it ) //save recently parsed file symbols
+		bool hasBeenIncluded = false;
+		for( unsigned u = 0; u < scriptMgr.pragmaFiles.size(); ++ u )
 		{
-			if( prev_scope.find( it->first ) == prev_scope.end() )
-				scriptMgr.includeSymbols[ scriptPath ][it->first] = it->second;
+			if( scriptMgr.pragmaFiles[ u ] == scriptPath )
+			{
+				hasBeenIncluded = true;
+				break;
+			}
+		}
+
+		if( !hasBeenIncluded )
+		{
+			//save
+			scope prev_scope = vecScope.back();
+			unsigned lexLine = lexicon.getLine();
+			unsigned lexPlace = lexicon.getCurrent() - scriptMgr.scriptString.c_str();
+			token tokPlace = lexicon.getToken();
+
+			std::string currentPath = scriptMgr.currentScriptPath;
+			std::string currentScriptStr = scriptMgr.scriptString;
+
+			//parse the new document
+			scriptMgr.currentScriptPath = scriptPath;
+			scriptMgr.scriptString = scriptString;
+
+			scriptMgr.pragmaFiles.push_back( scriptPath );
+			lexicon = lexer( scriptMgr.scriptString.c_str() );
+			scanCurrentScope( block::bk_normal, vector< std::string >() );
+			parseStatements();
+			if( lexicon.getToken() != tk_end )
+				raiseError( std::string() + "\"" + scriptMgr.pragmaFiles.back() + "\" did not parse fully", error::er_parser );
+			scriptMgr.pragmaFiles.pop_back();
+
+			//restore
+			scriptMgr.currentScriptPath = currentPath;
+			scriptMgr.scriptString = currentScriptStr;
+			lexicon = lexer( scriptMgr.scriptString.c_str() + lexPlace, lexLine, tokPlace );
+
+
+			for( auto it = vecScope.back().begin(); it != vecScope.back().end(); ++it ) //save recently parsed file symbols
+			{
+				if( prev_scope.find( it->first ) == prev_scope.end() )
+					scriptMgr.includeSymbols[ scriptPath ][it->first] = it->second;
+			}
 		}
 	}
 	else
