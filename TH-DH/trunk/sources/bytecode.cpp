@@ -252,7 +252,10 @@ void natives::_CreateEnemyFromScript( script_engine * eng, size_t * argv )
 {
 	size_t scriptIndex = eng->findScript( eng->getStringScriptData( argv[ 0 ] ) );
 	if( scriptIndex != invalidIndex )
-		eng->setQueueScriptMachine( scriptIndex );
+	{
+		script_queue sq = { script_queue::Initialization, scriptIndex };
+		eng->setQueueScriptMachine( sq );
+	}
 }
 void natives::_CreateEnemyFromFile( script_engine * eng, size_t * argv )
 {
@@ -260,5 +263,8 @@ void natives::_CreateEnemyFromFile( script_engine * eng, size_t * argv )
 	eng->parseScriptFromFile( scriptPath );
 	size_t scriptIndex;
 	if( (scriptIndex = eng->findScriptFromFile( scriptPath )) != invalidIndex )
-		eng->setQueueScriptMachine( scriptIndex );
+	{
+		script_queue sq = { script_queue::Initialization, scriptIndex };
+		eng->setQueueScriptMachine( sq );
+	}
 }
