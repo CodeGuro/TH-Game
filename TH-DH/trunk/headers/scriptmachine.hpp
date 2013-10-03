@@ -15,7 +15,6 @@ private:
 public:
 	bool advance( script_engine & engine ); //returns 1 when finished
 	void initialize( script_engine & engine, size_t script_index );
-	void prepareFinal( script_engine & engine );
 	void clean( script_engine & engine );
 	bool isOperable();
 };

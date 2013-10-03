@@ -28,7 +28,7 @@ private:
 		vector< script_container > vecScripts;
 		std::map< std::string, size_t > mappedScripts;
 		std::map< std::string, size_t > mappedMainScripts;
-		vector< script_queue > vecQueuedScripts; //queued for initiating script_machines
+		vector< script_queue > vecQueuedScripts;
 	};
 	class script_type_manager
 	{
@@ -76,8 +76,6 @@ private:
 	void releaseScriptEnvironment( size_t & index );
 	size_t fetchScriptMachine();
 	script_machine & getScriptMachine( size_t index );
-	void terminateMachine( size_t index ); //Finalize runs
-	void terminateImmediateMachine( size_t index ); //Finalize doesn't run (usually for off-screen termination)
 	void setQueueScriptMachine( script_queue const queue );
 	void releaseScriptMachine( size_t & index );
 	size_t getBlockFromScript( std::string const & filePath, std::string const & scriptName );

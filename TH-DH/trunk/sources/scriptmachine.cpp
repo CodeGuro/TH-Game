@@ -8,12 +8,6 @@ void script_machine::initialize( script_engine & eng, size_t script_index )
 	assert( !threads.size() );
 	current_script_index = script_index;
 }
-void script_machine::prepareFinal( script_engine & eng )
-{
-	do
-		eng.getScriptEnvironment( threads[ current_thread_index ] ).codeIndex = invalidIndex;
-	while( !advance( eng ) );
-}
 bool script_machine::advance( script_engine & eng )
 {
 	assert( threads.size() > current_thread_index );

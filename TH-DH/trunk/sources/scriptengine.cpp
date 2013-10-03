@@ -402,6 +402,7 @@ void script_engine::releaseScriptMachine( size_t & index )
 void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 {
 	unsigned prevMachine = currentRunningMachine;
+	currentRunningMachine = machineIndex;
 	script_machine & m = getScriptMachine( machineIndex );
 	assert( m.current_thread_index != invalidIndex && m.current_script_index != invalidIndex );
 	size_t blockIndex = invalidIndex;
@@ -494,29 +495,31 @@ void script_engine::start()
 }
 bool script_engine::advance()
 {
-	unsigned saved = currentRunningMachine;
+
+	while( battery.vecQueuedScripts.size() )
+	{
+		switch( battery.vecQueuedScripts.front().queueType )
+		{
+		case script_queue::Initialization: //script index
+			getScriptMachine( fetchScriptMachine() ).initialize( *this, battery.vecQueuedScripts.front().index ); 
+			break;
+		case script_queue::TerminationMark: //machine index
+			callSub( battery.vecQueuedScripts.front().index, script_container::AtFinalize );
+			break;
+		case script_queue::Termination: //machine index
+			getScriptMachine( battery.vecQueuedScripts.front().index ).clean( *this );
+			releaseScriptMachine( battery.vecQueuedScripts.front().index );
+			break;
+		}
+		battery.vecQueuedScripts.erase( battery.vecQueuedScripts.begin() );
+	}
 	for( unsigned u = 0; u < battery.vecMachines.size(); ++u )
 	{
 		if( error ) return false;
 		currentRunningMachine = u;
 		if( battery.vecMachines[ u ].isOperable() )
 			callSub( u, script_container::AtMainLoop );
-		while( battery.vecQueuedScripts.size() )
-		{
-			switch( battery.vecQueuedScripts.front().queueType )
-			{
-			case script_queue::Initialization:
-				getScriptMachine( fetchScriptMachine() ).initialize( *this, battery.vecQueuedScripts.front().index ); //script index
-				break;
-			case script_queue::TerminationMark: //machine index
-				break;
-			case script_queue::Termination: //machine index
-				break;
-			}
-			battery.vecQueuedScripts.erase( battery.vecQueuedScripts.begin() );
-		}
 	}
-	currentRunningMachine = saved;
 	return true;
 }
 void script_engine::parseScriptFromFile( std::string const & scriptPath )
