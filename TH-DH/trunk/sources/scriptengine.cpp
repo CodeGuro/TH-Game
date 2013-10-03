@@ -495,7 +495,6 @@ void script_engine::start()
 }
 bool script_engine::advance()
 {
-
 	while( battery.vecQueuedScripts.size() )
 	{
 		switch( battery.vecQueuedScripts.front().queueType )
@@ -503,10 +502,8 @@ bool script_engine::advance()
 		case script_queue::Initialization: //script index
 			getScriptMachine( fetchScriptMachine() ).initialize( *this, battery.vecQueuedScripts.front().index ); 
 			break;
-		case script_queue::TerminationMark: //machine index
-			callSub( battery.vecQueuedScripts.front().index, script_container::AtFinalize );
-			break;
 		case script_queue::Termination: //machine index
+			callSub( battery.vecQueuedScripts.front().index, script_container::AtFinalize );
 			getScriptMachine( battery.vecQueuedScripts.front().index ).clean( *this );
 			releaseScriptMachine( battery.vecQueuedScripts.front().index );
 			break;
@@ -516,7 +513,6 @@ bool script_engine::advance()
 	for( unsigned u = 0; u < battery.vecMachines.size(); ++u )
 	{
 		if( error ) return false;
-		currentRunningMachine = u;
 		if( battery.vecMachines[ u ].isOperable() )
 			callSub( u, script_container::AtMainLoop );
 	}

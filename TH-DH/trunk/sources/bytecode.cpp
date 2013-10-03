@@ -268,3 +268,8 @@ void natives::_CreateEnemyFromFile( script_engine * eng, size_t * argv )
 		eng->setQueueScriptMachine( sq );
 	}
 }
+void natives::_QueueScriptTermination( script_engine * eng, size_t * argv )
+{
+	script_queue const queue = { script_queue::Termination, eng->currentRunningMachine };
+	eng->setQueueScriptMachine( queue );
+}

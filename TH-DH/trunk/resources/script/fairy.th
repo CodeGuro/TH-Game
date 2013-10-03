@@ -5,13 +5,28 @@ script_main fairy
 {
 	@Initialize
 	{
-		print( "fairy got called!" );
+		print("fairy got called!");
+		selfDestruct
 	}
 	@MainLoop
 	{
 		print( "fairy advances!" );
+		yield;
 	}
 	@Finalize
 	{
+		print( "terminating!" );
 	}
+}
+
+task selfDestruct
+{
+
+	wait( 5 );
+	QueueScriptTermination;
+}
+
+function wait( let w )
+{
+	loop( w ) { yield; }
 }

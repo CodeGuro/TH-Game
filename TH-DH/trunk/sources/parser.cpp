@@ -643,7 +643,8 @@ void parser::parseScript( std::string const & scriptPath )
 	}
 	catch( error const & err )
 	{
-		engine.registerInvalidMainScript( scriptMgr.pragmaFiles[ 0 ] );
+		if( scriptMgr.pragmaFiles.size() )
+			engine.registerInvalidMainScript( scriptMgr.pragmaFiles[ 0 ] );
 		scriptMgr.pragmaFiles.resize( 0 );
 		std::stringstream sstr;
 		std::stringstream sstrAdditional;
@@ -1177,7 +1178,8 @@ parser::parser( script_engine & eng ) : engine( eng )
 		{ "decrement", &natives::_decrement, 1 },
 		{ "ToString", &natives::_ToString, 1 },
 		{ "CreateEnemyFromScript", &natives::_CreateEnemyFromScript, 1 },
-		{ "CreateEnemyFromFile", &natives::_CreateEnemyFromFile, 1 }
+		{ "CreateEnemyFromFile", &natives::_CreateEnemyFromFile, 1 },
+		{ "QueueScriptTermination", &natives::_QueueScriptTermination, 0 }
 	};
 	for( unsigned i = 0; i <  sizeof( funcs ) / sizeof( native_function ); ++i )
 	{

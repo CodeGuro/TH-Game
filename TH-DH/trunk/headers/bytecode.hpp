@@ -155,13 +155,14 @@ private:
 	static void _ToString( script_engine * eng, size_t * argv );
 	static void _CreateEnemyFromScript( script_engine * eng, size_t * argv );
 	static void _CreateEnemyFromFile( script_engine * eng, size_t * argv );
+	static void _QueueScriptTermination( script_engine * eng, size_t * argv );
 };
 
 struct script_queue
 {
 	enum scriptQueueType
 	{
-		Initialization, TerminationMark, Termination
+		Initialization, Termination
 	};
 	scriptQueueType queueType;
 	size_t index;
