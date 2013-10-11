@@ -249,6 +249,36 @@ void natives::_ToString( script_engine * eng, size_t * argv )
 	eng->scriptDataAssign( argv[0], tmp );
 	eng->releaseScriptData( tmp );
 }
+void natives::_cos( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( cos( eng->getRealScriptData( argv[ 0 ] ) ) );
+	eng->scriptDataAssign( argv[ 0 ], tmp );
+	eng->releaseScriptData( tmp );
+}
+void natives::_sin( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( sin( eng->getRealScriptData( argv[ 0 ] ) ) );
+	eng->scriptDataAssign( argv[ 0 ], tmp );
+	eng->releaseScriptData( tmp );
+}
+void natives::_tan( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( tan( eng->getRealScriptData( argv[ 0 ] ) ) );
+	eng->scriptDataAssign( argv[ 0 ], tmp );
+	eng->releaseScriptData( tmp );
+}
+void natives::_atan( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( atan( eng->getRealScriptData( argv[ 0 ] ) ) );
+	eng->scriptDataAssign( argv[ 0 ], tmp );
+	eng->releaseScriptData( tmp );
+}
+void natives::_atan2( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( atan2( eng->getRealScriptData( argv[ 0 ] ), eng->getRealScriptData( argv[ 1 ] ) ) );
+	eng->scriptDataAssign( argv[ 0 ], tmp );
+	eng->releaseScriptData( tmp );
+}
 void natives::_CreateEnemyFromScript( script_engine * eng, size_t * argv )
 {
 	size_t scriptIndex = eng->findScript( eng->getStringScriptData( argv[ 0 ] ) );
@@ -325,8 +355,8 @@ void natives::_Obj_SetVelocity( script_engine * eng, size_t * argv )
 void natives::_Obj_CreateVertex( script_engine * eng, size_t * argv )
 {
 	ObjMgr * objmgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( objmgr )
-		objmgr->SetVertexCount( (unsigned)eng->getRealScriptData( argv[ 1 ] ) );
+	if( objmgr )	
+		objmgr->ResizeVertexLib( (unsigned) eng->getRealScriptData( argv[ 1 ] )  );
 }
 void natives::_Obj_SetPrimitiveType( script_engine * eng, size_t * argv )
 {
@@ -345,8 +375,9 @@ void natives::_Obj_SetVertexUV( script_engine * eng, size_t * argv )
 	ObjMgr * objMgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
 	if( objMgr )
 	{
+		D3DSURFACE_DESC sd = objMgr->GetSurfaceDesc();
 		Vertex * v = objMgr->GetLibVertexPtr( (unsigned)eng->getRealScriptData( argv[ 1 ] ) );
-		v->tex = D3DXVECTOR2( eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) );
+		v->tex = D3DXVECTOR2( eng->getRealScriptData( argv[ 2 ] ) / sd.Width, eng->getRealScriptData( argv[ 3 ] ) / sd.Height );
 	}
 }
 void natives::_Obj_SetVertexXYZ( script_engine * eng, size_t * argv )
@@ -391,4 +422,8 @@ void natives::_PRIMITIVE_TRIANGLEFAN( script_engine * eng, size_t * argv )
 {
 	assert( argv[ 0 ] == invalidIndex );
 	argv[ 0 ] = eng->fetchScriptData( D3DPT_TRIANGLEFAN );
+}
+void natives::_LoadTexture( script_engine * eng, size_t * argv )
+{
+	eng->LoadTexture( eng->getStringScriptData( argv[ 0 ] ) );
 }

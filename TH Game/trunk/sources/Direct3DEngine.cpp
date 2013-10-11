@@ -206,6 +206,7 @@ void Direct3DEngine::RenderFrame( MSG const msg )
 	DrawTexture();
 	DrawFPS();
 	TestObjMgr();
+	DrawObjects();
 	d3ddev->EndScene();
 	d3ddev->Present( NULL, NULL, NULL, NULL );
 	ProcUserInput( msg );
@@ -335,6 +336,24 @@ void Direct3DEngine::TestObjMgr()
 	dir += D3DX_PI / ( 120.f );
 	mgr.AdvanceTransformedDraw( this );
 }
+void Direct3DEngine::DrawObjects()
+{
+	for( auto L = inventory.vLayers.begin(); L != inventory.vLayers.end(); ++L )
+	{
+		for( auto Obj = L->vObjMgr.begin(); Obj != L->vObjMgr.end(); ++Obj )
+			Obj->AdvanceTransformedDraw( this );
+	}
+}
+void Direct3DEngine::AdvanceObjects()
+{
+	/*
+	for( auto L = inventory.vLayers.begin(); L != inventory.vLayers.end(); ++L )
+	{
+		for( auto Obj = L->vObjMgr.begin(); Obj != L->vObjMgr.end(); ++Obj )
+	
+	}
+	*/
+}
 void Direct3DEngine::ProcUserInput( MSG const Msg )
 {
 	if( Msg.message == WM_KEYDOWN )
@@ -394,8 +413,12 @@ unsigned Direct3DEngine::CreateObject( unsigned short Layer )
 		inventory.vObjHandles[ Result ].Layer = Layer;
 		inventory.vObjHandles[ Result ].RefCount = 1;
 		inventory.vObjHandles[ Result ].MgrIdx = inventory.vLayers[ Layer ].vObjMgr.size();
-		inventory.vLayers[ Layer ].vObjMgr.push_back( ObjMgr() );
-		inventory.vLayers[ Layer ].vObjMgr[ inventory.vObjHandles[ Result ].MgrIdx ].PushObj( 0 );
+		ObjMgr * objMgr = &(*inventory.vLayers[ Layer ].vObjMgr.insert( inventory.vLayers[ Layer ].vObjMgr.end(), ObjMgr() ) );
+		objMgr->PushObj( 0 );
+		objMgr->SetVertexDeclaration( inventory.pDefaultVtDeclaration );
+		objMgr->SetVertexShader( inventory.pDefault3DVShader );
+		objMgr->SetPixelShader( inventory.pDefault3DPShader );
+		objMgr->SetVShaderConstTable( inventory.pDefaultConstable );
 	}
 	else
 		Result = -1;

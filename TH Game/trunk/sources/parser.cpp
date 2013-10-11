@@ -1177,6 +1177,11 @@ parser::parser( script_engine & eng ) : engine( eng )
 		{ "increment", &natives::_increment, 1 },
 		{ "decrement", &natives::_decrement, 1 },
 		{ "ToString", &natives::_ToString, 1 },
+		{ "cos", &natives::_cos, 1 },
+		{ "sin", &natives::_sin, 1 },
+		{ "tan", &natives::_tan, 1 },
+		{ "atan", &natives::_atan, 1 },
+		{ "atan2", &natives::_atan2, 2 },
 		{ "CreateEnemyFromScript", &natives::_CreateEnemyFromScript, 1 },
 		{ "CreateEnemyFromFile", &natives::_CreateEnemyFromFile, 1 },
 		{ "QueueScriptTermination", &natives::_QueueScriptTermination, 0 },
@@ -1198,7 +1203,8 @@ parser::parser( script_engine & eng ) : engine( eng )
 		{ "ADDITIVE_BLEND", &natives::_ADDITIVE_BLEND, 0 },
 		{ "PRIMITIVE_TRIANGLELIST", &natives::_PRIMITIVE_TRIANGLELIST, 0 },
 		{ "PRIMITIVE_TRIANGLESTRIP", &natives::_PRIMITIVE_TRIANGLESTRIP, 0 },
-		{ "PRIMITIVE_TRIANGLEFAN", &natives::_PRIMITIVE_TRIANGLEFAN, 0 }
+		{ "PRIMITIVE_TRIANGLEFAN", &natives::_PRIMITIVE_TRIANGLEFAN, 0 },
+		{ "LoadTexture", &natives::_LoadTexture, 1 }
 	};
 	for( unsigned i = 0; i <  sizeof( funcs ) / sizeof( native_function ); ++i )
 	{

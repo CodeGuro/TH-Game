@@ -30,21 +30,22 @@ script_main main_script //main routine
 task TestObj()
 {
 	let obj = Obj_Create( 4 );
+	LoadTexture( "etama.png" );
 	Obj_SetTexture( obj, "etama.png" );
 
 	Obj_CreateVertex( obj, 4 );
 	Obj_SetPrimitiveType( obj, PRIMITIVE_TRIANGLESTRIP );
-	Obj_SetRenderState( obj, ALPHA_BLEND );
+	Obj_SetRenderState( obj, ADDITIVE_BLEND );
 
-	/*Obj_SetVertexUV( obj, 0, 0, 0 );
+	Obj_SetVertexUV( obj, 0, 0, 0 );
 	Obj_SetVertexUV( obj, 1, 32, 0 );
 	Obj_SetVertexUV( obj, 2, 0, 32 );
 	Obj_SetVertexUV( obj, 3, 32, 32 );
 
-	Obj_SetVertexXY( obj, 0, 0, 0 );
-	Obj_SetVertexXY( obj, 1, 32, 0 );
-	Obj_SetVertexXY( obj, 2, 0, 32 );
-	Obj_SetVertexXY( obj, 3, 32, 32 );
+	Obj_SetVertexXYZ( obj, 0, -16, -16 , 0 );
+	Obj_SetVertexXYZ( obj, 1, 16, -16, 0 );
+	Obj_SetVertexXYZ( obj, 2, -16, 16, 0 );
+	Obj_SetVertexXYZ( obj, 3, 16, 16, 0 );
 
 	Obj_SetVertexColor( obj, 0, 255, 255, 255, 255 );
 	Obj_SetVertexColor( obj, 1, 255, 255, 255, 255 );
@@ -52,11 +53,17 @@ task TestObj()
 	Obj_SetVertexColor( obj, 3, 255, 255, 255, 255 );
 
 
-	Obj_SetSpeed( obj, 0 );
-	Obj_SetAngle( obj, 0 );	*/
-	Obj_SetPosition( obj, 7, 8, 0 );
+	Obj_SetVelocity( obj, cos( 3.14159 / 2 ), sin( 3.14159 / 2 ), 0 );
+	Obj_SetAcceleration( obj, 0.05, 0, 0 );
+	let ang = 0;
+	Obj_SetPosition( obj, 0.5, 0.5, 0 );
 
-	loop( 120 ){ yield; }
+	loop( 120 )
+	{
+		Obj_SetAngle( obj, ang );
+		ang = ang + 0.08333333;
+		yield; 
+	}
 	Obj_Delete( obj );
 	
 

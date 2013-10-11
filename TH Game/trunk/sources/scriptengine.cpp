@@ -164,6 +164,7 @@ size_t script_engine::fetchScriptData( size_t objParam )
 	script_data & data = getScriptData( index = fetchScriptData() );
 	data.objIndex = CreateObject( (unsigned short)objParam );
 	data.type = typeManager.getObjectType();
+
 	return index;
 }
 size_t script_engine::fetchScriptData( D3DPRIMITIVETYPE primType )

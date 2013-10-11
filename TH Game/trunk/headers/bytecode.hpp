@@ -3,6 +3,7 @@
 #include <d3d9.h>
 #include "defstypedefs.hpp"
 #include "ObjMgr.hpp"
+
 enum instruction
 {
 	//virtual commands
@@ -156,6 +157,11 @@ private:
 	static void _increment( script_engine * eng, size_t * argv );
 	static void _decrement( script_engine * eng, size_t * argv );
 	static void _ToString( script_engine * eng, size_t * argv );
+	static void _cos( script_engine * eng, size_t * argv );
+	static void _sin( script_engine * eng, size_t * argv );
+	static void _tan( script_engine * eng, size_t * argv );
+	static void _atan( script_engine * eng, size_t * argv );
+	static void _atan2( script_engine * eng, size_t * argv );
 	static void _CreateEnemyFromScript( script_engine * eng, size_t * argv );
 	static void _CreateEnemyFromFile( script_engine * eng, size_t * argv );
 	static void _QueueScriptTermination( script_engine * eng, size_t * argv );
@@ -178,6 +184,7 @@ private:
 	static void _PRIMITIVE_TRIANGLELIST( script_engine * eng, size_t * argv );
 	static void _PRIMITIVE_TRIANGLESTRIP( script_engine * eng, size_t * argv );
 	static void _PRIMITIVE_TRIANGLEFAN( script_engine * eng, size_t * argv );
+	static void _LoadTexture( script_engine * eng, size_t * argv );
 };
 
 struct script_queue
