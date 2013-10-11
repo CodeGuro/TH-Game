@@ -34,7 +34,7 @@ struct script_data
 	{
 		char character;
 		float real; // boolean evaluated by checking if it's a nonzero value
-		size_t objIndex;
+		unsigned objIndex;
 	};
 	vector< size_t > vec;
 	script_data();
@@ -156,6 +156,25 @@ private:
 	static void _CreateEnemyFromScript( script_engine * eng, size_t * argv );
 	static void _CreateEnemyFromFile( script_engine * eng, size_t * argv );
 	static void _QueueScriptTermination( script_engine * eng, size_t * argv );
+	static void _Obj_Create( script_engine * eng, size_t * argv );
+	static void _Obj_Delete( script_engine * eng, size_t * argv );
+	static void _Obj_SetPosition( script_engine * eng, size_t * argv );
+	static void _Obj_SetTexture( script_engine * eng, size_t * argv );
+	static void _Obj_SetSpeed( script_engine * eng, size_t * argv );
+	static void _Obj_SetAcceleration( script_engine * eng, size_t * argv );
+	static void _Obj_SetAngle( script_engine * eng, size_t * argv );
+	static void _Obj_SetVelocity( script_engine * eng, size_t * argv );
+	static void _Obj_CreateVertex( script_engine * eng, size_t * argv );
+	static void _Obj_SetPrimitiveType( script_engine * eng, size_t * argv );
+	static void _Obj_SetRenderState( script_engine * eng, size_t * argv );
+	static void _Obj_SetVertexUV( script_engine * eng, size_t * argv );
+	static void _Obj_SetVertexXY( script_engine * eng, size_t * argv );
+	static void _Obj_SetVertexColor( script_engine * eng, size_t * argv );
+	static void _ALPHA_BLEND( script_engine * eng, size_t * argv );
+	static void _ADDITIVE_BLEND( script_engine * eng, size_t * argv );
+	static void _PRIMITIVE_TRIANGLELIST( script_engine * eng, size_t * argv );
+	static void _PRIMITIVE_TRIANGLESTRIP( script_engine * eng, size_t * argv );
+	static void _PRIMITIVE_TRIANGLEFAN( script_engine * eng, size_t * argv );
 };
 
 struct script_queue

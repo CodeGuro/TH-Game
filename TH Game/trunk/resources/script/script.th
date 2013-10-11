@@ -3,23 +3,16 @@
                           //optional : [single] anonymous is a script enemy, [stage] anonymous is a stage, []/void - assumed [single]
 #include ".\functions.th" //preprocessor for including external scripts
 
-function foo( let val )
-{
-	print( "Foo!" );
-	print( val );
-}
 script_main main_script //main routine
 {
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
 	{
-		print( "script start!" );
-		CreateEnemyFromScript( "youkai" );
-		CreateEnemyFromFile( "C:\Users\Administrator\\Documents\Visual Studio 2010\Projects\TH-DH\TH-DH\trunk\resources\script\fairy.th" );
+		TestObj();
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{
-		print( "script advances!" );
+		yield;
 	}
 	@Finalize //routine called when the script machine terminates this script
 	{
@@ -30,6 +23,40 @@ script_main main_script //main routine
 	}
 }
 
+task TestObj()
+{
+	let obj = Obj_Create( 4 );
+	Obj_SetTexture( obj, "etama.png" );
+
+	Obj_CreateVertex( obj, 4 );
+	Obj_SetPrimitiveType( obj, PRIMITIVE_TRIANGLESTRIP );
+	Obj_SetRenderState( obj, ALPHA_BLEND );
+
+	Obj_SetVertexUV( obj, 0, 0, 0 );
+	Obj_SetVertexUV( obj, 1, 32, 0 );
+	Obj_SetVertexUV( obj, 2, 0, 32 );
+	Obj_SetVertexUV( obj, 3, 32, 32 );
+
+	Obj_SetVertexXY( obj, 0, 0, 0 );
+	Obj_SetVertexXY( obj, 1, 32, 0 );
+	Obj_SetVertexXY( obj, 2, 0, 32 );
+	Obj_SetVertexXY( obj, 3, 32, 32 );
+
+	Obj_SetVertexColor( obj, 0, 255, 255, 255, 255 );
+	Obj_SetVertexColor( obj, 1, 255, 255, 255, 255 );
+	Obj_SetVertexColor( obj, 2, 255, 255, 255, 255 );
+	Obj_SetVertexColor( obj, 3, 255, 255, 255, 255 );
+
+	Obj_SetPosition( obj, 0, 0, 0 );
+	Obj_SetSpeed( obj, 0 );
+	Obj_SetAngle( obj, 0 );
+
+
+	loop( 120 ){ yield; }
+	Obj_Delete( obj );
+	
+
+}
 
 script_enemy youkai
 {

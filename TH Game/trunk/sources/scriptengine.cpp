@@ -152,6 +152,15 @@ size_t script_engine::fetchScriptData( std::string const & string )
 		getScriptData( index ).vec.push_back( fetchScriptData( string[i] ) );
 	return index;
 }
+size_t script_engine::fetchScriptData( size_t objParam )
+{
+	//let objParam be the object type, 4 = bullet, 5 = effect
+	size_t index;
+	script_data & data = getScriptData( index = fetchScriptData() );
+	data.objIndex = CreateObject( (unsigned short)objParam );
+	data.type = typeManager.getObjectType();
+	return index;
+}
 script_data & script_engine::getScriptData( size_t index )
 {
 	return battery.vecScriptData[ index ];
@@ -172,6 +181,8 @@ void script_engine::releaseScriptData( size_t & index ) //interface function
 				releaseScriptData( dat.vec[i] );
 			dat.vec.resize( 0 );
 			battery.vecScriptDataGarbage.push_back( index );
+			if( dat.type.get_kind() == typeManager.getObjectType().get_kind() )
+				ReleaseObjHandle( dat.objIndex );
 		}
 		index = invalidIndex;
 	}
@@ -205,6 +216,7 @@ void script_engine::copyScriptData( size_t & dst, size_t & src ) //contents copy
 			destDat.character = sourDat.character;
 			break;
 		case type_data::tk_object:
+			AddRefObjHandle( sourDat.objIndex );
 			destDat.objIndex = sourDat.objIndex;
 			break;
 		case type_data::tk_array:
@@ -322,6 +334,12 @@ char script_engine::getCharacterScriptData( size_t index ) const
 {
 	if( index != invalidIndex )
 		return battery.vecScriptData[ index ].character;
+	return -1;
+}
+unsigned script_engine::getObjHandleScriptData( size_t index ) const
+{
+	if( index != invalidIndex )
+		return battery.vecScriptData[ index ].objIndex;
 	return -1;
 }
 
@@ -465,7 +483,7 @@ void script_engine::cleanEngine()
 void script_engine::start()
 {
 	//map the scripts to individual units to be parsed
-	char buff[512] = { 0 };
+	char buff[ 1024 ] = { 0 };
 	GetCurrentDirectory( sizeof( buff ), buff );
 	std::string const path = std::string( buff ) + "\\script";
 
@@ -479,6 +497,7 @@ void script_engine::start()
 	ofn.lpstrTitle = "Open script...";
 	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_FORCESHOWHIDDEN | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST ;
 	GetOpenFileNameA( &ofn );
+	SetCurrentDirectory( buff );
 	scriptPath= ofn.lpstrFile;
 	if( !scriptPath.size() )
 	{

@@ -6,9 +6,10 @@
 #include "bytecode.hpp"
 #include "scriptmachine.hpp"
 #include "parser.hpp"
+#include "Direct3DEngine.hpp"
 
 /*manages all script-related things*/
-class script_engine
+class script_engine : public Direct3DEngine
 {
 private:
 	friend class script_machine;
@@ -59,6 +60,7 @@ private:
 	size_t fetchScriptData( char character );
 	size_t fetchScriptData( bool boolean );
 	size_t fetchScriptData( std::string const & string );
+	size_t fetchScriptData( size_t objParam );
 	script_data & getScriptData( size_t index );
 	void addRefScriptData( size_t index );
 	void scriptDataAssign( size_t & dst, size_t src );
@@ -67,6 +69,7 @@ private:
 	float getRealScriptData( size_t index ) const;
 	char getCharacterScriptData( size_t index ) const;
 	bool getBooleanScriptData( size_t index ) const;
+	unsigned getObjHandleScriptData( size_t index ) const;
 	std::string getStringScriptData( size_t index );
 	void releaseScriptData( size_t & index );
 	size_t fetchScriptEnvironment( size_t blockIndex );

@@ -1,5 +1,5 @@
 #include <Windows.h>
-#include <Direct3DEngine.hpp>
+#include <scriptengine.hpp>
 
 LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
@@ -35,13 +35,15 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	if( !hWnd )
 		return EXIT_FAILURE;
 	MSG msg;
-	Direct3DEngine D3dEng;
+	script_engine D3dEng;
+	D3dEng.start();
 	D3dEng.InitEng( hWnd, MessageBox(NULL, "Fullscreen Mode?", "FULLSCREEN/WINDOW", MB_YESNO | MB_ICONQUESTION ) == IDNO );
 	do
 	{
 		PeekMessage( &msg, NULL, NULL, NULL, PM_REMOVE );
 		TranslateMessage( &msg );
 		DispatchMessage( &msg );
+		D3dEng.advance();
 		D3dEng.RenderFrame( msg );
 	}while( msg.message != WM_QUIT );
 

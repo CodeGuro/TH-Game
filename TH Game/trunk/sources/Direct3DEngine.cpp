@@ -82,9 +82,6 @@ void Direct3DEngine::InitEng( HWND hWnd, bool windowed )
 }
 void Direct3DEngine::InitBattery()
 {
-	char Buff[ 1024 ] = { 0 };
-	GetCurrentDirectory( sizeof( Buff ), Buff );
-	std::string Directory = std::string() + Buff + "\\";
 	LPD3DXBUFFER pshaderbuff = NULL;
 	LPD3DXBUFFER pshadererrbuff = NULL;
 	if( !inventory.pDefaultVDeclaration )
@@ -111,7 +108,7 @@ void Direct3DEngine::InitBattery()
 	}
 	if( !inventory.pDefault3DVShader && !inventory.pDefaultConstable )
 	{
-		if( D3D_OK != D3DXCompileShaderFromFile( (Directory + "Default3D.vs").c_str(), NULL, NULL, "vs_main", "vs_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, &inventory.pDefaultConstable ) )
+		if( D3D_OK != D3DXCompileShaderFromFile( "Default3D.vs", NULL, NULL, "vs_main", "vs_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, &inventory.pDefaultConstable ) )
 			MessageBox( NULL, pshadererrbuff? (LPCSTR)pshadererrbuff->GetBufferPointer() : "Vertex Shader Compiler Error", "DX Shader Error", NULL );
 		d3ddev->CreateVertexShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &inventory.pDefault3DVShader );
 		pshaderbuff->Release();
@@ -119,7 +116,7 @@ void Direct3DEngine::InitBattery()
 	}
 	if( !inventory.pDefault3DPShader )
 	{
-		if( D3D_OK != D3DXCompileShaderFromFile( (Directory + "Default3D.ps").c_str(), NULL, NULL, "ps_main", "ps_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, NULL ) )
+		if( D3D_OK != D3DXCompileShaderFromFile( "Default3D.ps", NULL, NULL, "ps_main", "ps_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, NULL ) )
 			MessageBox( NULL, pshadererrbuff? (LPCSTR)pshadererrbuff->GetBufferPointer() : "Pixel Shader Compiler Error", "DX Shader Error", NULL );	
 		d3ddev->CreatePixelShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &inventory.pDefault3DPShader );
 		pshaderbuff->Release();
@@ -399,18 +396,23 @@ unsigned Direct3DEngine::CreateObject( unsigned short Layer )
 }
 void Direct3DEngine::AddRefObjHandle( unsigned HandleIdx )
 {
-	++inventory.vObjHandles[ HandleIdx ].RefCount;
+	if( HandleIdx != -1 )
+		++inventory.vObjHandles[ HandleIdx ].RefCount;
 }
 void Direct3DEngine::ReleaseObjHandle( unsigned HandleIdx )
 {
-	if( !--inventory.vObjHandles[ HandleIdx ].RefCount )
-		inventory.vObjHandlesGC.push_back( HandleIdx );
+	if( HandleIdx != -1 )
+		if( !--inventory.vObjHandles[ HandleIdx ].RefCount )
+			inventory.vObjHandlesGC.push_back( HandleIdx );
 }
 void Direct3DEngine::ReleaseObject( unsigned HandleIdx )
 {
-	ObjHandle & handle = inventory.vObjHandles[ HandleIdx ];
-	inventory.vLayers[ handle.Layer ].vObjMgr[ handle.MgrIdx ].EraseObj( handle.ObjIdx );
-	if( !inventory.vLayers[ handle.Layer ].vObjMgr[ handle.MgrIdx ].GetObjCount() )
-		inventory.vLayers[ handle.Layer ].vObjMgr.erase( inventory.vLayers[ handle.Layer ].vObjMgr.begin() + handle.MgrIdx );
-	handle.ObjIdx = -1;
+	if( HandleIdx != -1 )
+	{
+		ObjHandle & handle = inventory.vObjHandles[ HandleIdx ];
+		inventory.vLayers[ handle.Layer ].vObjMgr[ handle.MgrIdx ].EraseObj( handle.ObjIdx );
+		if( !inventory.vLayers[ handle.Layer ].vObjMgr[ handle.MgrIdx ].GetObjCount() )
+			inventory.vLayers[ handle.Layer ].vObjMgr.erase( inventory.vLayers[ handle.Layer ].vObjMgr.begin() + handle.MgrIdx );
+		handle.ObjIdx = -1;
+	}
 }

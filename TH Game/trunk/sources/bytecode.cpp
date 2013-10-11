@@ -273,3 +273,15 @@ void natives::_QueueScriptTermination( script_engine * eng, size_t * argv )
 	script_queue const queue = { script_queue::Termination, eng->currentRunningMachine };
 	eng->setQueueScriptMachine( queue );
 }
+void natives::_Obj_Create( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( (size_t)eng->getRealScriptData( argv[ 0 ] ) );
+	eng->scriptDataAssign( argv[ 0 ], tmp );
+	eng->releaseScriptData( tmp );
+}
+void natives::_Obj_Delete( script_engine * eng, size_t * argv )
+{
+	unsigned objHandle = eng->getObjHandleScriptData( argv[ 0 ] );
+	eng->ReleaseObject( objHandle );
+	eng->ReleaseObjHandle( objHandle );
+}
