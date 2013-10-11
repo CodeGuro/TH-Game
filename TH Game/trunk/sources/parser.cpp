@@ -1179,7 +1179,26 @@ parser::parser( script_engine & eng ) : engine( eng )
 		{ "ToString", &natives::_ToString, 1 },
 		{ "CreateEnemyFromScript", &natives::_CreateEnemyFromScript, 1 },
 		{ "CreateEnemyFromFile", &natives::_CreateEnemyFromFile, 1 },
-		{ "QueueScriptTermination", &natives::_QueueScriptTermination, 0 }
+		{ "QueueScriptTermination", &natives::_QueueScriptTermination, 0 },
+		{ "Obj_Create", &natives::_Obj_Create, 1 },
+		{ "Obj_Delete", &natives::_Obj_Delete, 1 },
+		{ "Obj_SetPosition", &natives::_Obj_SetPosition, 4 },
+		{ "Obj_SetTexture", &natives::_Obj_SetTexture, 2 },
+		{ "Obj_SetSpeed", &natives::_Obj_SetSpeed, 2 },
+		{ "Obj_SetAcceleration", &natives::_Obj_SetAcceleration, 4 },
+		{ "Obj_SetAngle", &natives::_Obj_SetAngle, 2 },
+		{ "Obj_SetVelocity", &natives::_Obj_SetVelocity, 4 },
+		{ "Obj_CreateVertex", &natives::_Obj_CreateVertex, 2 },
+		{ "Obj_SetPrimitiveType", &natives::_Obj_SetPrimitiveType, 2 },
+		{ "Obj_SetRenderState", &natives::_Obj_SetRenderState, 2 },
+		{ "Obj_SetVertexUV", &natives::_Obj_SetVertexUV, 4 },
+		{ "Obj_SetVertexXYZ", &natives::_Obj_SetVertexXYZ, 5 },
+		{ "Obj_SetVertexColor", &natives::_Obj_SetVertexColor, 6 },
+		{ "ALPHA_BLEND", &natives::_ALPHA_BLEND, 0 },
+		{ "ADDITIVE_BLEND", &natives::_ADDITIVE_BLEND, 0 },
+		{ "PRIMITIVE_TRIANGLELIST", &natives::_PRIMITIVE_TRIANGLELIST, 0 },
+		{ "PRIMITIVE_TRIANGLESTRIP", &natives::_PRIMITIVE_TRIANGLESTRIP, 0 },
+		{ "PRIMITIVE_TRIANGLEFAN", &natives::_PRIMITIVE_TRIANGLEFAN, 0 }
 	};
 	for( unsigned i = 0; i <  sizeof( funcs ) / sizeof( native_function ); ++i )
 	{

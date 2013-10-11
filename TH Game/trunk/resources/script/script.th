@@ -3,6 +3,10 @@
                           //optional : [single] anonymous is a script enemy, [stage] anonymous is a stage, []/void - assumed [single]
 #include ".\functions.th" //preprocessor for including external scripts
 
+function foo( let val )
+{
+}
+
 script_main main_script //main routine
 {
 	//@[routine name][no args] <- events are routines called during notable events
@@ -32,7 +36,7 @@ task TestObj()
 	Obj_SetPrimitiveType( obj, PRIMITIVE_TRIANGLESTRIP );
 	Obj_SetRenderState( obj, ALPHA_BLEND );
 
-	Obj_SetVertexUV( obj, 0, 0, 0 );
+	/*Obj_SetVertexUV( obj, 0, 0, 0 );
 	Obj_SetVertexUV( obj, 1, 32, 0 );
 	Obj_SetVertexUV( obj, 2, 0, 32 );
 	Obj_SetVertexUV( obj, 3, 32, 32 );
@@ -47,10 +51,10 @@ task TestObj()
 	Obj_SetVertexColor( obj, 2, 255, 255, 255, 255 );
 	Obj_SetVertexColor( obj, 3, 255, 255, 255, 255 );
 
-	Obj_SetPosition( obj, 0, 0, 0 );
-	Obj_SetSpeed( obj, 0 );
-	Obj_SetAngle( obj, 0 );
 
+	Obj_SetSpeed( obj, 0 );
+	Obj_SetAngle( obj, 0 );	*/
+	Obj_SetPosition( obj, 7, 8, 0 );
 
 	loop( 120 ){ yield; }
 	Obj_Delete( obj );

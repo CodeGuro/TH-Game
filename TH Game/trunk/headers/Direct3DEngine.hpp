@@ -5,8 +5,7 @@
 #include <map>
 #include <string>
 #include <Windows.h>
-
-class ObjMgr;
+#include <ObjMgr.hpp>
 
 struct ObjHandle
 {
@@ -62,6 +61,7 @@ public:
 	void InitEng( HWND hWnd, bool windowed );
 	void ToggleWindowed();
 	void LoadTexture( std::string const pathname );
+	LPDIRECT3DTEXTURE9 GetTexture( std::string const & pathname );
 	void DeleteTexture( std::string const pathname );
 	void DrawGridTerrain( unsigned Rows, unsigned Columns, float Spacing );
 	void DrawTexture();
@@ -76,4 +76,6 @@ public:
 	void AddRefObjHandle( unsigned HandleIdx );
 	void ReleaseObjHandle( unsigned HandleIdx );
 	void ReleaseObject( unsigned HandleIdx );
+	Object * GetObject( unsigned HandleIdx );
+	ObjMgr * GetObjMgr( unsigned HandleIdx );
 };

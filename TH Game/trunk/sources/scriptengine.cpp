@@ -14,6 +14,7 @@ script_engine::script_type_manager::script_type_manager()
 	types.push_back( type_data( type_data::tk_array, invalidIndex) );
 	types.push_back( type_data( type_data::tk_array, (size_t)2 ) );
 	types.push_back( type_data( type_data::tk_object, invalidIndex ) );
+	types.push_back( type_data( type_data::tk_misc, invalidIndex ) );
 }
 type_data script_engine::script_type_manager::getRealType() const
 {
@@ -34,6 +35,10 @@ type_data script_engine::script_type_manager::getStringType() const
 type_data script_engine::script_type_manager::getObjectType() const
 {
 	return type_data( type_data::tk_object, invalidIndex );
+}
+type_data script_engine::script_type_manager::getMiscType() const
+{
+	return type_data( type_data::tk_misc, invalidIndex );
 }
 type_data script_engine::script_type_manager::getArrayType() const
 {
@@ -159,6 +164,22 @@ size_t script_engine::fetchScriptData( size_t objParam )
 	script_data & data = getScriptData( index = fetchScriptData() );
 	data.objIndex = CreateObject( (unsigned short)objParam );
 	data.type = typeManager.getObjectType();
+	return index;
+}
+size_t script_engine::fetchScriptData( D3DPRIMITIVETYPE primType )
+{
+	size_t index;
+	script_data & data = getScriptData( index = fetchScriptData() );
+	data.primitiveType = primType;
+	getScriptData( index ).type = typeManager.getMiscType();
+	return index;
+}
+size_t script_engine::fetchScriptData( BlendType blend )
+{
+	size_t index;
+	script_data & data = getScriptData( index = fetchScriptData() );
+	data.blendMode = blend;
+	data.type = typeManager.getMiscType();
 	return index;
 }
 script_data & script_engine::getScriptData( size_t index )
@@ -341,6 +362,18 @@ unsigned script_engine::getObjHandleScriptData( size_t index ) const
 	if( index != invalidIndex )
 		return battery.vecScriptData[ index ].objIndex;
 	return -1;
+}
+D3DPRIMITIVETYPE script_engine::getPrimitiveTypeScriptData( size_t index ) const
+{
+	if( index != invalidIndex )
+		return battery.vecScriptData[ index ].primitiveType;
+	return (D3DPRIMITIVETYPE)-1;
+}
+BlendType script_engine::getBlendModeScriptData( size_t index ) const
+{
+	if( index != invalidIndex )
+		return battery.vecScriptData[ index ].blendMode;
+	return (BlendType)-1;
 }
 
 //script engine - script environment - related functions

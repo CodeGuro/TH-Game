@@ -182,6 +182,13 @@ void Direct3DEngine::LoadTexture( std::string const pathname )
 		D3DXCreateTextureFromFile( d3ddev, pathname.c_str(), &inventory.mapTextures[ pathname ] );
 	}
 }
+LPDIRECT3DTEXTURE9 Direct3DEngine::GetTexture( std::string const & pathname )
+{
+	auto it = inventory.mapTextures.find( pathname );
+	if( it == inventory.mapTextures.end() )
+		return 0;
+	return it->second;
+}
 void Direct3DEngine::DeleteTexture( std::string const pathname )
 {
 	auto it = inventory.mapTextures.find( pathname );
@@ -412,7 +419,30 @@ void Direct3DEngine::ReleaseObject( unsigned HandleIdx )
 		ObjHandle & handle = inventory.vObjHandles[ HandleIdx ];
 		inventory.vLayers[ handle.Layer ].vObjMgr[ handle.MgrIdx ].EraseObj( handle.ObjIdx );
 		if( !inventory.vLayers[ handle.Layer ].vObjMgr[ handle.MgrIdx ].GetObjCount() )
+		{
 			inventory.vLayers[ handle.Layer ].vObjMgr.erase( inventory.vLayers[ handle.Layer ].vObjMgr.begin() + handle.MgrIdx );
+			handle.MgrIdx = -1;
+		}
 		handle.ObjIdx = -1;
 	}
+}
+Object * Direct3DEngine::GetObject( unsigned HandleIdx )
+{
+	if( HandleIdx != -1 )
+	{
+		ObjHandle & handle = inventory.vObjHandles[ HandleIdx ];
+		if( handle.ObjIdx != -1 && handle.MgrIdx != -1 )
+			return inventory.vLayers[ handle.Layer ].vObjMgr[ handle.MgrIdx ].GetObjPtr( handle.ObjIdx );
+	}
+	return 0;
+}
+ObjMgr * Direct3DEngine::GetObjMgr( unsigned HandleIdx )
+{
+	if( HandleIdx != -1 )
+	{
+		ObjHandle & handle = inventory.vObjHandles[ HandleIdx ];
+		if( handle.MgrIdx != -1 )
+			return &inventory.vLayers[ handle.Layer ].vObjMgr[ handle.MgrIdx ];
+	}
+	return 0;
 }

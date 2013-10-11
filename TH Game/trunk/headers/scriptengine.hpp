@@ -42,6 +42,7 @@ private:
 		type_data getCharacterType() const;
 		type_data getStringType() const;
 		type_data getObjectType() const;
+		type_data getMiscType() const;
 		type_data getArrayType() const;
 		type_data getArrayType( size_t element ); //an array of some type
 	};
@@ -61,6 +62,8 @@ private:
 	size_t fetchScriptData( bool boolean );
 	size_t fetchScriptData( std::string const & string );
 	size_t fetchScriptData( size_t objParam );
+	size_t fetchScriptData( D3DPRIMITIVETYPE primType );
+	size_t fetchScriptData( BlendType blend );
 	script_data & getScriptData( size_t index );
 	void addRefScriptData( size_t index );
 	void scriptDataAssign( size_t & dst, size_t src );
@@ -70,6 +73,8 @@ private:
 	char getCharacterScriptData( size_t index ) const;
 	bool getBooleanScriptData( size_t index ) const;
 	unsigned getObjHandleScriptData( size_t index ) const;
+	D3DPRIMITIVETYPE getPrimitiveTypeScriptData( size_t index ) const;
+	BlendType getBlendModeScriptData( size_t index ) const;
 	std::string getStringScriptData( size_t index );
 	void releaseScriptData( size_t & index );
 	size_t fetchScriptEnvironment( size_t blockIndex );

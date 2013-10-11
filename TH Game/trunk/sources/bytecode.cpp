@@ -1,6 +1,7 @@
 #include <bytecode.hpp>
 #include <scriptengine.hpp>
 #include <iostream>
+#include <assert.h>
 
 type_data::type_data() : kind( tk_invalid ), element( invalidIndex )
 {
@@ -284,4 +285,110 @@ void natives::_Obj_Delete( script_engine * eng, size_t * argv )
 	unsigned objHandle = eng->getObjHandleScriptData( argv[ 0 ] );
 	eng->ReleaseObject( objHandle );
 	eng->ReleaseObjHandle( objHandle );
+}
+void natives::_Obj_SetPosition( script_engine * eng, size_t * argv )
+{
+	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( obj )
+		obj->SetPosition( D3DXVECTOR3( eng->getRealScriptData( argv[ 1 ] ), eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) ) );
+}
+void natives::_Obj_SetTexture( script_engine * eng, size_t * argv )
+{
+	ObjMgr * objmgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( objmgr )
+		objmgr->SetTexture( eng->GetTexture( eng->getStringScriptData( argv[ 1 ] ) ) );
+}
+void natives::_Obj_SetSpeed( script_engine * eng, size_t * argv )
+{
+	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( obj )
+		obj->SetSpeed( eng->getRealScriptData( argv[ 1 ] ) );
+}
+void natives::_Obj_SetAcceleration( script_engine * eng, size_t * argv )
+{
+	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( obj )
+		obj->SetAccel( D3DXVECTOR3( eng->getRealScriptData( argv[ 1 ] ), eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) ) );
+}
+void natives::_Obj_SetAngle( script_engine * eng, size_t * argv )
+{
+	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( obj )
+		obj->SetAngle( eng->getRealScriptData( argv[ 1 ] ) );
+}
+void natives::_Obj_SetVelocity( script_engine * eng, size_t * argv )
+{
+	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( obj )
+		obj->SetVelocity( D3DXVECTOR3( eng->getRealScriptData( argv[ 1 ] ), eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) ) );
+}
+void natives::_Obj_CreateVertex( script_engine * eng, size_t * argv )
+{
+	ObjMgr * objmgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( objmgr )
+		objmgr->SetVertexCount( (unsigned)eng->getRealScriptData( argv[ 1 ] ) );
+}
+void natives::_Obj_SetPrimitiveType( script_engine * eng, size_t * argv )
+{
+	ObjMgr * objmgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( objmgr )
+		objmgr->SetPrimitiveType( eng->getPrimitiveTypeScriptData( argv[ 1 ] ) );
+}
+void natives::_Obj_SetRenderState( script_engine * eng, size_t * argv )
+{
+	ObjMgr * objMgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( objMgr )
+		objMgr->SetBlendMode( eng->getBlendModeScriptData( argv[ 1 ] ) );
+}
+void natives::_Obj_SetVertexUV( script_engine * eng, size_t * argv )
+{
+	ObjMgr * objMgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( objMgr )
+	{
+		Vertex * v = objMgr->GetLibVertexPtr( (unsigned)eng->getRealScriptData( argv[ 1 ] ) );
+		v->tex = D3DXVECTOR2( eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) );
+	}
+}
+void natives::_Obj_SetVertexXYZ( script_engine * eng, size_t * argv )
+{
+	ObjMgr * objMgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( objMgr )
+	{
+		Vertex * v = objMgr->GetLibVertexPtr( (unsigned)eng->getRealScriptData( argv[ 1 ] ) );
+		v->pos = D3DXVECTOR3( eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ), eng->getRealScriptData( argv[ 4 ] ) );
+	}
+}
+void natives::_Obj_SetVertexColor( script_engine * eng, size_t * argv )
+{
+	ObjMgr * objMgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( objMgr )
+	{
+		Vertex * v = objMgr->GetLibVertexPtr( (unsigned)eng->getRealScriptData( argv[ 1 ] ) );
+		v->color = D3DCOLOR_ARGB( (UCHAR)eng->getRealScriptData( argv[ 2 ] ), (UCHAR)eng->getRealScriptData( argv[ 3 ] ), (UCHAR)eng->getRealScriptData( argv[ 4 ] ), (UCHAR)eng->getRealScriptData( argv[ 5 ] ) );
+	}
+}
+void natives::_ALPHA_BLEND( script_engine * eng, size_t * argv )
+{
+	assert( argv[ 0 ] == invalidIndex );
+	argv[ 0 ] = eng->fetchScriptData( BlendAlpha );
+}
+void natives::_ADDITIVE_BLEND( script_engine * eng, size_t * argv )
+{
+	assert( argv[ 0 ] == invalidIndex );
+	argv[ 0 ] = eng->fetchScriptData( BlendAdd );
+}
+void natives::_PRIMITIVE_TRIANGLELIST( script_engine * eng, size_t * argv )
+{
+	assert( argv[ 0 ] == invalidIndex );
+	argv[ 0 ] = eng->fetchScriptData( D3DPT_TRIANGLELIST );
+}	
+void natives::_PRIMITIVE_TRIANGLESTRIP( script_engine * eng, size_t * argv )
+{
+	assert( argv[ 0 ] == invalidIndex );
+	argv[ 0 ] = eng->fetchScriptData( D3DPT_TRIANGLESTRIP );
+}
+void natives::_PRIMITIVE_TRIANGLEFAN( script_engine * eng, size_t * argv )
+{
+	assert( argv[ 0 ] == invalidIndex );
+	argv[ 0 ] = eng->fetchScriptData( D3DPT_TRIANGLEFAN );
 }

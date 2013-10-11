@@ -1,7 +1,8 @@
 #pragma once
 #include <string>
+#include <d3d9.h>
 #include "defstypedefs.hpp"
-
+#include "ObjMgr.hpp"
 enum instruction
 {
 	//virtual commands
@@ -16,7 +17,7 @@ struct type_data
 {
 	enum type_kind
 	{
-		tk_real, tk_boolean, tk_char, tk_array, tk_object, tk_invalid
+		tk_real, tk_boolean, tk_char, tk_array, tk_object, tk_misc, tk_invalid
 	};
 	type_kind kind;
 	size_t element; //vector index
@@ -35,6 +36,8 @@ struct script_data
 		char character;
 		float real; // boolean evaluated by checking if it's a nonzero value
 		unsigned objIndex;
+		D3DPRIMITIVETYPE primitiveType;
+		BlendType blendMode;
 	};
 	vector< size_t > vec;
 	script_data();
@@ -168,7 +171,7 @@ private:
 	static void _Obj_SetPrimitiveType( script_engine * eng, size_t * argv );
 	static void _Obj_SetRenderState( script_engine * eng, size_t * argv );
 	static void _Obj_SetVertexUV( script_engine * eng, size_t * argv );
-	static void _Obj_SetVertexXY( script_engine * eng, size_t * argv );
+	static void _Obj_SetVertexXYZ( script_engine * eng, size_t * argv );
 	static void _Obj_SetVertexColor( script_engine * eng, size_t * argv );
 	static void _ALPHA_BLEND( script_engine * eng, size_t * argv );
 	static void _ADDITIVE_BLEND( script_engine * eng, size_t * argv );
