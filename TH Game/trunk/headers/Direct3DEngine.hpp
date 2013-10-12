@@ -66,9 +66,7 @@ public:
 	void DrawGridTerrain( unsigned Rows, unsigned Columns, float Spacing );
 	void DrawTexture();
 	void DrawFPS();
-	void TestObjMgr();
 	void DrawObjects();
-	void AdvanceObjects();
 	void RenderFrame( MSG const Msg );
 	void ProcUserInput( MSG const Msg );
 	LPDIRECT3DDEVICE9 GetDevice();

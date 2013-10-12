@@ -26,12 +26,12 @@ ObjMgr & ObjMgr::operator = ( ObjMgr const & source )
 	if( PShader ) PShader->Release();
 	if( Constable ) Constable->Release();
 
-	source.pTexture->AddRef();
-	source.VertexBuffer->AddRef();
-	source.VDeclaration->AddRef();
-	source.VShader->AddRef();
-	source.PShader->AddRef();
-	source.Constable->AddRef();
+	if( source.pTexture ) source.pTexture->AddRef();
+	if( source.VertexBuffer ) source.VertexBuffer->AddRef();
+	if( source.VDeclaration ) source.VDeclaration->AddRef();
+	if( source.VShader ) source.VShader->AddRef();
+	if( source.PShader ) source.PShader->AddRef();
+	if( source.Constable ) source.Constable->AddRef();
 
 	pTexture = source.pTexture;
 	PrimitiveType = source.PrimitiveType;
@@ -40,7 +40,7 @@ ObjMgr & ObjMgr::operator = ( ObjMgr const & source )
 	VShader = source.VShader;
 	PShader = source.PShader;
 	Constable = source.Constable;
-	BlendOp = BlendAdd;
+	BlendOp = source.BlendOp;
 	SurfaceDesc = source.SurfaceDesc;
 	VertexCount = source.VertexCount;
 	VBufferLength = source.VBufferLength;
@@ -176,14 +176,17 @@ unsigned ObjMgr::PushEmptyObj()
 }
 void ObjMgr::EraseObj( unsigned const Index )
 {
-	unsigned ObjIdx = vecIntermediateLayer[ Index ].ObjIdx;
-	vecIntermediateLayerGC.push_back( Index );
-	for( unsigned i = 0; i < vecIntermediateLayer.size(); ++i )
+	if( Index != -1 )
 	{
-		if( vecIntermediateLayer[ i ].ObjIdx > ObjIdx )
-			--(vecIntermediateLayer[ i ].ObjIdx);
+		unsigned ObjIdx = vecIntermediateLayer[ Index ].ObjIdx;
+		vecIntermediateLayerGC.push_back( Index );
+		for( unsigned i = 0; i < vecIntermediateLayer.size(); ++i )
+		{
+			if( vecIntermediateLayer[ i ].ObjIdx > ObjIdx )
+				--(vecIntermediateLayer[ i ].ObjIdx);
+		}
+		vecObjects.erase( vecObjects.begin() + ObjIdx );
 	}
-	vecObjects.erase( vecObjects.begin() + ObjIdx );
 }
 Object & ObjMgr::GetObjRef( unsigned const Index )
 {

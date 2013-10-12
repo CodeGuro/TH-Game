@@ -36,8 +36,8 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 		return EXIT_FAILURE;
 	MSG msg;
 	script_engine D3dEng;
-	D3dEng.start();
 	D3dEng.InitEng( hWnd, MessageBox(NULL, "Fullscreen Mode?", "FULLSCREEN/WINDOW", MB_YESNO | MB_ICONQUESTION ) == IDNO );
+	D3dEng.start();
 	do
 	{
 		PeekMessage( &msg, NULL, NULL, NULL, PM_REMOVE );
