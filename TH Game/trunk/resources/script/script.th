@@ -35,7 +35,7 @@ task Task()
 		let looper = 30;
 		let x = rand_int( 100, 500 );
 		let y = rand_int( 0, 100 );
-		loop( looper )
+		loop( 60 )
 		{
 			TestObj( a, x, y );
 			a = a + 2 * 3.1415926 / looper;
@@ -73,16 +73,22 @@ task TestObj( let angle, let posx, let posy )
 	Obj_SetVelocity( obj, cos( angle ), sin( angle ), 0 );
 	Obj_SetAngle( obj, angle + 3.14159 / 2 );
 	Obj_SetPosition( obj, posx, posy, 0 );
-
-	loop( 600 )
-	{
-		yield; 
-	}
+	wait( 30 );
+	let ang = rand_int( 0, 360 ) * 3.14159265 / 180;
+	Obj_SetVelocity( obj, cos( ang ), sin ( ang ), 0 );
+	Obj_SetAngle( obj, ang + 3.14159265/2 );
+	wait( 60 );
 	Obj_Delete( obj );
 	
 
 }
-
+function wait( let v )
+{
+	loop( v )
+	{
+		yield;
+	}
+}
 script_enemy youkai
 {
 	@Initialize

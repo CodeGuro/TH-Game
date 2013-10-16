@@ -64,7 +64,6 @@ private:
 	LPDIRECT3DPIXELSHADER9 PShader;
 	LPD3DXCONSTANTTABLE Constable;
 	std::vector< Vertex > vecVertexLibrary;
-	std::vector< Vertex > vecVertices;
 	std::vector< Object > vecObjects;
 	std::vector< ObjHandle > vecIntermediateLayer;
 	std::vector< unsigned > vecIntermediateLayerGC;

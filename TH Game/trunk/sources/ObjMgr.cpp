@@ -44,7 +44,6 @@ ObjMgr & ObjMgr::operator = ( ObjMgr const & source )
 	SurfaceDesc = source.SurfaceDesc;
 	VertexCount = source.VertexCount;
 	VBufferLength = source.VBufferLength;
-	vecVertices = source.vecVertices;
 	vecObjects = source.vecObjects;
 	vecIntermediateLayer = source.vecIntermediateLayer;
 	vecIntermediateLayerGC = source.vecIntermediateLayerGC;
@@ -62,7 +61,6 @@ ObjMgr::~ObjMgr()
 void ObjMgr::SetVertexCount( unsigned const Count )
 {
 	VertexCount = Count;
-	vecVertices.resize( vecObjects.size() * VertexCount );
 }
 void ObjMgr::SetTexture( LPDIRECT3DTEXTURE9 pTex )
 {
@@ -211,17 +209,18 @@ void ObjMgr::AdvanceTransformedDraw( Direct3DEngine * D3DEng )
 
 		LPDIRECT3DDEVICE9 d3ddev = D3DEng->GetDevice();
 		unsigned s = vecObjects.size();
-		vecVertices.resize( vecObjects.size() * VertexCount );
 		D3DXMATRIX mat;
-		if( VBufferLength < vecVertices.size() * sizeof( Vertex ) )
+		if( VBufferLength < vecObjects.size() * VertexCount * sizeof( Vertex ) )
 		{
-			VBufferLength = vecVertices.size() * sizeof( Vertex );
+			VBufferLength = vecObjects.size() * VertexCount * sizeof( Vertex );
 			if( VertexBuffer ) VertexBuffer->Release();
-			d3ddev->CreateVertexBuffer( vecVertices.size() * sizeof( Vertex ), D3DUSAGE_WRITEONLY, 0, D3DPOOL_MANAGED, &VertexBuffer, NULL );
+			d3ddev->CreateVertexBuffer(  vecObjects.size() * VertexCount * sizeof( Vertex ), D3DUSAGE_WRITEONLY, 0, D3DPOOL_MANAGED, &VertexBuffer, NULL );
 		}
+		Vertex * vtxptr;
+		VertexBuffer->Lock( 0, 0, (void**)&vtxptr, 0 );
 		for( unsigned u = 0; u < s; ++u )
 		{
-			Vertex * dst = &vecVertices[ u * VertexCount ];
+			Vertex * dst = &vtxptr[ u * VertexCount ];//&vecVertices[ u * VertexCount ];
 			Vertex * src = &vecVertexLibrary[ vecObjects[ u ].libidx ];
 			D3DXMatrixTransformation( &mat, NULL, NULL, &vecObjects[ u ].scale, NULL, &( vecObjects[ u ].direction * vecObjects[ u ].orient ), &vecObjects[ u ].position );
 			for( unsigned v = 0; v < VertexCount; ++v )
@@ -234,11 +233,8 @@ void ObjMgr::AdvanceTransformedDraw( Direct3DEngine * D3DEng )
 			};
 			vecObjects[ u ].Advance();
 		}
-		void * ptr;
-		DWORD ZSet;
-		VertexBuffer->Lock( 0, 0, &ptr, NULL );
-		memcpy( ptr, &vecVertices[ 0 ], sizeof( Vertex ) * vecVertices.size() );
 		VertexBuffer->Unlock();
+		DWORD ZSet;
 		d3ddev->SetTexture( 0, pTexture );
 		d3ddev->SetVertexDeclaration( VDeclaration );
 		d3ddev->SetVertexShader( VShader );
