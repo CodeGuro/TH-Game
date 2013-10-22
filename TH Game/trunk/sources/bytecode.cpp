@@ -427,3 +427,8 @@ void natives::_LoadTexture( script_engine * eng, size_t * argv )
 {
 	eng->LoadTexture( eng->getStringScriptData( argv[ 0 ] ) );
 }
+void natives::_LoadUserShotData( script_engine * eng, size_t * argv )
+{
+	std::string scriptPath = eng->getStringScriptData( argv[ 0 ] );
+	eng->scriptParser.parseShotScript( scriptPath );
+}

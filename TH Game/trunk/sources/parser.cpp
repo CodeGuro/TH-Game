@@ -606,6 +606,34 @@ void parser::raiseError( std::string errmsg, error::errReason reason)
 		err.fivelines += *it;
 	}
 
+	if( scriptMgr.pragmaFiles.size() )
+		engine.registerInvalidMainScript( scriptMgr.pragmaFiles[ 0 ] );
+	scriptMgr.pragmaFiles.resize( 0 );
+	std::stringstream sstr;
+	std::stringstream sstrAdditional;
+	std::string title;
+	switch( err.reason )
+	{
+	case error::er_internal:
+		title = "INTERNAL PARSER ERROR";
+		break;
+	case error::er_parser:
+	case error::er_syntax:
+		title = ( err.reason == error::er_parser? "Parser Error" : "Syntax Error" );
+		sstrAdditional << err.errmsg;
+		break;
+	case error::er_symbol:
+		title = "Syntax / Linkage Error";
+		sstrAdditional << "\"" << err.errmsg << "\"" << " has already been defined";
+		break;
+	case error::er_usymbol:
+		title = "Syntax Error";
+		sstrAdditional << "\"" << err.errmsg << "\"" << " undefined symbol";
+	}
+	sstr << err.pathDoc << "\n\n" << "line " << err.line << "\n\n"
+		<< sstrAdditional.str() << "\n\n" << err.fivelines << "\n" << "....." << std::endl;
+	MessageBoxA( NULL, sstr.str().c_str(), title.c_str(), NULL );
+
 	throw err;
 }
 parser::symbol * parser::search( std::string const & name )
@@ -646,30 +674,6 @@ void parser::parseScript( std::string const & scriptPath )
 		if( scriptMgr.pragmaFiles.size() )
 			engine.registerInvalidMainScript( scriptMgr.pragmaFiles[ 0 ] );
 		scriptMgr.pragmaFiles.resize( 0 );
-		std::stringstream sstr;
-		std::stringstream sstrAdditional;
-		std::string title;
-		switch( err.reason )
-		{
-		case error::er_internal:
-			title = "INTERNAL PARSER ERROR";
-			break;
-		case error::er_parser:
-		case error::er_syntax:
-			title = ( err.reason == error::er_parser? "Parser Error" : "Syntax Error" );
-			sstrAdditional << err.errmsg;
-			break;
-		case error::er_symbol:
-			title = "Syntax / Linkage Error";
-			sstrAdditional << "\"" << err.errmsg << "\"" << " has already been defined";
-			break;
-		case error::er_usymbol:
-			title = "Syntax Error";
-			sstrAdditional << "\"" << err.errmsg << "\"" << " undefined symbol";
-		}
-		sstr << err.pathDoc << "\n\n" << "line " << err.line << "\n\n"
-			<< sstrAdditional.str() << "\n\n" << err.fivelines << "\n" << "....." << std::endl;
-		MessageBoxA( NULL, sstr.str().c_str(), title.c_str(), NULL );
 		engine.raiseError( "Parser did not finish properly" );
 	}
 }
@@ -1137,7 +1141,168 @@ std::string parser::getCurrentScriptPath() const
 {
 	return scriptMgr.currentScriptPath;
 }
+void parser::parseShotScript( std::string const & scriptPath )
+{
+	try
+	{
+		scriptMgr.scriptString = std::string( (std::istreambuf_iterator< char >( std::ifstream( scriptPath ) ) ), std::istreambuf_iterator< char >() );
+		scriptMgr.currentScriptPath = scriptPath;
+		if( !scriptMgr.scriptString.size() )
+			raiseError( "User shot data did not load", error::er_parser );
+		lexicon = lexer( scriptMgr.scriptString.c_str() );
+		do
+		{
+			if( lexicon.getToken() == tk_word )
+			{
+				std::string word = lexicon.getWord();
+				lexicon.advance();
+				if( word == "ShotData" )
+					parseShotData();
+			}
+			else
+				lexicon.advance();
+		} while( lexicon.getToken() != tk_end );
+	}
+	catch( error const & err )
+	{
+		engine.raiseError( "Parser did not finish properly" );
+	}
+}
+void parser::parseShotData()
+{
+	if( lexicon.getToken() != tk_opencur )
+		raiseError( "\"{\" expected", error::er_syntax );
+	lexicon.advance();
 
+	size_t id;
+	BlendType render;
+	float angular_velocity;
+	float rec[4];
+	float col[4];
+	vector< vector< float > > animation_data;
+	unsigned delay;
+
+	while( lexicon.getToken() == tk_word )
+	{
+		std::string word = lexicon.getWord();
+
+		if( word == "id" )
+		{
+			if( lexicon.advance() != tk_assign )
+				raiseError( "\"=\" expected", error::er_syntax );
+			if( lexicon.advance() != tk_real )
+				raiseError( "id lexer::tk_real expected", error::er_syntax );
+			id = (size_t)lexicon.getReal();
+			lexicon.advance();
+		}
+		else if( word == "render" )
+		{
+			if( lexicon.advance() != tk_assign )
+				raiseError( "\"=\" expected", error::er_syntax );
+			if( lexicon.advance() != tk_word )
+				raiseError( "render lexer::tk_word expected", error::er_syntax );
+			if( lexicon.getWord() == "ALPHA_BLEND" ) render = BlendAlpha;
+			else if( lexicon.getWord() == "ADDITIVE_BLEND" ) render = BlendAdd;
+			else raiseError( "render lexer::tk_word expected for ALPHA_BLEND or ADDITIVE_BLEND", error::er_syntax );
+			lexicon.advance();
+		}
+		else if( word == "rect" )
+		{
+			if( lexicon.advance() != tk_assign )
+				raiseError( "\"=\" expected", error::er_syntax );
+			if( lexicon.advance() != tk_lparen )
+				raiseError( "\"(\" expected", error::er_syntax );
+			
+			unsigned u;
+			for( u = 0; lexicon.advance() == tk_real && u < 4 ; )
+			{
+				rec[ u++ ] = lexicon.getReal();
+				if( lexicon.advance() != tk_comma )
+					break;
+			}
+
+			if( lexicon.getToken() != tk_rparen )
+				raiseError( "\")\" expected", error::er_syntax );
+			if( u != 4 ) raiseError( "rect expects four elements", error::er_syntax );
+			lexicon.advance();
+		}
+		else if( word == "color" )
+		{
+			if( lexicon.advance() != tk_assign )
+				raiseError( "\"=\" expected", error::er_syntax );
+			if( lexicon.advance() != tk_lparen )
+				raiseError( "\"(\" expected", error::er_syntax );
+			
+			unsigned u;
+			for( u = 0; lexicon.advance() == tk_real && u < 4; )
+			{
+				col[ u++ ] = lexicon.getReal();
+				if( lexicon.advance() != tk_comma )
+					break;
+			}
+
+			if( lexicon.getToken() != tk_rparen )
+				raiseError( "\")\" expected", error::er_syntax );
+			if( u != 4 ) raiseError( "color expects four elements", error::er_syntax );
+			lexicon.advance();
+		}
+		else if( word == "angular_velocity" )
+		{
+			if( lexicon.advance() != tk_assign )
+				raiseError( "\"=\" expected", error::er_syntax );
+			if( lexicon.advance() != tk_real )
+				raiseError( "lexer::tk_real expected", error::er_syntax );
+			angular_velocity = lexicon.getReal();
+			lexicon.advance();
+		}
+		else if( word == "AnimationData" )
+		{
+			if( lexicon.advance() != tk_opencur )
+				raiseError( "\"{\" expected", error::er_syntax );
+			unsigned j = 0;
+			while( lexicon.advance() == tk_word && lexicon.getWord() == "animation_data" )
+			{
+				animation_data.resize( 1 + animation_data.size() );
+				animation_data[ j ].resize( 5 );
+				if( lexicon.advance() != tk_assign )
+					raiseError( "\"=\" expected", error::er_syntax );
+				if( lexicon.advance() != tk_lparen )
+					raiseError( "\"(\" expected", error::er_syntax );
+			
+				unsigned u;
+				for( u = 0; lexicon.advance() == tk_real && u < 5 ; )
+				{
+					animation_data[ j ][ u++ ] = lexicon.getReal();
+					if( lexicon.advance() != tk_comma )
+						break;
+				}
+
+				if( lexicon.getToken() != tk_rparen )
+					raiseError( "\")\" expected", error::er_syntax );
+				if( u != 5 ) raiseError( "animation_data expects five elements", error::er_syntax );
+				++j;
+			}
+
+			if( lexicon.getToken() != tk_closecur )
+				raiseError( "\"}\" expected", error::er_syntax );
+		}
+		else if( lexicon.getWord() == "delay" )
+		{
+			if( lexicon.advance() != tk_assign )
+				raiseError( "\"=\" expected", error::er_syntax );
+			if( lexicon.advance() != tk_real )
+				raiseError( "lexer::tk_real expected", error::er_syntax );
+			delay = (unsigned)lexicon.getReal();
+			lexicon.advance();
+		}
+		else
+			raiseError( lexicon.getWord(), error::er_usymbol );
+	}
+
+	if( lexicon.getToken() != tk_closecur )
+		raiseError( "\"}\" expected", error::er_syntax );
+	lexicon.advance();
+}
 struct native_function
 {
 	char const * name;
@@ -1204,7 +1369,8 @@ parser::parser( script_engine & eng ) : engine( eng )
 		{ "PRIMITIVE_TRIANGLELIST", &natives::_PRIMITIVE_TRIANGLELIST, 0 },
 		{ "PRIMITIVE_TRIANGLESTRIP", &natives::_PRIMITIVE_TRIANGLESTRIP, 0 },
 		{ "PRIMITIVE_TRIANGLEFAN", &natives::_PRIMITIVE_TRIANGLEFAN, 0 },
-		{ "LoadTexture", &natives::_LoadTexture, 1 }
+		{ "LoadTexture", &natives::_LoadTexture, 1 },
+		{ "LoadUserShotData", &natives::_LoadUserShotData, 1 }
 	};
 	for( unsigned i = 0; i <  sizeof( funcs ) / sizeof( native_function ); ++i )
 	{

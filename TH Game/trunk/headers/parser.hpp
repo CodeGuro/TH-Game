@@ -98,7 +98,7 @@ private:
 	void parseInlineBlock( block::block_kind const bk_kind ); //auto-call (if/loops)
 	void parseBlock( symbol const symSub, vector< std::string > const & args );
 	void scanCurrentScope( block::block_kind kind, vector< std::string > const & args );
-	void parsePreProcess();
+	void parseShotData();
 	block & getBlock(); //get the current working block
 	void pushCode( code const & val ); //on the current working block
 	void mapScriptPaths( std::string const & pathStart );
@@ -110,5 +110,6 @@ private:
 public:
 	parser( script_engine & eng ); //automatic parsing, feed data to the engine's battery
 	void parseScript( std::string const & scriptPath );
+	void parseShotScript( std::string const & scriptPath );
 	std::string getCurrentScriptPath() const;
 };

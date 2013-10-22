@@ -12,6 +12,7 @@ script_main main_script //main routine
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
 	{
+		LoadUserShotData( "C:\Users\Administrator\Documents\Visual Studio 2010\Projects\TH Game\TH Game\trunk\resources\script\ShotData.th" );
 		Task();
 	}
 	@MainLoop //routine called every frame post-Initialize

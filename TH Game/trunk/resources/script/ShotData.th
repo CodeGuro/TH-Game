@@ -1,0 +1,24 @@
+#UserShotData
+
+ShotData
+{
+	id = 0
+	render = ALPHA_BLEND
+	delay = 0
+	angular_velocity = 0.3
+	rect = ( 64, 64, 80, 80 )
+	color = ( 255, 255, 255, 255 )
+}
+ShotData
+{
+	id = 1
+	render = ADDITIVE_BLEND
+	delay = 0
+	AnimationData
+	{
+		animation_data = ( 16, 0, 0, 16, 16 )
+		animation_data = ( 16, 16, 0, 32, 16 )
+		animation_data = ( 16, 32, 0, 48, 16 )
+		animation_data = ( 16, 48, 0, 64, 16 )
+	}
+}

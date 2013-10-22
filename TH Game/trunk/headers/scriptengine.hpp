@@ -29,6 +29,7 @@ private:
 		vector< script_container > vecScripts;
 		std::map< std::string, size_t > mappedScripts;
 		std::map< std::string, size_t > mappedMainScripts;
+		std::map< std::string, size_t > mappedShotScripts;
 		vector< script_queue > vecQueuedScripts;
 	};
 	class script_type_manager
