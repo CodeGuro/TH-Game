@@ -39,6 +39,9 @@
     <ClInclude Include="trunk\headers\scriptmachine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="trunk\headers\inventory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="trunk\sources\bytecode.cpp">
@@ -60,6 +63,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="trunk\sources\WinMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="trunk\sources\inventory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

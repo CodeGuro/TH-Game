@@ -2,7 +2,7 @@
 #include <ObjMgr.hpp>
 #include <sstream>
 
-Direct3DEngine::Battery::Battery() : pDefaultVDeclaration( NULL ), pDefaultVtDeclaration( NULL ), pDefault3DVShader( NULL ), pDefault3DPShader( NULL ), pDefaultConstable( NULL )
+Direct3DEngine::Battery::Battery() : pDefaultVDeclaration( NULL ), pDefault3DVShader( NULL ), pDefault3DPShader( NULL ), pDefaultConstable( NULL )
 {
 }
 Direct3DEngine::Direct3DEngine() : d3d( Direct3DCreate9( D3D_SDK_VERSION ) ), d3ddev( NULL ), inventory( Battery() )
@@ -33,7 +33,6 @@ Direct3DEngine::~Direct3DEngine()
 	if( inventory.pDefault3DVShader ) inventory.pDefault3DVShader->Release();
 	if( inventory.pDefaultConstable ) inventory.pDefaultConstable->Release();
 	if( inventory.pDefaultVDeclaration ) inventory.pDefaultVDeclaration->Release();
-	if( inventory.pDefaultVtDeclaration ) inventory.pDefaultVtDeclaration->Release();
 }
 
 void Direct3DEngine::InitEng( HWND hWnd, bool windowed )
@@ -95,17 +94,7 @@ void Direct3DEngine::InitBattery()
 		};
 		d3ddev->CreateVertexDeclaration( ve, &inventory.pDefaultVDeclaration );
 	}
-	if( !inventory.pDefaultVtDeclaration )
-	{
-		D3DVERTEXELEMENT9 ve[] = 
-		{
-			{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0 },
-			{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-			{ 0, 20, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0 },
-			D3DDECL_END()
-		};
-		d3ddev->CreateVertexDeclaration( ve, &inventory.pDefaultVtDeclaration );
-	}
+
 	if( !inventory.pDefault3DVShader && !inventory.pDefaultConstable )
 	{
 		if( D3D_OK != D3DXCompileShaderFromFile( "Default3D.vs", NULL, NULL, "vs_main", "vs_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, &inventory.pDefaultConstable ) )

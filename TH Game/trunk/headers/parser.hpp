@@ -2,10 +2,10 @@
 #include "bytecode.hpp"
 #include <string>
 #include <map>
+#include <inventory.hpp>
 
-class script_engine;
 /*To parse the script into bytecode*/
-class parser
+class parser : private virtual inventory
 {
 private:
 	enum token
@@ -75,7 +75,6 @@ private:
 		std::string errmsg;
 	};
 
-	script_engine & engine;
 	scriptHandler scriptMgr;
 	lexer lexicon;
 	vector< scope > vecScope;
@@ -108,7 +107,7 @@ private:
 	void importNativeSymbols(); //in the topmost scope
 	void parseDocument( std::string const & scriptPath, std::string const & scriptString );
 public:
-	parser( script_engine & eng ); //automatic parsing, feed data to the engine's battery
+	parser(); //automatic parsing, feed data to the engine's battery
 	void parseScript( std::string const & scriptPath );
 	void parseShotScript( std::string const & scriptPath );
 	std::string getCurrentScriptPath() const;

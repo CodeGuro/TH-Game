@@ -31,7 +31,6 @@ private:
 	struct Battery
 	{
 		LPDIRECT3DVERTEXDECLARATION9 pDefaultVDeclaration;
-		LPDIRECT3DVERTEXDECLARATION9 pDefaultVtDeclaration;
 		LPDIRECT3DVERTEXSHADER9 pDefault3DVShader;
 		LPDIRECT3DPIXELSHADER9 pDefault3DPShader;
 		LPD3DXCONSTANTTABLE pDefaultConstable;
