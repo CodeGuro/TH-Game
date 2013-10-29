@@ -53,7 +53,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;D3D_DEBUG_INFO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4101;4355;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -86,6 +86,7 @@
     <ClInclude Include="trunk\headers\D3DSmartPtr.hpp" />
     <ClInclude Include="trunk\headers\defstypedefs.hpp" />
     <ClInclude Include="trunk\headers\Direct3DEngine.hpp" />
+    <ClInclude Include="trunk\headers\GameEngine.hpp" />
     <ClInclude Include="trunk\headers\inventory.hpp" />
     <ClInclude Include="trunk\headers\lightweight_vector.hpp" />
     <ClInclude Include="trunk\headers\ObjMgr.hpp" />

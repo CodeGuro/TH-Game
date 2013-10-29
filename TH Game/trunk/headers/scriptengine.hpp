@@ -10,7 +10,7 @@
 
 /*manages all script-related things*/
 
-class script_engine : public virtual inventory, private parser, public virtual Direct3DEngine
+class script_engine : protected virtual inventory, private parser
 {
 private:
 	friend class script_machine;

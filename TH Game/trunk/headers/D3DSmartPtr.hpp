@@ -58,6 +58,10 @@ public:
 	{
 		return member;
 	}
+	operator T const & () const
+	{
+		return member;
+	}
 	~D3DSmartPtr()
 	{
 		if( GetIUnknown() )

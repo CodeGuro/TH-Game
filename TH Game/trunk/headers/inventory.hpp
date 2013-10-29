@@ -20,7 +20,7 @@ public:
 	type_data getArrayType( size_t element ); //an array of some type
 };
 
-class inventory : protected script_type_manager, virtual public Direct3DEngine
+class inventory : protected script_type_manager, protected virtual Battery
 {
 	friend class script_engine;
 private:

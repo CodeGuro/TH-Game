@@ -1,5 +1,5 @@
 #include <Windows.h>
-#include <scriptengine.hpp>
+#include <GameEngine.hpp>
 
 LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
@@ -35,16 +35,15 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	if( !hWnd )
 		return EXIT_FAILURE;
 	MSG msg;
-	script_engine D3dEng;
-	D3dEng.InitEng( hWnd, MessageBox(NULL, "Fullscreen Mode?", "FULLSCREEN/WINDOW", MB_YESNO | MB_ICONQUESTION ) == IDNO );
-	D3dEng.start();
+	GameEngine engine( hWnd );
+	engine.start();
 	do
 	{
 		PeekMessage( &msg, NULL, NULL, NULL, PM_REMOVE );
 		TranslateMessage( &msg );
 		DispatchMessage( &msg );
-		D3dEng.advance();
-		D3dEng.RenderFrame( msg );
+		engine.advance();
+		engine.RenderFrame( msg );
 	}while( msg.message != WM_QUIT );
 
 	return EXIT_SUCCESS;

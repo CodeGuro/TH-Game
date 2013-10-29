@@ -1,6 +1,5 @@
 #pragma once
 #include <vector>
-#include <iterator>
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <D3DSmartPtr.hpp>
