@@ -1,62 +1,9 @@
 #include <ObjMgr.hpp>
 #include <Direct3DEngine.hpp>
 
-ObjMgr::ObjMgr() : BlendOp( BlendAlpha ), VertexCount( 0 ), VBufferLength( 0 ), PrimitiveType( D3DPT_TRIANGLELIST ), pTexture( NULL ), VertexBuffer( NULL ), VDeclaration( NULL ), VShader( NULL), PShader( NULL ), Constable( NULL )
+ObjMgr::ObjMgr() : BlendOp( BlendAlpha ), VertexCount( 0 ), VBufferLength( 0 ), PrimitiveType( D3DPT_TRIANGLELIST )
 {
 	memset( &SurfaceDesc, -1, sizeof( SurfaceDesc ) );
-}
-ObjMgr::ObjMgr( ObjMgr const & source ) : BlendOp( source.BlendOp ), PrimitiveType( source.PrimitiveType ), VertexCount( source.VertexCount ), VBufferLength( source.VBufferLength ), SurfaceDesc( source.SurfaceDesc ),
-	pTexture( source.pTexture ), VertexBuffer( source.VertexBuffer ), VDeclaration( source.VDeclaration ), VShader( source.VShader ), PShader( source.PShader ), Constable( source.Constable ), 
-	vecVertexLibrary( source.vecVertexLibrary ), vecObjects( source.vecObjects ),
-	vecIntermediateLayer( source.vecIntermediateLayer ), vecIntermediateLayerGC( source.vecIntermediateLayerGC )
-{
-	if( source.pTexture ) source.pTexture->AddRef();
-	if( source.VertexBuffer ) source.VertexBuffer->AddRef() ;
-	if( source.VDeclaration ) source.VDeclaration->AddRef();
-	if( source.VShader ) source.VShader->AddRef();
-	if( source.PShader ) source.PShader->AddRef();
-	if( source.Constable ) source.Constable->AddRef();
-}
-ObjMgr & ObjMgr::operator = ( ObjMgr const & source )
-{
-	if( pTexture ) pTexture->Release();
-	if( VertexBuffer ) VertexBuffer->Release();
-	if( VDeclaration ) VDeclaration->Release();
-	if( VShader ) VShader->Release();
-	if( PShader ) PShader->Release();
-	if( Constable ) Constable->Release();
-
-	if( source.pTexture ) source.pTexture->AddRef();
-	if( source.VertexBuffer ) source.VertexBuffer->AddRef();
-	if( source.VDeclaration ) source.VDeclaration->AddRef();
-	if( source.VShader ) source.VShader->AddRef();
-	if( source.PShader ) source.PShader->AddRef();
-	if( source.Constable ) source.Constable->AddRef();
-
-	pTexture = source.pTexture;
-	PrimitiveType = source.PrimitiveType;
-	VertexBuffer = source.VertexBuffer;
-	VDeclaration = source.VDeclaration;
-	VShader = source.VShader;
-	PShader = source.PShader;
-	Constable = source.Constable;
-	BlendOp = source.BlendOp;
-	SurfaceDesc = source.SurfaceDesc;
-	VertexCount = source.VertexCount;
-	VBufferLength = source.VBufferLength;
-	vecObjects = source.vecObjects;
-	vecIntermediateLayer = source.vecIntermediateLayer;
-	vecIntermediateLayerGC = source.vecIntermediateLayerGC;
-	return *this;
-}
-ObjMgr::~ObjMgr()
-{
-	if( pTexture ) pTexture->Release();
-	if( VertexBuffer ) VertexBuffer->Release();
-	if( VDeclaration ) VDeclaration->Release();
-	if( VShader ) VShader->Release();
-	if( PShader ) PShader->Release();
-	if( Constable ) Constable->Release();
 }
 void ObjMgr::SetVertexCount( unsigned const Count )
 {
@@ -64,33 +11,23 @@ void ObjMgr::SetVertexCount( unsigned const Count )
 }
 void ObjMgr::SetTexture( LPDIRECT3DTEXTURE9 pTex )
 {
-	if( this->pTexture ) pTexture->Release();
-	if( pTex ) pTex->AddRef();
-	if( pTex ) pTex->GetLevelDesc(0, &SurfaceDesc );
 	pTexture = pTex;
+	pTex->GetLevelDesc( 0, &SurfaceDesc );
 };
 void ObjMgr::SetVertexDeclaration( LPDIRECT3DVERTEXDECLARATION9 VDecl )
 {
-	if( VDeclaration ) VDeclaration->Release();
-	if( VDecl ) VDecl->AddRef();
 	VDeclaration = VDecl;
 }
 void ObjMgr::SetVertexShader( LPDIRECT3DVERTEXSHADER9 Shader )
 {
-	if( VShader ) VShader->Release();
-	if( Shader ) Shader->AddRef();
 	VShader = Shader;
 }
 void ObjMgr::SetPixelShader( LPDIRECT3DPIXELSHADER9 Shader )
 {
-	if( PShader ) PShader->Release();
-	if( Shader ) Shader->AddRef();
 	PShader = Shader;
 }
 void ObjMgr::SetVShaderConstTable( LPD3DXCONSTANTTABLE Table )
 {
-	if( Constable ) Constable->Release();
-	if( Table ) Table->AddRef();
 	Constable = Table;
 }
 void ObjMgr::SetPrimitiveType( D3DPRIMITIVETYPE PrimType )

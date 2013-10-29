@@ -83,6 +83,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="trunk\headers\bytecode.hpp" />
+    <ClInclude Include="trunk\headers\D3DSmartPtr.hpp" />
     <ClInclude Include="trunk\headers\defstypedefs.hpp" />
     <ClInclude Include="trunk\headers\Direct3DEngine.hpp" />
     <ClInclude Include="trunk\headers\inventory.hpp" />

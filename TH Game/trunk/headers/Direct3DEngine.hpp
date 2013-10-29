@@ -6,6 +6,7 @@
 #include <string>
 #include <Windows.h>
 #include <ObjMgr.hpp>
+#include <D3DSmartPtr.hpp>
 
 struct ObjHandle
 {
@@ -30,19 +31,18 @@ private:
 	};
 	struct Battery
 	{
-		LPDIRECT3DVERTEXDECLARATION9 pDefaultVDeclaration;
-		LPDIRECT3DVERTEXSHADER9 pDefault3DVShader;
-		LPDIRECT3DPIXELSHADER9 pDefault3DPShader;
-		LPD3DXCONSTANTTABLE pDefaultConstable;
+		D3DSmartPtr< LPDIRECT3DVERTEXDECLARATION9 > pDefaultVDeclaration;
+		D3DSmartPtr<LPDIRECT3DVERTEXSHADER9 > pDefault3DVShader;
+		D3DSmartPtr<LPDIRECT3DPIXELSHADER9 > pDefault3DPShader;
+		D3DSmartPtr<LPD3DXCONSTANTTABLE > pDefaultConstable;
 		
 		std::map< std::string, LPDIRECT3DTEXTURE9 > mapTextures;
 		std::vector< Layer > vLayers;
 		std::vector< ObjHandle > vObjHandles;
 		std::vector< unsigned > vObjHandlesGC;
-		Battery();
 	};
-	LPDIRECT3D9 d3d;
-	LPDIRECT3DDEVICE9 d3ddev;
+	D3DSmartPtr< LPDIRECT3D9 > d3d;
+	D3DSmartPtr< LPDIRECT3DDEVICE9 > d3ddev;
 	GenCameraSetting CamSetting;
 	Battery inventory;
 	void InitLayers();
@@ -51,9 +51,6 @@ private:
 	void D3dRelease( T *& RefPtr );
 public:
 	Direct3DEngine();
-	Direct3DEngine( Direct3DEngine const & source );
-	Direct3DEngine & operator = ( Direct3DEngine const & source );
-	~Direct3DEngine();
 	/* We will probably not need move semantics
 	Direct3DEngine & operator = ( Direct3DEngine && source );
 	Direct3DEngine( Direct3DEngine && source ); */

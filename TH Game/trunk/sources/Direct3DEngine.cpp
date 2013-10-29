@@ -2,39 +2,9 @@
 #include <ObjMgr.hpp>
 #include <sstream>
 
-Direct3DEngine::Battery::Battery() : pDefaultVDeclaration( NULL ), pDefault3DVShader( NULL ), pDefault3DPShader( NULL ), pDefaultConstable( NULL )
-{
-}
 Direct3DEngine::Direct3DEngine() : d3d( Direct3DCreate9( D3D_SDK_VERSION ) ), d3ddev( NULL ), inventory( Battery() )
 {
 }
-Direct3DEngine::Direct3DEngine( Direct3DEngine const & source )
-{
-
-	if( source.d3d ) source.d3d->AddRef();
-	if( source.d3ddev ) source.d3ddev->AddRef();
-
-	d3d = source.d3d;
-	d3ddev = source.d3ddev;
-}
-Direct3DEngine & Direct3DEngine::operator = ( Direct3DEngine const & source )
-{
-	D3dRelease( d3d );
-	D3dRelease( d3ddev );
-	source.d3d->AddRef();
-	source.d3ddev->AddRef();
-	d3d = source.d3d;
-	d3ddev = source.d3ddev;
-	return *this;
-}
-Direct3DEngine::~Direct3DEngine()
-{
-	if( inventory.pDefault3DPShader ) inventory.pDefault3DPShader->Release();
-	if( inventory.pDefault3DVShader ) inventory.pDefault3DVShader->Release();
-	if( inventory.pDefaultConstable ) inventory.pDefaultConstable->Release();
-	if( inventory.pDefaultVDeclaration ) inventory.pDefaultVDeclaration->Release();
-}
-
 void Direct3DEngine::InitEng( HWND hWnd, bool windowed )
 {
 	if( hWnd && !d3ddev )

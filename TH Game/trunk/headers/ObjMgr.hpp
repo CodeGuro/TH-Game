@@ -1,7 +1,9 @@
 #pragma once
 #include <vector>
+#include <iterator>
 #include <d3d9.h>
 #include <d3dx9.h>
+#include <D3DSmartPtr.hpp>
 
 class Direct3DEngine;
 
@@ -43,6 +45,8 @@ enum BlendType
 	BlendInvAlph, BlendInvAdd
 };
 
+
+
 class ObjMgr
 {
 private:
@@ -57,12 +61,12 @@ private:
 	unsigned VertexCount;
 	unsigned VBufferLength;
 	D3DPRIMITIVETYPE PrimitiveType;
-	LPDIRECT3DTEXTURE9 pTexture;
-	LPDIRECT3DVERTEXBUFFER9 VertexBuffer;
-	LPDIRECT3DVERTEXDECLARATION9 VDeclaration;
-	LPDIRECT3DVERTEXSHADER9 VShader;
-	LPDIRECT3DPIXELSHADER9 PShader;
-	LPD3DXCONSTANTTABLE Constable;
+	D3DSmartPtr< LPDIRECT3DTEXTURE9 > pTexture;
+	D3DSmartPtr< LPDIRECT3DVERTEXBUFFER9 > VertexBuffer;
+	D3DSmartPtr< LPDIRECT3DVERTEXDECLARATION9 > VDeclaration;
+	D3DSmartPtr< LPDIRECT3DVERTEXSHADER9 > VShader;
+	D3DSmartPtr< LPDIRECT3DPIXELSHADER9 > PShader;
+	D3DSmartPtr< LPD3DXCONSTANTTABLE > Constable;
 	std::vector< Vertex > vecVertexLibrary;
 	std::vector< Object > vecObjects;
 	std::vector< ObjHandle > vecIntermediateLayer;
@@ -70,9 +74,6 @@ private:
 
 public:
 	ObjMgr();
-	ObjMgr( ObjMgr const & source );
-	ObjMgr & operator = ( ObjMgr const & source );
-	~ObjMgr();
 	void SetVertexCount( unsigned const Count );
 	void SetTexture( LPDIRECT3DTEXTURE9 pTex );
 	void SetVertexDeclaration( LPDIRECT3DVERTEXDECLARATION9 VDecl );
@@ -94,4 +95,45 @@ public:
 	D3DSURFACE_DESC GetSurfaceDesc();
 	void AdvanceTransformedDraw( Direct3DEngine * D3DEng );
 	unsigned GetObjCount();
+};
+
+struct ShotData
+{
+	ULONG VtxOffset;
+	ULONG DelayVtxOffset;
+	ULONG Radius;
+	ULONG AnimationTime;
+	ULONG NextShot;
+};
+
+struct Shot
+{
+	D3DXVECTOR2 PosXY;
+	FLOAT Direction;
+	FLOAT Speed;
+	FLOAT Acceleration;
+	FLOAT Rotation;
+	FLOAT Rotational_Velocity;
+	ULONG ID;
+	ULONG Flags;
+	ULONG Time;
+};
+
+//I want to make it such that declariong a smart, arbitrary pointer such that some methods are overridden
+//ex: D3DPointer< LPDIRECT3DTEXTURE9 > pTexture;
+//pTexture = Source.pTexture;
+
+class ShotClass
+{
+private:
+	D3DSmartPtr< LPDIRECT3DTEXTURE9 > pTexture;
+	D3DSmartPtr< LPDIRECT3DVERTEXBUFFER9 > pVBuffer;
+	D3DSmartPtr< LPDIRECT3DVERTEXDECLARATION9 > pVDecl;
+	D3DSmartPtr< LPDIRECT3DVERTEXSHADER9 > pVShader;
+	D3DSmartPtr< LPDIRECT3DPIXELSHADER9 > pPShader;
+	D3DSmartPtr< LPD3DXCONSTANTTABLE > pConstable;
+	ULONG VBufferSize;
+	std::vector< Shot > Bullets;
+	std::vector< ShotData > Bullet_Templates;
+	std::vector< Vertex > Vertex_Templates;
 };
