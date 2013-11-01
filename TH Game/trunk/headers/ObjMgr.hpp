@@ -3,6 +3,7 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <D3DSmartPtr.hpp>
+#include <cassert>
 
 class Direct3DEngine;
 
@@ -22,7 +23,12 @@ struct Object
 	D3DXQUATERNION direction;
 	D3DXQUATERNION orient;
 	D3DXQUATERNION orientvel;
-	ULONG libidx;
+	union
+	{
+		ULONG ShotData;
+		ULONG libidx;
+	};
+	DWORD flags;
 
 	void SetSpeed( float Speed );
 	void SetVelocity( D3DXVECTOR3 Velocity );
@@ -35,6 +41,13 @@ struct Object
 	void SetRotationEx( D3DXVECTOR3 Axis, float Theta );
 	void SetRotationVelocity( float Theta );
 	void SetRotationVelocityEx( D3DXVECTOR3 Axis, float Theta );
+
+	//flags, -1 to get, 1 for on, 0 for off
+	bool FlagMotion( int flag );
+	bool FlagCollidable( int flag );
+	bool FlagScreenDeletable( int flag );
+	bool FlagGraze( int flag );
+	bool FlagPixelPerfect( int flag );
 	void Advance();
 };
 
@@ -44,7 +57,34 @@ enum BlendType
 	BlendInvAlph, BlendInvAdd
 };
 
+struct ShotData
+{
+	ULONG VtxOffset;
+	ULONG Delay;
+	ULONG Radius;
+	ULONG AnimationTime;
+	ULONG NextShot;
+};
 
+struct DelayData
+{
+	ULONG VtxOffset;
+	ULONG DelayFrames;
+	FLOAT Scale;
+};
+
+struct Shot
+{
+	D3DXVECTOR2 PosXY;
+	FLOAT Direction;
+	FLOAT Speed;
+	FLOAT Acceleration;
+	FLOAT Rotation;
+	FLOAT Rotational_Velocity;
+	ULONG ShotDataID;
+	ULONG Flags;
+	ULONG Time;
+};
 
 class ObjMgr
 {
@@ -67,6 +107,8 @@ private:
 	D3DSmartPtr< LPDIRECT3DPIXELSHADER9 > PShader;
 	D3DSmartPtr< LPD3DXCONSTANTTABLE > Constable;
 	std::vector< Vertex > vecVertexLibrary;
+	std::vector< ShotData > Bullet_Templates;
+	std::vector< DelayData > Bullet_Delays;
 	std::vector< Object > vecObjects;
 	std::vector< ObjHandle > vecIntermediateLayer;
 	std::vector< unsigned > vecIntermediateLayerGC;
@@ -92,47 +134,10 @@ public:
 	Object * GetObjPtr( unsigned const Index );
 	Vertex * GetLibVertexPtr( unsigned const Index );
 	D3DSURFACE_DESC GetSurfaceDesc();
-	void AdvanceTransformedDraw( Direct3DEngine * D3DEng );
-	unsigned GetObjCount();
+	void AdvanceTransformedDraw( Direct3DEngine * D3DEng, bool Danmaku );
+	unsigned GetObjCount() const;
+	unsigned GetDelayDataSize() const;
+	void CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT const & rect, D3DCOLOR color, std::vector< std::vector< float > > const & AnimationData );
+	void CreateDelayShotData( unsigned ID, RECT const & rect, D3DCOLOR const color, FLOAT const Scale, ULONG const DelayFrames );
 };
 
-struct ShotData
-{
-	ULONG VtxOffset;
-	ULONG DelayVtxOffset;
-	ULONG Radius;
-	ULONG AnimationTime;
-	ULONG NextShot;
-};
-
-struct Shot
-{
-	D3DXVECTOR2 PosXY;
-	FLOAT Direction;
-	FLOAT Speed;
-	FLOAT Acceleration;
-	FLOAT Rotation;
-	FLOAT Rotational_Velocity;
-	ULONG ID;
-	ULONG Flags;
-	ULONG Time;
-};
-
-//I want to make it such that declariong a smart, arbitrary pointer such that some methods are overridden
-//ex: D3DPointer< LPDIRECT3DTEXTURE9 > pTexture;
-//pTexture = Source.pTexture;
-
-class ShotClass
-{
-private:
-	D3DSmartPtr< LPDIRECT3DTEXTURE9 > pTexture;
-	D3DSmartPtr< LPDIRECT3DVERTEXBUFFER9 > pVBuffer;
-	D3DSmartPtr< LPDIRECT3DVERTEXDECLARATION9 > pVDecl;
-	D3DSmartPtr< LPDIRECT3DVERTEXSHADER9 > pVShader;
-	D3DSmartPtr< LPDIRECT3DPIXELSHADER9 > pPShader;
-	D3DSmartPtr< LPD3DXCONSTANTTABLE > pConstable;
-	ULONG VBufferSize;
-	std::vector< Shot > Bullets;
-	std::vector< ShotData > Bullet_Templates;
-	std::vector< Vertex > Vertex_Templates;
-};

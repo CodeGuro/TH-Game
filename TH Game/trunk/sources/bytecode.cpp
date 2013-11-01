@@ -203,14 +203,14 @@ void natives::_uniqueize( script_engine * eng, size_t * argv )
 void natives::_rand( script_engine * eng, size_t * argv )
 {
 	float domain = eng->getScriptData( argv[1] ).real - eng->getScriptData( argv[0] ).real;
-	size_t tmp = eng->fetchScriptData( eng->getScriptData( argv[0] ).real + fmod( (float)rand() + 1.f, domain ) );
+	size_t tmp = eng->fetchScriptData( eng->getScriptData( argv[0] ).real + fmod( (float)rand(), 1 + domain ) );
 	eng->scriptDataAssign( argv[0], tmp );
 	eng->releaseScriptData( tmp );
 }
 void natives::_rand_int( script_engine * eng, size_t * argv )
 {
 	float domain = floor( eng->getScriptData( argv[1] ).real - eng->getScriptData( argv[0] ).real );
-	size_t tmp = eng->fetchScriptData( floor( eng->getScriptData( argv[0] ).real ) + fmod( (float)rand() + 1.f, domain ) );
+	size_t tmp = eng->fetchScriptData( floor( eng->getScriptData( argv[0] ).real ) + fmod( (float)rand(), 1 + domain ) );
 	eng->scriptDataAssign( argv[0], tmp );
 	eng->releaseScriptData( tmp );
 }
@@ -431,4 +431,13 @@ void natives::_LoadUserShotData( script_engine * eng, size_t * argv )
 {
 	std::string scriptPath = eng->getStringScriptData( argv[ 0 ] );
 	eng->parseShotScript( scriptPath );
+}
+void natives::_CreateShot01( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData();
+	eng->getScriptData( tmp ).type = eng->getObjectType();
+	eng->getScriptData( tmp ).objIndex = eng->CreateShot01( D3DXVECTOR2( eng->getRealScriptData( argv[ 0 ] ), eng->getRealScriptData( argv[ 1 ] ) ), eng->getRealScriptData( argv[ 2 ] ),
+		eng->getRealScriptData( argv[ 3 ] ), eng->getRealScriptData( argv[ 4 ] )  );
+	eng->scriptDataAssign( argv[ 0 ], tmp );
+	eng->releaseScriptData( tmp );
 }

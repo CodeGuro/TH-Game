@@ -49,6 +49,8 @@ protected:
 	Object * GetObject( unsigned HandleIdx );
 	ObjMgr * GetObjMgr( unsigned HandleIdx );
 
+	unsigned CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed, FLOAT const direction, FLOAT const graphic );
+
 public:
 	void LoadTexture( std::string const pathname );
 	void DeleteTexture( std::string const pathname );

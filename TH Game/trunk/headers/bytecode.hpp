@@ -186,6 +186,7 @@ private:
 	static void _PRIMITIVE_TRIANGLEFAN( script_engine * eng, size_t * argv );
 	static void _LoadTexture( script_engine * eng, size_t * argv );
 	static void _LoadUserShotData( script_engine * eng, size_t * argv );
+	static void _CreateShot01( script_engine * eng, size_t * argv );
 };
 
 struct script_queue

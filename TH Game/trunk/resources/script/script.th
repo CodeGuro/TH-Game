@@ -33,15 +33,16 @@ task Task()
 	loop
 	{
 		let a = 0;
-		let looper = 30;
+		let looper = rand_int( 10, 40 );
 		let x = rand_int( 100, 500 );
 		let y = rand_int( 0, 100 );
-		loop( 60 )
+		loop( looper )
 		{
-			TestObj( a, x, y );
+			//TestObj( a, x, y );
+			CreateShot01( x, y, 1, a, rand_int(0,2) );
 			a = a + 2 * 3.1415926 / looper;
 		}
-		loop( 30 ){ yield; }
+		loop( rand_int( 5, 25) ){ yield; }
 	}
 }
 

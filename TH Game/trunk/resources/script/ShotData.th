@@ -1,17 +1,46 @@
 #UserShotData
 
+ShotImage = "etama.png"
+
+DelayData
+{
+	id = 0
+	frames = 10
+	scale = 1
+	rect = ( 0, 0, 16, 16 )
+	color = ( 255, 255, 255, 255 )
+}
+
 ShotData
 {
 	id = 0
 	render = ALPHA_BLEND
 	delay = 0
-	angular_velocity = 0.3
-	rect = ( 64, 64, 80, 80 )
+	angular_velocity = 0
+	rect = ( 16, 16, 32, 32 )
 	color = ( 255, 255, 255, 255 )
 }
 ShotData
 {
 	id = 1
+	render = ALPHA_BLEND
+	delay = 0
+	angular_velocity = 0
+	rect = ( 32, 32, 48, 48 )
+	color = ( 255, 255, 255, 255 )
+}
+ShotData
+{
+	id = 2
+	render = ALPHA_BLEND
+	delay = 0
+	angular_velocity = 0
+	rect = ( 48, 48, 64, 64 )
+	color = ( 255, 255, 255, 255 )
+}
+ShotData
+{
+	id = 3
 	render = ADDITIVE_BLEND
 	delay = 0
 	AnimationData

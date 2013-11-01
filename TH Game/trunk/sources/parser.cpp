@@ -1149,18 +1149,8 @@ void parser::parseShotScript( std::string const & scriptPath )
 		if( !scriptMgr.scriptString.size() )
 			raiseError( "User shot data did not load", error::er_parser );
 		lexicon = lexer( scriptMgr.scriptString.c_str() );
-		do
-		{
-			if( lexicon.getToken() == tk_word )
-			{
-				std::string word = lexicon.getWord();
-				lexicon.advance();
-				if( word == "ShotData" )
-					parseShotData();
-			}
-			else
-				lexicon.advance();
-		} while( lexicon.getToken() != tk_end );
+		parseDelayData();
+		parseShotData();
 	}
 	catch( error const & err )
 	{
@@ -1168,138 +1158,234 @@ void parser::parseShotScript( std::string const & scriptPath )
 }
 void parser::parseShotData()
 {
-	if( lexicon.getToken() != tk_opencur )
-		raiseError( "\"{\" expected", error::er_syntax );
-	lexicon.advance();
-
-	size_t id;
-	BlendType render;
-	float angular_velocity;
-	float rec[4];
-	float col[4];
-	vector< vector< float > > animation_data;
-	unsigned delay;
-
-	while( lexicon.getToken() == tk_word )
+	lexer lexsave = lexicon;
+	do
 	{
-		std::string word = lexicon.getWord();
-
-		if( word == "id" )
-		{
-			if( lexicon.advance() != tk_assign )
-				raiseError( "\"=\" expected", error::er_syntax );
-			if( lexicon.advance() != tk_real )
-				raiseError( "id lexer::tk_real expected", error::er_syntax );
-			id = (size_t)lexicon.getReal();
+		if( lexicon.getToken() != tk_word )
 			lexicon.advance();
-		}
-		else if( word == "render" )
+		else
 		{
-			if( lexicon.advance() != tk_assign )
-				raiseError( "\"=\" expected", error::er_syntax );
-			if( lexicon.advance() != tk_word )
-				raiseError( "render lexer::tk_word expected", error::er_syntax );
-			if( lexicon.getWord() == "ALPHA_BLEND" ) render = BlendAlpha;
-			else if( lexicon.getWord() == "ADDITIVE_BLEND" ) render = BlendAdd;
-			else raiseError( "render lexer::tk_word expected for ALPHA_BLEND or ADDITIVE_BLEND", error::er_syntax );
+			std::string word = lexicon.getWord();
 			lexicon.advance();
-		}
-		else if( word == "rect" )
-		{
-			if( lexicon.advance() != tk_assign )
-				raiseError( "\"=\" expected", error::er_syntax );
-			if( lexicon.advance() != tk_lparen )
-				raiseError( "\"(\" expected", error::er_syntax );
-			
-			unsigned u;
-			for( u = 0; lexicon.advance() == tk_real && u < 4 ; )
-			{
-				rec[ u++ ] = lexicon.getReal();
-				if( lexicon.advance() != tk_comma )
-					break;
-			}
-
-			if( lexicon.getToken() != tk_rparen )
-				raiseError( "\")\" expected", error::er_syntax );
-			if( u != 4 ) raiseError( "rect expects four elements", error::er_syntax );
-			lexicon.advance();
-		}
-		else if( word == "color" )
-		{
-			if( lexicon.advance() != tk_assign )
-				raiseError( "\"=\" expected", error::er_syntax );
-			if( lexicon.advance() != tk_lparen )
-				raiseError( "\"(\" expected", error::er_syntax );
-			
-			unsigned u;
-			for( u = 0; lexicon.advance() == tk_real && u < 4; )
-			{
-				col[ u++ ] = lexicon.getReal();
-				if( lexicon.advance() != tk_comma )
-					break;
-			}
-
-			if( lexicon.getToken() != tk_rparen )
-				raiseError( "\")\" expected", error::er_syntax );
-			if( u != 4 ) raiseError( "color expects four elements", error::er_syntax );
-			lexicon.advance();
-		}
-		else if( word == "angular_velocity" )
-		{
-			if( lexicon.advance() != tk_assign )
-				raiseError( "\"=\" expected", error::er_syntax );
-			if( lexicon.advance() != tk_real )
-				raiseError( "lexer::tk_real expected", error::er_syntax );
-			angular_velocity = lexicon.getReal();
-			lexicon.advance();
-		}
-		else if( word == "AnimationData" )
-		{
-			if( lexicon.advance() != tk_opencur )
+			if( word != "ShotData" ) continue;
+			if( lexicon.getToken() != tk_opencur )
 				raiseError( "\"{\" expected", error::er_syntax );
-			unsigned j = 0;
-			while( lexicon.advance() == tk_word && lexicon.getWord() == "animation_data" )
-			{
-				animation_data.resize( 1 + animation_data.size() );
-				animation_data[ j ].resize( 5 );
-				if( lexicon.advance() != tk_assign )
-					raiseError( "\"=\" expected", error::er_syntax );
-				if( lexicon.advance() != tk_lparen )
-					raiseError( "\"(\" expected", error::er_syntax );
-			
-				unsigned u;
-				for( u = 0; lexicon.advance() == tk_real && u < 5 ; )
-				{
-					animation_data[ j ][ u++ ] = lexicon.getReal();
-					if( lexicon.advance() != tk_comma )
-						break;
-				}
+			lexicon.advance();
 
-				if( lexicon.getToken() != tk_rparen )
-					raiseError( "\")\" expected", error::er_syntax );
-				if( u != 5 ) raiseError( "animation_data expects five elements", error::er_syntax );
-				++j;
+			size_t id = -1;
+			BlendType render = BlendAlpha;
+			float angular_velocity = 0;
+			float rec[4] = { 0, 0, 0, 0 };
+			float col[4] = { 255, 255, 255, 255 };
+			vector< vector< float > > animation_data;
+			unsigned delay;
+
+			while( lexicon.getToken() == tk_word )
+			{
+				std::string word = lexicon.getWord();
+
+				if( word == "id" )
+				{
+					if( lexicon.advance() != tk_assign )
+						raiseError( "\"=\" expected", error::er_syntax );
+					if( lexicon.advance() != tk_real )
+						raiseError( "id lexer::tk_real expected", error::er_syntax );
+					id = (size_t)lexicon.getReal();
+					lexicon.advance();
+				}
+				else if( word == "render" )
+				{
+					if( lexicon.advance() != tk_assign )
+						raiseError( "\"=\" expected", error::er_syntax );
+					if( lexicon.advance() != tk_word )
+						raiseError( "render lexer::tk_word expected", error::er_syntax );
+					if( lexicon.getWord() == "ALPHA_BLEND" ) render = BlendAlpha;
+					else if( lexicon.getWord() == "ADDITIVE_BLEND" ) render = BlendAdd;
+					else raiseError( "render lexer::tk_word expected for ALPHA_BLEND or ADDITIVE_BLEND", error::er_syntax );
+					lexicon.advance();
+				}
+				else if( word == "rect" )
+				{
+					if( lexicon.advance() != tk_assign )
+						raiseError( "\"=\" expected", error::er_syntax );
+					if( lexicon.advance() != tk_lparen )
+						raiseError( "\"(\" expected", error::er_syntax );
+			
+					unsigned u;
+					for( u = 0; lexicon.advance() == tk_real && u < 4 ; )
+					{
+						rec[ u++ ] = lexicon.getReal();
+						if( lexicon.advance() != tk_comma )
+							break;
+					}
+
+					if( lexicon.getToken() != tk_rparen )
+						raiseError( "\")\" expected", error::er_syntax );
+					if( u != 4 ) raiseError( "rect expects four elements", error::er_syntax );
+					lexicon.advance();
+				}
+				else if( word == "color" )
+				{
+					if( lexicon.advance() != tk_assign )
+						raiseError( "\"=\" expected", error::er_syntax );
+					if( lexicon.advance() != tk_lparen )
+						raiseError( "\"(\" expected", error::er_syntax );
+			
+					unsigned u;
+					for( u = 0; lexicon.advance() == tk_real && u < 4; )
+					{
+						col[ u++ ] = lexicon.getReal();
+						if( lexicon.advance() != tk_comma )
+							break;
+					}
+
+					if( lexicon.getToken() != tk_rparen )
+						raiseError( "\")\" expected", error::er_syntax );
+					if( u != 4 ) raiseError( "color expects four elements", error::er_syntax );
+					lexicon.advance();
+				}
+				else if( word == "angular_velocity" )
+				{
+					if( lexicon.advance() != tk_assign )
+						raiseError( "\"=\" expected", error::er_syntax );
+					if( lexicon.advance() != tk_real )
+						raiseError( "lexer::tk_real expected", error::er_syntax );
+					angular_velocity = lexicon.getReal();
+					lexicon.advance();
+				}
+				else if( word == "AnimationData" )
+				{
+					if( lexicon.advance() != tk_opencur )
+						raiseError( "\"{\" expected", error::er_syntax );
+					unsigned j = 0;
+					while( lexicon.advance() == tk_word && lexicon.getWord() == "animation_data" )
+					{
+						animation_data.resize( 1 + animation_data.size() );
+						animation_data[ j ].resize( 5 );
+						if( lexicon.advance() != tk_assign )
+							raiseError( "\"=\" expected", error::er_syntax );
+						if( lexicon.advance() != tk_lparen )
+							raiseError( "\"(\" expected", error::er_syntax );
+			
+						unsigned u;
+						for( u = 0; lexicon.advance() == tk_real && u < 5 ; )
+						{
+							animation_data[ j ][ u++ ] = lexicon.getReal();
+							if( lexicon.advance() != tk_comma )
+								break;
+						}
+
+						if( lexicon.getToken() != tk_rparen )
+							raiseError( "\")\" expected", error::er_syntax );
+						if( u != 5 ) raiseError( "animation_data expects five elements", error::er_syntax );
+						++j;
+					}
+
+					if( lexicon.getToken() != tk_closecur )
+						raiseError( "\"}\" expected", error::er_syntax );
+				}
+				else if( lexicon.getWord() == "delay" )
+				{
+					if( lexicon.advance() != tk_assign )
+						raiseError( "\"=\" expected", error::er_syntax );
+					if( lexicon.advance() != tk_real )
+						raiseError( "lexer::tk_real expected", error::er_syntax );
+					delay = (unsigned)lexicon.getReal();
+					if( GetLayers()[ 4 ].vObjMgr[ 0 ].GetDelayDataSize() < 1 + delay ) raiseError( "No such delay ID exists", error::er_syntax );
+					lexicon.advance();
+				}
+				else
+					raiseError( lexicon.getWord(), error::er_usymbol );
 			}
 
 			if( lexicon.getToken() != tk_closecur )
 				raiseError( "\"}\" expected", error::er_syntax );
+			lexicon.advance();
+			if( id == -1 ) raiseError( "\"id\" must be provided with a real number", error::er_syntax );
+			RECT r = { (ULONG)rec[ 0 ], (ULONG)rec[ 1 ], (ULONG)rec[ 2 ], (ULONG)rec[ 3 ] };
+			GetLayers()[ 4 ].vObjMgr[ 0 ].CreateShotData( id, render, delay, r, D3DCOLOR_RGBA( (UCHAR)col[ 0 ], (UCHAR)col[ 1 ], (UCHAR)col[ 2 ], (UCHAR)col[ 3 ] ), animation_data );
 		}
-		else if( lexicon.getWord() == "delay" )
+	} while( lexicon.getToken() != tk_end );
+	lexicon = lexsave;
+}
+void parser::parseDelayData()
+{
+	lexer lexsave = lexicon;
+	do
+	{
+		if( lexicon.getToken() == tk_word && lexicon.getWord() == "ShotImage" )
 		{
 			if( lexicon.advance() != tk_assign )
 				raiseError( "\"=\" expected", error::er_syntax );
-			if( lexicon.advance() != tk_real )
-				raiseError( "lexer::tk_real expected", error::er_syntax );
-			delay = (unsigned)lexicon.getReal();
-			lexicon.advance();
+			if( lexicon.advance() != tk_string )
+				raiseError( "lexer::tk_string expected", error::er_syntax );
+			LoadTexture( lexicon.getString() );
+			GetLayers()[ 4 ].vObjMgr[ 0 ].SetTexture( GetTexture( lexicon.getString() ) );
+			break;
 		}
-		else
-			raiseError( lexicon.getWord(), error::er_usymbol );
-	}
+		else lexicon.advance();
+			
+	}while( lexicon.getToken() != tk_end );
+	lexsave = lexicon;
+	do
+	{
+		token tok = lexicon.getToken();
+		lexicon.advance();
+		if( tok != tk_word )
+			continue;
+		else if( lexicon.getWord() != "DelayData" )
+			continue;
 
-	if( lexicon.getToken() != tk_closecur )
-		raiseError( "\"}\" expected", error::er_syntax );
-	lexicon.advance();
+		float id = -1;
+		float scale = 1;
+		float delayframes = 10;
+		std::vector< float > rect;
+		std::vector< float > col;
+		if( lexicon.getToken() != tk_opencur )
+			raiseError( "\"{\" expected", error::er_syntax );
+		lexicon.advance();
+
+		while( lexicon.getToken() == tk_word )
+		{
+			std::string word = lexicon.getWord();
+			lexicon.advance();
+			if( word == "id" || word == "frames" || word == "scale" )
+			{
+				if( lexicon.getToken() != tk_assign )
+					raiseError( "\"=\" expected", error::er_syntax );
+				if( lexicon.advance() != tk_real )
+					raiseError( "id lexer::tk_real expected", error::er_syntax );
+				((word == "id")? id : ((word == "scale")? scale : delayframes) ) = lexicon.getReal();
+				lexicon.advance();
+			}
+			else if( word == "rect" || word == "color" )
+			{
+				if( lexicon.getToken() != tk_assign ) raiseError( "\"=\" expected", error::er_syntax );
+				if( lexicon.advance() != tk_lparen ) raiseError( "\"(\" expected", error::er_syntax );
+				for( unsigned u = 0; u < 4 && lexicon.advance() == tk_real; ++u )
+				{
+					word == "rect"? rect.push_back( lexicon.getReal() ) : col.push_back( lexicon.getReal() ); ;
+					if( lexicon.advance() != tk_comma )
+						break;
+				}
+				if( lexicon.getToken() != tk_rparen )
+					raiseError( "\")\" expected", error::er_syntax );
+				lexicon.advance();
+				if( rect.size() != 4 ) raiseError( std::string() + "\"" + word + "\" size expected to have 4 elements", error::er_syntax );
+			}
+
+		}
+
+		if( lexicon.getToken() != tk_closecur )
+			raiseError( "\"}\" expected", error::er_syntax );
+		lexicon.advance();
+
+		if( id == -1 ) raiseError( "\"id\" must be provided with a real number", error::er_syntax );
+		RECT r = { (ULONG)rect[ 0 ], (ULONG)rect[ 1 ], (ULONG)rect[ 2 ], (ULONG)rect[ 3 ] };
+		D3DCOLOR color = D3DCOLOR_RGBA( (UCHAR)col[ 0 ], (UCHAR)col[ 1 ], (UCHAR)col[ 2 ], (UCHAR)col[ 3 ] );
+		GetLayers()[ 4 ].vObjMgr[ 0 ].CreateDelayShotData( (ULONG)id, r, color, 1.f, 0 );
+	}while( lexicon.getToken() != tk_end );
+	lexicon = lexsave;
 }
 struct native_function
 {
@@ -1368,7 +1454,8 @@ parser::parser()
 		{ "PRIMITIVE_TRIANGLESTRIP", &natives::_PRIMITIVE_TRIANGLESTRIP, 0 },
 		{ "PRIMITIVE_TRIANGLEFAN", &natives::_PRIMITIVE_TRIANGLEFAN, 0 },
 		{ "LoadTexture", &natives::_LoadTexture, 1 },
-		{ "LoadUserShotData", &natives::_LoadUserShotData, 1 }
+		{ "LoadUserShotData", &natives::_LoadUserShotData, 1 },
+		{ "CreateShot01", &natives::_CreateShot01, 5 }
 	};
 	for( unsigned i = 0; i <  sizeof( funcs ) / sizeof( native_function ); ++i )
 	{

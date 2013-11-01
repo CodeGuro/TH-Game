@@ -8,6 +8,7 @@ Battery::Battery( HWND const hWnd ) : d3d( Direct3DCreate9( D3D_SDK_VERSION ) )
 	////////////////////////
 	/////Initialization/////
 	////////////////////////
+
 	assert( hWnd && !(LPDIRECT3DDEVICE9)d3ddev );
 	RECT rec;
 	GetClientRect( hWnd, &rec );
@@ -44,19 +45,6 @@ Battery::Battery( HWND const hWnd ) : d3d( Direct3DCreate9( D3D_SDK_VERSION ) )
 
 	GetDevice()->Clear( 0, 0, D3DCLEAR_TARGET, D3DCOLOR_XRGB( 100, 30, 180 ), 1.f, 0 );
 	GetDevice()->Present( NULL, NULL, NULL, NULL );
-	
-
-	//0 - background
-	//1 - 3D
-	//2 - enemy boss
-	//3 - player
-	//4 - enemies
-	//5 - bullets
-	//6 - effects
-	//7 - sprites/text
-	//8 - foreground
-	GetLayers().resize( 8 );
-
 
 	///////////////
 	////shaders////
@@ -92,6 +80,19 @@ Battery::Battery( HWND const hWnd ) : d3d( Direct3DCreate9( D3D_SDK_VERSION ) )
 		pshaderbuff->Release();
 		if(pshadererrbuff ) pshadererrbuff->Release();
 	}
+
+
+	//0 - background
+	//1 - 3D
+	//2 - enemy boss
+	//3 - player
+	//4 - enemies
+	//5 - bullets
+	//6 - effects
+	//7 - sprites/text
+	//8 - foreground
+	GetLayers().resize( 8 );
+	CreateObject( 4 );
 
 }
 Battery::Battery()
@@ -227,6 +228,39 @@ void Battery::DeleteTexture( std::string const pathname )
 		it->second->Release();
 		mapTextures.erase( it );
 	}
+}
+unsigned Battery::CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed, FLOAT const direction, FLOAT const graphic )
+{
+	unsigned Result;
+	if( 5 <= GetLayers().size() )
+	{
+		if( vObjHandlesGC.size() )
+		{
+			Result = vObjHandlesGC.back();
+			vObjHandlesGC.pop_back();
+		}
+		else
+			Result = vObjHandles.size();
+		if( vObjHandles.size() <= Result )
+			vObjHandles.resize( 1 + Result );
+		ObjHandle & handle = vObjHandles[ Result ];
+		handle.Layer = 4;
+		handle.RefCount = 1;
+		handle.MgrIdx = 0;
+		handle.ObjIdx = GetLayers()[ 4 ].vObjMgr[ 0 ].PushEmptyObj();
+		Object & obj = *GetObject( Result );
+		obj.position = D3DXVECTOR3( position.x, position.y, 0.f );
+		obj.velocity = D3DXVECTOR3( speed * cos( direction ), speed * sin( direction ), 0.f );
+		obj.accel = D3DXVECTOR3( 0, 0, 0 );
+		obj.SetRotation( D3DX_PI / 2 );
+		obj.SetAngle( direction );
+		obj.FlagMotion( 1 );
+		obj.FlagCollidable( 1 );
+		obj.FlagScreenDeletable( 1 );
+		obj.ShotData = (ULONG)graphic;
+		return Result;
+	}
+	return -1;
 }
 
 Direct3DEngine::Direct3DEngine()
@@ -378,7 +412,7 @@ void Direct3DEngine::DrawObjects()
 	for( auto L = GetLayers().begin(); L < GetLayers().end(); ++L )
 	{
 		for( auto Obj = L->vObjMgr.begin(); Obj != L->vObjMgr.end(); ++Obj )
-			Obj->AdvanceTransformedDraw( this );
+			Obj->AdvanceTransformedDraw( this, L - GetLayers().begin() == 4 );
 	}
 }
 void Direct3DEngine::ProcUserInput( MSG const Msg )
