@@ -63,6 +63,8 @@ struct ShotData
 	ULONG Delay;
 	ULONG Radius;
 	ULONG AnimationTime;
+	BlendType Render;
+	DWORD Flags;
 	ULONG NextShot;
 };
 
@@ -107,8 +109,6 @@ private:
 	D3DSmartPtr< LPDIRECT3DPIXELSHADER9 > PShader;
 	D3DSmartPtr< LPD3DXCONSTANTTABLE > Constable;
 	std::vector< Vertex > vecVertexLibrary;
-	std::vector< ShotData > Bullet_Templates;
-	std::vector< DelayData > Bullet_Delays;
 	std::vector< Object > vecObjects;
 	std::vector< ObjHandle > vecIntermediateLayer;
 	std::vector< unsigned > vecIntermediateLayerGC;
@@ -137,7 +137,5 @@ public:
 	void AdvanceTransformedDraw( Direct3DEngine * D3DEng, bool Danmaku );
 	unsigned GetObjCount() const;
 	unsigned GetDelayDataSize() const;
-	void CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT const & rect, D3DCOLOR color, std::vector< std::vector< float > > const & AnimationData );
-	void CreateDelayShotData( unsigned ID, RECT const & rect, D3DCOLOR const color, FLOAT const Scale, ULONG const DelayFrames );
 };
 

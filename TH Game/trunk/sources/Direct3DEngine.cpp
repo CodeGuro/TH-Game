@@ -257,10 +257,61 @@ unsigned Battery::CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed,
 		obj.FlagMotion( 1 );
 		obj.FlagCollidable( 1 );
 		obj.FlagScreenDeletable( 1 );
+		obj.FlagPixelPerfect( Bullet_Templates[ (ULONG)graphic ].Flags & 0x16 ? 1 : 0 );
 		obj.ShotData = (ULONG)graphic;
 		return Result;
 	}
 	return -1;
+}
+void Battery::CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT const & rect, D3DCOLOR color, DWORD flags, std::vector< std::vector< float > > const & AnimationData )
+{
+	assert( GetLayers().size() > 4 );
+	ObjMgr & bullet_mgr = GetLayers()[ 4 ].vObjMgr[ 0 ];
+	ShotData shot_data;
+	if( !AnimationData.size() )
+	{
+		shot_data.VtxOffset = bullet_mgr.GetVertexCountLib();
+		shot_data.Delay = delay;
+		shot_data.Radius = (ULONG)( pow( pow( (float)(rect.right - rect.left), 2.f ) + pow( (float)(rect.bottom - rect.top), 2.f ), 0.5f ) );
+		shot_data.AnimationTime = -1;
+		shot_data.Flags = flags;
+		shot_data.NextShot = Bullet_Templates.size();
+		bullet_mgr.PushQuadLib( rect, color );
+		Bullet_Templates.push_back( shot_data );
+	}
+	else
+	{
+		for( unsigned i = 0; i < AnimationData.size(); ++i )
+		{
+			shot_data.VtxOffset = bullet_mgr.GetVertexCountLib();
+			shot_data.Delay = delay;
+			shot_data.AnimationTime = (ULONG)AnimationData[ i ][ 0 ];
+			shot_data.Flags = flags;
+			shot_data.Radius = (ULONG)pow( pow( AnimationData[ i ][ 3 ] - AnimationData[ i ][ 1 ], 2.f ) + pow( AnimationData[ i ][ 4 ] - AnimationData[ i ][ 2 ], 2.f ), 0.5f );
+			shot_data.NextShot = Bullet_Templates.size() - (( i < AnimationData.size() - 1 )? 0 : i );
+			RECT r = { (ULONG)AnimationData[ i ][ 1 ], (ULONG)AnimationData[ i ][ 2 ], (ULONG)AnimationData[ i ][ 3 ], (ULONG)AnimationData[ i ][ 4 ] };
+			bullet_mgr.PushQuadLib( r, color );
+			Bullet_Templates.push_back( shot_data );
+		}
+	}
+}
+void Battery::CreateDelayShotData( unsigned ID, RECT const & rect, D3DCOLOR const color, FLOAT const Scale, ULONG const DelayFrames )
+{
+	assert( GetLayers().size() > 4 );
+	ObjMgr & bullet_mgr = GetLayers()[ 4 ].vObjMgr[ 0 ];
+	bullet_mgr.SetVertexCount( 6 );
+	if( ID >= Bullet_Delays.size() ) Bullet_Delays.resize( 1 + ID );
+	DelayData delaydata = { bullet_mgr.GetVertexCountLib(), DelayFrames, Scale };
+	bullet_mgr.PushQuadLib( rect, color );
+	Bullet_Delays[ ID ] = delaydata;
+}
+ShotData const & Battery::GetBulletTemplates( unsigned const graphic ) const
+{
+	return Bullet_Templates[ graphic ];
+}
+unsigned Battery::GetDelayDataSize() const
+{
+	return Bullet_Delays.size();
 }
 
 Direct3DEngine::Direct3DEngine()

@@ -143,42 +143,6 @@ D3DSURFACE_DESC ObjMgr::GetSurfaceDesc()
 {
 	return SurfaceDesc;
 }
-void ObjMgr::CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT const & rect, D3DCOLOR color, std::vector< std::vector< float > > const & AnimationData )
-{
-	VertexCount = 6;
-	ShotData shot_data;
-	if( !AnimationData.size() )
-	{
-		shot_data.VtxOffset = vecVertexLibrary.size();
-		shot_data.Delay = delay;
-		shot_data.Radius = (ULONG)( pow( pow( (float)(rect.right - rect.left), 2.f ) + pow( (float)(rect.bottom - rect.top), 2.f ), 0.5f ) );
-		shot_data.AnimationTime = -1;
-		shot_data.NextShot = Bullet_Templates.size();
-		PushQuadLib( rect, color );
-		Bullet_Templates.push_back( shot_data );
-	}
-	else
-	{
-		for( unsigned i = 0; i < AnimationData.size(); ++i )
-		{
-			shot_data.VtxOffset = vecVertexLibrary.size();
-			shot_data.Delay = delay;
-			shot_data.AnimationTime = (ULONG)AnimationData[ i ][ 0 ];
-			shot_data.Radius = (ULONG)pow( pow( AnimationData[ i ][ 3 ] - AnimationData[ i ][ 1 ], 2.f ) + pow( AnimationData[ i ][ 4 ] - AnimationData[ i ][ 2 ], 2.f ), 0.5f );
-			shot_data.NextShot = Bullet_Templates.size() - (( i < AnimationData.size() - 1 )? 0 : i );
-			RECT r = { (ULONG)AnimationData[ i ][ 1 ], (ULONG)AnimationData[ i ][ 2 ], (ULONG)AnimationData[ i ][ 3 ], (ULONG)AnimationData[ i ][ 4 ] };
-			PushQuadLib( r, color );
-			Bullet_Templates.push_back( shot_data );
-		}
-	}
-}
-void ObjMgr::CreateDelayShotData( unsigned ID, RECT const & rect, D3DCOLOR const color, FLOAT const Scale, ULONG const DelayFrames )
-{
-	if( ID >= Bullet_Delays.size() ) Bullet_Delays.resize( 1 + ID );
-	DelayData delaydata = { vecVertexLibrary.size(), DelayFrames, Scale };
-	PushQuadLib( rect, color );
-	Bullet_Delays[ ID ] = delaydata;
-}
 void ObjMgr::AdvanceTransformedDraw( Direct3DEngine * D3DEng, bool Danmaku )
 {
 	if( vecVertexLibrary.size() )
@@ -197,8 +161,8 @@ void ObjMgr::AdvanceTransformedDraw( Direct3DEngine * D3DEng, bool Danmaku )
 		for( unsigned u = 0; u < s; ++u )
 		{
 			Vertex * dst = &vtxptr[ u * VertexCount ];//&vecVertices[ u * VertexCount ];
-			Vertex * src = Danmaku ? &vecVertexLibrary[ Bullet_Templates[ vecObjects[ u ].ShotData ].VtxOffset ] : &vecVertexLibrary[ vecObjects[ u ].libidx ];
-			D3DXMatrixTransformation( &mat, NULL, NULL, &vecObjects[ u ].scale, NULL, &( vecObjects[ u ].direction * vecObjects[ u ].orient ), &vecObjects[ u ].position );
+			Vertex * src = Danmaku ? &vecVertexLibrary[ D3DEng->GetBulletTemplates( vecObjects[ u ].ShotData ).VtxOffset ] : &vecVertexLibrary[ vecObjects[ u ].libidx ];
+			D3DXMatrixTransformation( &mat, NULL, NULL, &vecObjects[ u ].scale, NULL, &( vecObjects[ u ].direction * vecObjects[ u ].orient ), vecObjects[ u ].FlagPixelPerfect( -1 ) ? &D3DXVECTOR3( floor( vecObjects[ u ].position.x + 0.5f), floor(vecObjects[ u ].position.y + 0.5f), floor( vecObjects[ u ].position.z + 0.5f ) ) : &vecObjects[ u ].position );
 			for( unsigned v = 0; v < VertexCount; ++v )
 			{
 				D3DXVec3TransformCoord( &dst->pos, &src->pos, &mat );
@@ -260,10 +224,6 @@ unsigned ObjMgr::GetObjCount() const
 {
 	return vecObjects.size();
 }
-unsigned ObjMgr::GetDelayDataSize() const
-{
-	return Bullet_Delays.size();
-}
 
 void Object::SetSpeed( float Speed )
 {
@@ -311,18 +271,18 @@ void Object::SetRotationVelocityEx( D3DXVECTOR3 Axis, float Theta )
 }
 void Object::Advance()
 {
+	D3DXQUATERNION inv;
+	D3DXQuaternionInverse( &inv, &direction );
 	if( FlagMotion( -1 ) )
-	{
 		position += velocity += accel;
-		orient *= orientvel;
-	}
+	orient = FlagPixelPerfect( - 1 )? D3DXQUATERNION( 0, 0, 0, 1 ) * inv : orient * orientvel;
 }
 bool Object::FlagMotion( int flag )
 {
 	switch( flag )
 	{
 	case -1:
-		return (flags = flags & 0x1) != 0;
+		return (flags & 0x1) != 0;
 	case 0:
 		flags = flags & ~0x1;
 		return false;
@@ -337,7 +297,7 @@ bool Object::FlagCollidable( int flag )
 	switch( flag )
 	{
 	case -1:
-		return (flags = flags & 0x2) != 0;
+		return (flags & 0x2) != 0;
 	case 0:
 		flags = flags & ~0x2;
 		return false;
@@ -352,7 +312,7 @@ bool Object::FlagScreenDeletable( int flag )
 	switch( flag )
 	{
 	case -1:
-		return (flags = flags & 0x4) != 0;
+		return (flags & 0x4) != 0;
 	case 0:
 		flags = flags & ~0x4;
 		return false;
@@ -367,7 +327,7 @@ bool Object::FlagGraze( int flag )
 	switch( flag )
 	{
 	case -1:
-		return (flags = flags & 0x8) != 0;
+		return (flags & 0x8) != 0;
 	case 0:
 		flags = flags & ~0x8;
 		return false;
@@ -382,7 +342,7 @@ bool Object::FlagPixelPerfect( int flag )
 	switch( flag )
 	{
 	case -1:
-		return (flags = flags & 0x16) != 0;
+		return (flags & 0x16) != 0;
 	case 0:
 		flags = flags & ~0x16;
 		return false;

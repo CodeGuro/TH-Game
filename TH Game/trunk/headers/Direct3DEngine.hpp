@@ -33,6 +33,8 @@ private:
 		
 	typedef std::vector< Layer > vLayer_t;
 	std::map< std::string, LPDIRECT3DTEXTURE9 > mapTextures;
+	std::vector< ShotData > Bullet_Templates;
+	std::vector< DelayData > Bullet_Delays;
 	vLayer_t vLayers;
 	std::vector< ObjHandle > vObjHandles;
 	std::vector< unsigned > vObjHandlesGC;
@@ -62,6 +64,10 @@ public:
 	LPDIRECT3DPIXELSHADER9 GetDefaultPShader() const;
 	LPD3DXCONSTANTTABLE GetDefaultConstable() const;
 
+	void CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT const & rect, D3DCOLOR color, DWORD flags, std::vector< std::vector< float > > const & AnimationData );
+	void CreateDelayShotData( unsigned ID, RECT const & rect, D3DCOLOR const color, FLOAT const Scale, ULONG const DelayFrames );
+	ShotData const & GetBulletTemplates( unsigned const graphic ) const;
+	unsigned GetDelayDataSize() const;
 	Battery( HWND const hWnd );
 	Battery();
 };

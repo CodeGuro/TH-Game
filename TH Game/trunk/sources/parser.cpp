@@ -1178,7 +1178,8 @@ void parser::parseShotData()
 			float rec[4] = { 0, 0, 0, 0 };
 			float col[4] = { 255, 255, 255, 255 };
 			vector< vector< float > > animation_data;
-			unsigned delay;
+			unsigned delay = 0;
+			DWORD flags = 0;
 
 			while( lexicon.getToken() == tk_word )
 			{
@@ -1291,7 +1292,19 @@ void parser::parseShotData()
 					if( lexicon.advance() != tk_real )
 						raiseError( "lexer::tk_real expected", error::er_syntax );
 					delay = (unsigned)lexicon.getReal();
-					if( GetLayers()[ 4 ].vObjMgr[ 0 ].GetDelayDataSize() < 1 + delay ) raiseError( "No such delay ID exists", error::er_syntax );
+					if( GetDelayDataSize() < 1 + delay ) raiseError( "No such delay ID exists", error::er_syntax );
+					lexicon.advance();
+				}
+				else if( lexicon.getWord() == "pixel_perfect" )
+				{
+					if( lexicon.advance() != tk_assign )
+						raiseError( "\"=\" expected", error::er_syntax );
+					if( lexicon.advance() != tk_word )
+						raiseError( "lexicon::tk_word expected", error::er_syntax );
+					int boolval = (( lexicon.getWord() == "TRUE" )? 1 : ( lexicon.getWord() == "FALSE" )? 0 : -1 );
+					if( !(boolval == 0 || boolval == 1) )
+						raiseError( "\"TRUE\" or \"FALSE\" expected", error::er_syntax );
+					flags = (( boolval == 1 )? flags | 0x16 : flags & ~0x16);
 					lexicon.advance();
 				}
 				else
@@ -1303,7 +1316,7 @@ void parser::parseShotData()
 			lexicon.advance();
 			if( id == -1 ) raiseError( "\"id\" must be provided with a real number", error::er_syntax );
 			RECT r = { (ULONG)rec[ 0 ], (ULONG)rec[ 1 ], (ULONG)rec[ 2 ], (ULONG)rec[ 3 ] };
-			GetLayers()[ 4 ].vObjMgr[ 0 ].CreateShotData( id, render, delay, r, D3DCOLOR_RGBA( (UCHAR)col[ 0 ], (UCHAR)col[ 1 ], (UCHAR)col[ 2 ], (UCHAR)col[ 3 ] ), animation_data );
+			CreateShotData( id, render, delay, r, D3DCOLOR_RGBA( (UCHAR)col[ 0 ], (UCHAR)col[ 1 ], (UCHAR)col[ 2 ], (UCHAR)col[ 3 ] ), flags, animation_data );
 		}
 	} while( lexicon.getToken() != tk_end );
 	lexicon = lexsave;
@@ -1383,7 +1396,7 @@ void parser::parseDelayData()
 		if( id == -1 ) raiseError( "\"id\" must be provided with a real number", error::er_syntax );
 		RECT r = { (ULONG)rect[ 0 ], (ULONG)rect[ 1 ], (ULONG)rect[ 2 ], (ULONG)rect[ 3 ] };
 		D3DCOLOR color = D3DCOLOR_RGBA( (UCHAR)col[ 0 ], (UCHAR)col[ 1 ], (UCHAR)col[ 2 ], (UCHAR)col[ 3 ] );
-		GetLayers()[ 4 ].vObjMgr[ 0 ].CreateDelayShotData( (ULONG)id, r, color, 1.f, 0 );
+		CreateDelayShotData( (ULONG)id, r, color, 1.f, 0 );
 	}while( lexicon.getToken() != tk_end );
 	lexicon = lexsave;
 }
