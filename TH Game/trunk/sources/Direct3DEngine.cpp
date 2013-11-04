@@ -144,9 +144,8 @@ unsigned Battery::CreateObject( unsigned short Layer )
 		handle.Layer = Layer;
 		handle.RefCount = 1;
 		handle.MgrIdx = GetLayers()[ Layer ].vObjMgr.size();
-		handle.ObjIdx = 0;
+		handle.ObjIdx = -1;
 		ObjMgr * objMgr = &(*GetLayers()[ Layer ].vObjMgr.insert( GetLayers()[ Layer ].vObjMgr.end(), ObjMgr() ) );
-		objMgr->PushObj( 0 );
 		objMgr->SetVertexDeclaration( pDefaultVDeclaration );
 		objMgr->SetVertexShader( pDefault3DVShader );
 		objMgr->SetPixelShader( pDefault3DPShader );
@@ -258,6 +257,7 @@ unsigned Battery::CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed,
 		obj.FlagCollidable( 1 );
 		obj.FlagScreenDeletable( 1 );
 		obj.FlagPixelPerfect( Bullet_Templates[ (ULONG)graphic ].Flags & 0x16 ? 1 : 0 );
+		obj.render = Bullet_Templates[ (ULONG)graphic ].Render;
 		obj.ShotData = (ULONG)graphic;
 		return Result;
 	}
@@ -276,6 +276,7 @@ void Battery::CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT
 		shot_data.AnimationTime = -1;
 		shot_data.Flags = flags;
 		shot_data.NextShot = Bullet_Templates.size();
+		shot_data.Render = blend;
 		bullet_mgr.PushQuadLib( rect, color );
 		Bullet_Templates.push_back( shot_data );
 	}
@@ -287,6 +288,7 @@ void Battery::CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT
 			shot_data.Delay = delay;
 			shot_data.AnimationTime = (ULONG)AnimationData[ i ][ 0 ];
 			shot_data.Flags = flags;
+			shot_data.Render = blend;
 			shot_data.Radius = (ULONG)pow( pow( AnimationData[ i ][ 3 ] - AnimationData[ i ][ 1 ], 2.f ) + pow( AnimationData[ i ][ 4 ] - AnimationData[ i ][ 2 ], 2.f ), 0.5f );
 			shot_data.NextShot = Bullet_Templates.size() - (( i < AnimationData.size() - 1 )? 0 : i );
 			RECT r = { (ULONG)AnimationData[ i ][ 1 ], (ULONG)AnimationData[ i ][ 2 ], (ULONG)AnimationData[ i ][ 3 ], (ULONG)AnimationData[ i ][ 4 ] };
@@ -463,7 +465,7 @@ void Direct3DEngine::DrawObjects()
 	for( auto L = GetLayers().begin(); L < GetLayers().end(); ++L )
 	{
 		for( auto Obj = L->vObjMgr.begin(); Obj != L->vObjMgr.end(); ++Obj )
-			Obj->AdvanceTransformedDraw( this, L - GetLayers().begin() == 4 );
+			Obj->AdvanceDrawDanmaku( this );
 	}
 }
 void Direct3DEngine::ProcUserInput( MSG const Msg )

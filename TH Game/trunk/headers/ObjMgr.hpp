@@ -14,6 +14,11 @@ struct Vertex
 	D3DCOLOR color;
 };
 
+enum BlendType
+{
+	BlendAlpha,	BlendAdd, BlendSub, BlendMult
+};
+
 struct Object
 {
 	D3DXVECTOR3 position;
@@ -28,6 +33,7 @@ struct Object
 		ULONG ShotData;
 		ULONG libidx;
 	};
+	BlendType render;
 	DWORD flags;
 
 	void SetSpeed( float Speed );
@@ -49,12 +55,6 @@ struct Object
 	bool FlagGraze( int flag );
 	bool FlagPixelPerfect( int flag );
 	void Advance();
-};
-
-enum BlendType
-{
-	BlendAlpha,	BlendAdd, BlendSub,
-	BlendInvAlph, BlendInvAdd
 };
 
 struct ShotData
@@ -95,15 +95,23 @@ private:
 	{
 		unsigned ObjIdx;
 	};
+	struct VBuffer
+	{
+		ULONG VBufferLength;
+		D3DSmartPtr< LPDIRECT3DVERTEXBUFFER9 > VertexBuffer;
+		Vertex * ptr;
+		Vertex * ptrinit;
+		VBuffer() : VBufferLength( 0 )
+		{
+		}
+	};
 
-	BlendType BlendOp;
 	D3DSURFACE_DESC SurfaceDesc;
 
 	unsigned VertexCount;
-	unsigned VBufferLength;
 	D3DPRIMITIVETYPE PrimitiveType;
 	D3DSmartPtr< LPDIRECT3DTEXTURE9 > pTexture;
-	D3DSmartPtr< LPDIRECT3DVERTEXBUFFER9 > VertexBuffer;
+	VBuffer VertexBuffers[ 4 ];
 	D3DSmartPtr< LPDIRECT3DVERTEXDECLARATION9 > VDeclaration;
 	D3DSmartPtr< LPDIRECT3DVERTEXSHADER9 > VShader;
 	D3DSmartPtr< LPDIRECT3DPIXELSHADER9 > PShader;
@@ -122,7 +130,6 @@ public:
 	void SetPixelShader( LPDIRECT3DPIXELSHADER9 Shader );
 	void SetVShaderConstTable( LPD3DXCONSTANTTABLE Table );
 	void SetPrimitiveType( D3DPRIMITIVETYPE PrimType );
-	void SetBlendMode( BlendType Blend );
 	void PushQuadLib( RECT Quad, D3DCOLOR Color );
 	void PushVertexLib( std::vector< Vertex > const & VecVerts );
 	void ResizeVertexLib( unsigned VCount );
@@ -130,12 +137,10 @@ public:
 	unsigned PushObj( unsigned const Index ); //returns an index to the handle
 	unsigned PushEmptyObj(); //returns an index to the handle
 	void EraseObj( unsigned const Index );
-	Object & GetObjRef( unsigned const Index );
 	Object * GetObjPtr( unsigned const Index );
 	Vertex * GetLibVertexPtr( unsigned const Index );
 	D3DSURFACE_DESC GetSurfaceDesc();
-	void AdvanceTransformedDraw( Direct3DEngine * D3DEng, bool Danmaku );
+	void AdvanceDrawDanmaku( Direct3DEngine * D3DEng );
 	unsigned GetObjCount() const;
 	unsigned GetDelayDataSize() const;
 };
-

@@ -38,7 +38,6 @@ task Task()
 		let y = rand_int( 0, 100 );
 		loop( looper )
 		{
-			//TestObj( a, x, y );
 			CreateShot01( x, y, 1, a, rand_int(0,2) );
 			a = a + 2 * 3.1415926 / looper;
 		}

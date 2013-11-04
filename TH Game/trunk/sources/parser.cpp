@@ -1202,7 +1202,9 @@ void parser::parseShotData()
 						raiseError( "render lexer::tk_word expected", error::er_syntax );
 					if( lexicon.getWord() == "ALPHA_BLEND" ) render = BlendAlpha;
 					else if( lexicon.getWord() == "ADDITIVE_BLEND" ) render = BlendAdd;
-					else raiseError( "render lexer::tk_word expected for ALPHA_BLEND or ADDITIVE_BLEND", error::er_syntax );
+					else if( lexicon.getWord() == "SUBTRACTIVE_BLEND" ) render = BlendSub;
+					else if( lexicon.getWord() == "MULTIPLY_BLEND" ) render = BlendMult;
+					else raiseError( "render lexer::tk_word expected for \'ALPHA_BLEND | ADDITIVE_BLEND | SUBTRACTIVE_BLEND | MULTIPLY_BLEND\'", error::er_syntax );
 					lexicon.advance();
 				}
 				else if( word == "rect" )

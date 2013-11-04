@@ -366,9 +366,9 @@ void natives::_Obj_SetPrimitiveType( script_engine * eng, size_t * argv )
 }
 void natives::_Obj_SetRenderState( script_engine * eng, size_t * argv )
 {
-	ObjMgr * objMgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( objMgr )
-		objMgr->SetBlendMode( eng->getBlendModeScriptData( argv[ 1 ] ) );
+	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( obj )
+		obj->render = eng->getBlendModeScriptData( argv[ 1 ] );
 }
 void natives::_Obj_SetVertexUV( script_engine * eng, size_t * argv )
 {
