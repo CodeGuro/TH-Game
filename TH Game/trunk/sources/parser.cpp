@@ -1334,8 +1334,7 @@ void parser::parseDelayData()
 				raiseError( "\"=\" expected", error::er_syntax );
 			if( lexicon.advance() != tk_string )
 				raiseError( "lexer::tk_string expected", error::er_syntax );
-			LoadTexture( lexicon.getString() );
-			GetLayers()[ 4 ].vObjMgr[ 0 ].SetTexture( GetTexture( lexicon.getString() ) );
+			LoadShotImage( lexicon.getString() );
 			break;
 		}
 		else lexicon.advance();
@@ -1461,8 +1460,9 @@ parser::parser()
 		{ "Obj_SetPrimitiveType", &natives::_Obj_SetPrimitiveType, 2 },
 		{ "Obj_SetRenderState", &natives::_Obj_SetRenderState, 2 },
 		{ "Obj_SetVertexUV", &natives::_Obj_SetVertexUV, 4 },
-		{ "Obj_SetVertexXYZ", &natives::_Obj_SetVertexXYZ, 5 },
+		{ "Obj_SetVertexXY", &natives::_Obj_SetVertexXY, 4 },
 		{ "Obj_SetVertexColor", &natives::_Obj_SetVertexColor, 6 },
+		{ "Obj_SetLayer", &natives::_Obj_SetLayer, 2 },
 		{ "ALPHA_BLEND", &natives::_ALPHA_BLEND, 0 },
 		{ "ADDITIVE_BLEND", &natives::_ADDITIVE_BLEND, 0 },
 		{ "PRIMITIVE_TRIANGLELIST", &natives::_PRIMITIVE_TRIANGLELIST, 0 },

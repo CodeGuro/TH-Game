@@ -16,7 +16,7 @@ struct Vertex
 
 enum BlendType
 {
-	BlendAlpha,	BlendAdd, BlendSub, BlendMult
+	BlendMult, BlendSub, BlendAdd, BlendAlpha
 };
 
 struct Object
@@ -28,12 +28,7 @@ struct Object
 	D3DXQUATERNION direction;
 	D3DXQUATERNION orient;
 	D3DXQUATERNION orientvel;
-	union
-	{
-		ULONG ShotData;
-		ULONG libidx;
-	};
-	BlendType render;
+	ULONG VertexOffset;
 	DWORD flags;
 
 	void SetSpeed( float Speed );
@@ -75,72 +70,31 @@ struct DelayData
 	FLOAT Scale;
 };
 
-struct Shot
-{
-	D3DXVECTOR2 PosXY;
-	FLOAT Direction;
-	FLOAT Speed;
-	FLOAT Acceleration;
-	FLOAT Rotation;
-	FLOAT Rotational_Velocity;
-	ULONG ShotDataID;
-	ULONG Flags;
-	ULONG Time;
-};
-
 class ObjMgr
 {
 private:
-	struct ObjHandle
-	{
-		unsigned ObjIdx;
-	};
-	struct VBuffer
-	{
-		ULONG VBufferLength;
-		D3DSmartPtr< LPDIRECT3DVERTEXBUFFER9 > VertexBuffer;
-		Vertex * ptr;
-		Vertex * ptrinit;
-		VBuffer() : VBufferLength( 0 )
-		{
-		}
-	};
-
-	D3DSURFACE_DESC SurfaceDesc;
-
 	unsigned VertexCount;
+	unsigned VertexBufferIdx;
+	unsigned ObjBufferIdx;
 	D3DPRIMITIVETYPE PrimitiveType;
+	BlendType BlendState;
 	D3DSmartPtr< LPDIRECT3DTEXTURE9 > pTexture;
-	VBuffer VertexBuffers[ 4 ];
 	D3DSmartPtr< LPDIRECT3DVERTEXDECLARATION9 > VDeclaration;
 	D3DSmartPtr< LPDIRECT3DVERTEXSHADER9 > VShader;
 	D3DSmartPtr< LPDIRECT3DPIXELSHADER9 > PShader;
 	D3DSmartPtr< LPD3DXCONSTANTTABLE > Constable;
-	std::vector< Vertex > vecVertexLibrary;
-	std::vector< Object > vecObjects;
-	std::vector< ObjHandle > vecIntermediateLayer;
-	std::vector< unsigned > vecIntermediateLayerGC;
 
 public:
 	ObjMgr();
 	void SetVertexCount( unsigned const Count );
+	void SetVertexBufferIdx( unsigned const Idx );
+	void SetObjBufferIdx( unsigned const Idx );
 	void SetTexture( LPDIRECT3DTEXTURE9 pTex );
 	void SetVertexDeclaration( LPDIRECT3DVERTEXDECLARATION9 VDecl );
 	void SetVertexShader( LPDIRECT3DVERTEXSHADER9 Shader );
 	void SetPixelShader( LPDIRECT3DPIXELSHADER9 Shader );
 	void SetVShaderConstTable( LPD3DXCONSTANTTABLE Table );
 	void SetPrimitiveType( D3DPRIMITIVETYPE PrimType );
-	void PushQuadLib( RECT Quad, D3DCOLOR Color );
-	void PushVertexLib( std::vector< Vertex > const & VecVerts );
-	void ResizeVertexLib( unsigned VCount );
-	unsigned GetVertexCountLib();
-	unsigned PushObj( unsigned const Index ); //returns an index to the handle
-	unsigned PushEmptyObj(); //returns an index to the handle
-	void EraseObj( unsigned const Index );
-	Object * GetObjPtr( unsigned const Index );
-	Vertex * GetLibVertexPtr( unsigned const Index );
-	D3DSURFACE_DESC GetSurfaceDesc();
+	void SetBlendState( BlendType const Blend);
 	void AdvanceDrawDanmaku( Direct3DEngine * D3DEng );
-	unsigned GetObjCount() const;
-	unsigned GetDelayDataSize() const;
 };

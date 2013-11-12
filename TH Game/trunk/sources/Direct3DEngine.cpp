@@ -80,7 +80,8 @@ Battery::Battery( HWND const hWnd ) : d3d( Direct3DCreate9( D3D_SDK_VERSION ) )
 		pshaderbuff->Release();
 		if(pshadererrbuff ) pshadererrbuff->Release();
 	}
-
+	if( !PipelineVertexBuffer.Buffer )
+		d3ddev->CreateVertexBuffer( PipelineVertexBuffer.BufferSize = 1000, D3DUSAGE_WRITEONLY, 0, D3DPOOL_MANAGED, &PipelineVertexBuffer.Buffer, NULL );
 
 	//0 - background
 	//1 - 3D
@@ -91,8 +92,23 @@ Battery::Battery( HWND const hWnd ) : d3d( Direct3DCreate9( D3D_SDK_VERSION ) )
 	//6 - effects
 	//7 - sprites/text
 	//8 - foreground
+	vVertexBuffers.resize( 1 );
+	vVertexBuffers.back().RefCount = 4;
+	vvObjects.resize( 4 );
 	GetLayers().resize( 8 );
-	CreateObject( 4 );
+	GetLayers()[ 4 ].vObjMgr.resize( 4 );
+	for( unsigned u = 0; u < 4; ++u )
+	{
+		ObjMgr & mgr = GetLayers()[ 4 ].vObjMgr[ u ];
+		mgr.SetVertexDeclaration( GetDefaultVDeclaration() );
+		mgr.SetVertexShader( GetDefaultVShader() );
+		mgr.SetPixelShader( GetDefaultPShader() );
+		mgr.SetVShaderConstTable( GetDefaultConstable() );
+		mgr.SetVertexBufferIdx( 0 );
+		mgr.SetVertexCount( 6 );
+		mgr.SetObjBufferIdx( u );
+		mgr.SetBlendState( (BlendType)u );
+	}
 
 }
 Battery::Battery()
@@ -126,9 +142,18 @@ Battery::vLayer_t & Battery::GetLayers()
 {
 	return vLayers;
 }
-unsigned Battery::CreateObject( unsigned short Layer )
+void Battery::LoadShotImage( std::string const & pathname )
+{
+	ShotImagePath = pathname;
+	LoadTexture( pathname );
+	for( unsigned u = 0; u < 4; ++u )
+		GetLayers()[ 4 ].vObjMgr[ u ].SetTexture( GetTexture( pathname ) );
+}
+unsigned Battery::CreateObject( unsigned short Layer ) //0 - BG, 4 - Bullet, 5 - Effect, 8 - Foreground
 {
 	unsigned Result;
+	unsigned VtxBuffIdx;
+	unsigned ObjVector;
 	if( Layer <= GetLayers().size() )
 	{
 		if( vObjHandlesGC.size() )
@@ -137,19 +162,50 @@ unsigned Battery::CreateObject( unsigned short Layer )
 			vObjHandlesGC.pop_back();
 		}
 		else
+		{
 			Result = vObjHandles.size();
-		if( vObjHandles.size() <= Result )
 			vObjHandles.resize( 1 + Result );
+		}
+		if( vvObjectsGC.size() )
+		{
+			ObjVector = vvObjectsGC.back();
+			vvObjectsGC.pop_back();
+		}
+		else
+		{
+			ObjVector = vvObjects.size();
+			vvObjects.resize( 1 + ObjVector );
+		}
+		if( Layer != 4 )
+		{
+			if( vVertexBuffersGC.size() )
+			{
+				VtxBuffIdx = vVertexBuffersGC.back();
+				vVertexBuffersGC.pop_back();
+			}
+			else
+			{
+				VtxBuffIdx = vVertexBuffers.size();
+				vVertexBuffers.resize( 1 + VtxBuffIdx );
+			}
+		}
+		else
+			VtxBuffIdx = -1;
 		ObjHandle & handle = vObjHandles[ Result ];
 		handle.Layer = Layer;
 		handle.RefCount = 1;
 		handle.MgrIdx = GetLayers()[ Layer ].vObjMgr.size();
-		handle.ObjIdx = -1;
+		handle.VertexBuffer = VtxBuffIdx;
+		handle.ObjVector = ObjVector;
+		handle.ObjVectorIdx = vvObjects[ ObjVector ].size();
+		vvObjects[ ObjVector ].resize( 1 + handle.ObjVectorIdx );
 		ObjMgr * objMgr = &(*GetLayers()[ Layer ].vObjMgr.insert( GetLayers()[ Layer ].vObjMgr.end(), ObjMgr() ) );
 		objMgr->SetVertexDeclaration( pDefaultVDeclaration );
 		objMgr->SetVertexShader( pDefault3DVShader );
 		objMgr->SetPixelShader( pDefault3DPShader );
 		objMgr->SetVShaderConstTable( pDefaultConstable );
+		objMgr->SetVertexBufferIdx( VtxBuffIdx );
+		objMgr->SetObjBufferIdx( handle.ObjVector );
 	}
 	else
 		Result = -1;
@@ -171,16 +227,29 @@ void Battery::ReleaseObject( unsigned HandleIdx )
 	if( HandleIdx != -1 )
 	{
 		ObjHandle & handle = vObjHandles[ HandleIdx ];
-		GetLayers()[ handle.Layer ].vObjMgr[ handle.MgrIdx ].EraseObj( handle.ObjIdx );
-		if( !GetLayers()[ handle.Layer ].vObjMgr[ handle.MgrIdx ].GetObjCount() )
+		auto & vObjects = vvObjects[ handle.ObjVector ];
+		vObjects.erase( vObjects.begin() + handle.ObjVectorIdx );
+		for( auto it = vObjHandles.begin(); it != vObjHandles.end(); ++it )
+			if( it->ObjVector == handle.ObjVector && it->ObjVectorIdx > handle.ObjVectorIdx )
+				--(it->ObjVectorIdx);
+
+		if( !vObjects.size() && handle.Type != ObjShot )
 		{
-			GetLayers()[ handle.Layer ].vObjMgr.erase( GetLayers()[ handle.Layer ].vObjMgr.begin() + handle.MgrIdx );
+			auto & Layer = GetLayers()[ handle.Layer ];
+			auto objmgr_it = Layer.vObjMgr.begin() + handle.MgrIdx;
+			Layer.vObjMgr.erase( objmgr_it );
+			if( !--(vVertexBuffers[ handle.VertexBuffer ].RefCount) )
+				vVertexBuffersGC.push_back( handle.VertexBuffer );
 			for( auto it = vObjHandles.begin(); it != vObjHandles.end(); ++it )
 				if( it->Layer == handle.Layer && it->MgrIdx > handle.MgrIdx )
 					--(it->MgrIdx);
+
 			handle.MgrIdx = -1;
 		}
-		handle.ObjIdx = -1;
+		handle.VertexBuffer = -1;
+		handle.ObjVector = -1;
+		handle.ObjVectorIdx = -1;
+		handle.Layer = -1;
 	}
 }
 Object * Battery::GetObject( unsigned HandleIdx )
@@ -188,8 +257,8 @@ Object * Battery::GetObject( unsigned HandleIdx )
 	if( HandleIdx != -1 )
 	{
 		ObjHandle & handle = vObjHandles[ HandleIdx ];
-		if( handle.ObjIdx != -1 && handle.MgrIdx != -1 )
-			return GetLayers()[ handle.Layer ].vObjMgr[ handle.MgrIdx ].GetObjPtr( handle.ObjIdx );
+		if( handle.ObjVectorIdx != -1 && handle.ObjVector!= -1 )
+			return &vvObjects[ handle.ObjVector ][ handle.ObjVectorIdx ];
 	}
 	return 0;
 }
@@ -245,20 +314,27 @@ unsigned Battery::CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed,
 		ObjHandle & handle = vObjHandles[ Result ];
 		handle.Layer = 4;
 		handle.RefCount = 1;
-		handle.MgrIdx = 0;
-		handle.ObjIdx = GetLayers()[ 4 ].vObjMgr[ 0 ].PushEmptyObj();
+		/*Get ObjMgr from graphic*/
+		ShotData const & shot_data= Bullet_Templates[ (unsigned)graphic ];
+		handle.ObjVector = (ULONG)shot_data.Render;
+		handle.ObjVectorIdx = vvObjects[ handle.ObjVector ].size();
+		handle.VertexBuffer = -1;
+		handle.MgrIdx = -1;
+		handle.Layer = -1;
+		vvObjects[ handle.ObjVector ].resize( 1 + handle.ObjVectorIdx );
 		Object & obj = *GetObject( Result );
 		obj.position = D3DXVECTOR3( position.x, position.y, 0.f );
 		obj.velocity = D3DXVECTOR3( speed * cos( direction ), speed * sin( direction ), 0.f );
+		obj.orientvel = D3DXQUATERNION( 0, 0, 0, 1 );
 		obj.accel = D3DXVECTOR3( 0, 0, 0 );
 		obj.SetRotation( D3DX_PI / 2 );
 		obj.SetAngle( direction );
+		obj.SetScale( D3DXVECTOR3( 1, 1, 1 ) );
+		obj.VertexOffset= shot_data.VtxOffset;
 		obj.FlagMotion( 1 );
 		obj.FlagCollidable( 1 );
 		obj.FlagScreenDeletable( 1 );
-		obj.FlagPixelPerfect( Bullet_Templates[ (ULONG)graphic ].Flags & 0x16 ? 1 : 0 );
-		obj.render = Bullet_Templates[ (ULONG)graphic ].Render;
-		obj.ShotData = (ULONG)graphic;
+		obj.FlagPixelPerfect( shot_data.Flags & 0x16 ? 1 : 0 );
 		return Result;
 	}
 	return -1;
@@ -266,36 +342,32 @@ unsigned Battery::CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed,
 void Battery::CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT const & rect, D3DCOLOR color, DWORD flags, std::vector< std::vector< float > > const & AnimationData )
 {
 	assert( GetLayers().size() > 4 );
-	ObjMgr & bullet_mgr = GetLayers()[ 4 ].vObjMgr[ 0 ];
 	ShotData shot_data;
-	if( !AnimationData.size() )
+	unsigned i = 0;
+	do
 	{
-		shot_data.VtxOffset = bullet_mgr.GetVertexCountLib();
+		shot_data.VtxOffset = vVertexBuffers[ 0 ].VertexBuffer.size();
 		shot_data.Delay = delay;
-		shot_data.Radius = (ULONG)( pow( pow( (float)(rect.right - rect.left), 2.f ) + pow( (float)(rect.bottom - rect.top), 2.f ), 0.5f ) );
-		shot_data.AnimationTime = -1;
 		shot_data.Flags = flags;
-		shot_data.NextShot = Bullet_Templates.size();
 		shot_data.Render = blend;
-		bullet_mgr.PushQuadLib( rect, color );
-		Bullet_Templates.push_back( shot_data );
-	}
-	else
-	{
-		for( unsigned i = 0; i < AnimationData.size(); ++i )
+		shot_data.NextShot = AnimationData.size() ? 1 + Bullet_Templates.size() - (( i < AnimationData.size() - 1 )? 0 : i + 1 ) : Bullet_Templates.size();
+		RECT r;
+		if( AnimationData.size() )
 		{
-			shot_data.VtxOffset = bullet_mgr.GetVertexCountLib();
-			shot_data.Delay = delay;
 			shot_data.AnimationTime = (ULONG)AnimationData[ i ][ 0 ];
-			shot_data.Flags = flags;
-			shot_data.Render = blend;
 			shot_data.Radius = (ULONG)pow( pow( AnimationData[ i ][ 3 ] - AnimationData[ i ][ 1 ], 2.f ) + pow( AnimationData[ i ][ 4 ] - AnimationData[ i ][ 2 ], 2.f ), 0.5f );
-			shot_data.NextShot = Bullet_Templates.size() - (( i < AnimationData.size() - 1 )? 0 : i );
-			RECT r = { (ULONG)AnimationData[ i ][ 1 ], (ULONG)AnimationData[ i ][ 2 ], (ULONG)AnimationData[ i ][ 3 ], (ULONG)AnimationData[ i ][ 4 ] };
-			bullet_mgr.PushQuadLib( r, color );
-			Bullet_Templates.push_back( shot_data );
+			RECT r2 = { (ULONG)AnimationData[ i ][ 1 ], (ULONG)AnimationData[ i ][ 2 ], (ULONG)AnimationData[ i ][ 3 ], (ULONG)AnimationData[ i ][ 4 ] };
+			r = r2;
 		}
-	}
+		else
+		{
+			shot_data.AnimationTime = 0;
+			shot_data.Radius = (ULONG)pow( pow( (float)(rect.right - rect.left), 2.f ) + pow( (float)(rect.bottom - rect.top), 2.f ), 0.5f );
+			r = rect;
+		}
+		PushQuadShotBuffer( r, color );
+		Bullet_Templates.push_back( shot_data );
+	}while( ++i < AnimationData.size() );
 }
 void Battery::CreateDelayShotData( unsigned ID, RECT const & rect, D3DCOLOR const color, FLOAT const Scale, ULONG const DelayFrames )
 {
@@ -303,8 +375,8 @@ void Battery::CreateDelayShotData( unsigned ID, RECT const & rect, D3DCOLOR cons
 	ObjMgr & bullet_mgr = GetLayers()[ 4 ].vObjMgr[ 0 ];
 	bullet_mgr.SetVertexCount( 6 );
 	if( ID >= Bullet_Delays.size() ) Bullet_Delays.resize( 1 + ID );
-	DelayData delaydata = { bullet_mgr.GetVertexCountLib(), DelayFrames, Scale };
-	bullet_mgr.PushQuadLib( rect, color );
+	DelayData delaydata = { vVertexBuffers[ 0 ].VertexBuffer.size(), DelayFrames, Scale };
+	PushQuadShotBuffer( rect, color );
 	Bullet_Delays[ ID ] = delaydata;
 }
 ShotData const & Battery::GetBulletTemplates( unsigned const graphic ) const
@@ -314,6 +386,100 @@ ShotData const & Battery::GetBulletTemplates( unsigned const graphic ) const
 unsigned Battery::GetDelayDataSize() const
 {
 	return Bullet_Delays.size();
+}
+void Battery::PushQuadShotBuffer( RECT const Quad, D3DCOLOR const Color )
+{
+	D3DSURFACE_DESC SurfaceDesc;
+	GetTexture( ShotImagePath )->GetLevelDesc( 0, &SurfaceDesc );
+	Vertex v[6] = 
+	{
+		{ D3DXVECTOR3( -(float)(Quad.right - Quad.left)/2, -(float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.left / (float)SurfaceDesc.Width, (float)Quad.top / (float)SurfaceDesc.Height ), Color },
+		{ D3DXVECTOR3( (float)(Quad.right - Quad.left)/2, -(float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.right / (float)SurfaceDesc.Width, (float)Quad.top / (float)SurfaceDesc.Height ), Color },
+		{ D3DXVECTOR3( -(float)(Quad.right - Quad.left)/2, (float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.left / (float)SurfaceDesc.Width, (float)Quad.bottom / (float)SurfaceDesc.Height ), Color },
+		{ D3DXVECTOR3( (float)(Quad.right - Quad.left)/2, -(float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.right / (float)SurfaceDesc.Width, (float)Quad.top / (float)SurfaceDesc.Height ), Color },
+		{ D3DXVECTOR3( (float)(Quad.right - Quad.left)/2, (float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.right / (float)SurfaceDesc.Width, (float)Quad.bottom / (float)SurfaceDesc.Height ), Color },
+		{ D3DXVECTOR3( -(float)(Quad.right - Quad.left)/2, (float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.left / (float)SurfaceDesc.Width, (float)Quad.bottom / (float)SurfaceDesc.Height ), Color }
+	};
+	for( unsigned u = 0; u < 6; ++u ) vVertexBuffers[ 0 ].VertexBuffer.push_back( v[u] );
+}
+D3DVBuffer & Battery::GetPipelineVBuffer()
+{
+	return PipelineVertexBuffer;
+}
+
+//ObjEffect functions
+void Battery::ObjEffect_CreateVertex( unsigned HandleIdx, ULONG VertexCount )
+{
+	if( HandleIdx != -1 )
+	{
+		ObjHandle & handle = vObjHandles[ HandleIdx ];
+		if( handle.VertexBuffer != -1 )
+			vVertexBuffers[ handle.VertexBuffer ].VertexBuffer.resize( VertexCount );
+	}
+}
+void Battery::ObjEffect_SetVertexXY( unsigned HandleIdx, ULONG VIndex,  D3DXVECTOR2 Posxy )
+{
+	if( HandleIdx != -1 )
+	{
+		ObjHandle & handle = vObjHandles[ HandleIdx ];
+		if( handle.VertexBuffer != -1 )
+			vVertexBuffers[ handle.VertexBuffer ].VertexBuffer[ VIndex ].pos = D3DXVECTOR3( Posxy.x, Posxy.y, 0.f );
+	}
+}
+void Battery::ObjEffect_SetVertexUV( unsigned HandleIdx, ULONG VIndex, D3DXVECTOR2 Posuv )
+{
+	if( HandleIdx != -1 )
+	{
+		ObjHandle & handle = vObjHandles[ HandleIdx ];
+		if( handle.VertexBuffer != -1 )
+			vVertexBuffers[ handle.VertexBuffer ].VertexBuffer[ VIndex ].tex = Posuv;
+	}
+}
+void Battery::ObjEffect_SetVertexColor( unsigned HandleIdx, ULONG VIndex, D3DCOLOR Color )
+{
+	if( HandleIdx != -1 )
+	{
+		ObjHandle & handle = vObjHandles[ HandleIdx ];
+		if( handle.VertexBuffer != -1 )
+			vVertexBuffers[ handle.VertexBuffer ].VertexBuffer[ VIndex ].color = Color;
+	}
+}
+void Battery::ObjEffect_SetRenderState( unsigned HandleIdx, BlendType BlendState )
+{
+	if( HandleIdx != -1 )
+	{
+		ObjHandle & handle = vObjHandles[ HandleIdx ];
+		if( handle.MgrIdx != -1 )
+			GetLayers()[ handle.Layer ].vObjMgr[ handle.MgrIdx ].SetBlendState( BlendState );
+	}
+}
+void Battery::ObjEffect_SetPrimitiveType( unsigned HandleIdx, D3DPRIMITIVETYPE PrimitiveType )
+{
+	if( HandleIdx != -1 )
+	{
+		ObjHandle & handle = vObjHandles[ HandleIdx ];
+		if( handle.MgrIdx != -1 )
+			GetLayers()[ handle.Layer ].vObjMgr[ handle.MgrIdx ].SetPrimitiveType( PrimitiveType );
+	}
+}
+void Battery::ObjEffect_SetLayer( unsigned HandleIdx, ULONG Layer )
+{
+	if( HandleIdx != -1 )
+	{
+		ObjHandle & handle = vObjHandles[ HandleIdx ];
+		if( handle.Layer != -1  && handle.Layer != Layer )
+		{
+			auto & objvec = GetLayers()[ handle.Layer ].vObjMgr;
+			ULONG mgrIdx = GetLayers()[ Layer ].vObjMgr.size();
+			GetLayers()[ Layer ].vObjMgr.push_back( objvec[ handle.MgrIdx ] );
+			objvec.erase( objvec.begin() + handle.MgrIdx );
+			for( auto it = vObjHandles.begin(); it != vObjHandles.end(); ++it )
+				if( it->Layer == handle.Layer && it->MgrIdx > handle.MgrIdx )
+					--(it->MgrIdx);
+			handle.Layer = (USHORT)Layer;
+			handle.MgrIdx = mgrIdx;
+		}
+	}
 }
 
 Direct3DEngine::Direct3DEngine()

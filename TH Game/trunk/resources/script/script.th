@@ -60,10 +60,10 @@ task TestObj( let angle, let posx, let posy )
 	Obj_SetVertexUV( obj, 2, 80, 112 );
 	Obj_SetVertexUV( obj, 3, 96, 112 );
 
-	Obj_SetVertexXYZ( obj, 0, -8, -8 , 0 );
-	Obj_SetVertexXYZ( obj, 1, 8, -8, 0 );
-	Obj_SetVertexXYZ( obj, 2, -8, 8, 0 );
-	Obj_SetVertexXYZ( obj, 3, 8, 8, 0 );
+	Obj_SetVertexXY( obj, 0, -8, -8 );
+	Obj_SetVertexXY( obj, 1, 8, -8 );
+	Obj_SetVertexXY( obj, 2, -8, 8 );
+	Obj_SetVertexXY( obj, 3, 8, 8 );
 
 	Obj_SetVertexColor( obj, 0, 255, 255, 255, 255 );
 	Obj_SetVertexColor( obj, 1, 255, 255, 255, 255 );

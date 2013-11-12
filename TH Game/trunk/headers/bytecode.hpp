@@ -177,8 +177,9 @@ private:
 	static void _Obj_SetPrimitiveType( script_engine * eng, size_t * argv );
 	static void _Obj_SetRenderState( script_engine * eng, size_t * argv );
 	static void _Obj_SetVertexUV( script_engine * eng, size_t * argv );
-	static void _Obj_SetVertexXYZ( script_engine * eng, size_t * argv );
+	static void _Obj_SetVertexXY( script_engine * eng, size_t * argv );
 	static void _Obj_SetVertexColor( script_engine * eng, size_t * argv );
+	static void _Obj_SetLayer( script_engine * eng, size_t * argv );
 	static void _ALPHA_BLEND( script_engine * eng, size_t * argv );
 	static void _ADDITIVE_BLEND( script_engine * eng, size_t * argv );
 	static void _PRIMITIVE_TRIANGLELIST( script_engine * eng, size_t * argv );

@@ -354,49 +354,31 @@ void natives::_Obj_SetVelocity( script_engine * eng, size_t * argv )
 }
 void natives::_Obj_CreateVertex( script_engine * eng, size_t * argv )
 {
-	ObjMgr * objmgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( objmgr )	
-		objmgr->ResizeVertexLib( (unsigned) eng->getRealScriptData( argv[ 1 ] )  );
+	eng->ObjEffect_CreateVertex( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ) );
 }
 void natives::_Obj_SetPrimitiveType( script_engine * eng, size_t * argv )
 {
-	ObjMgr * objmgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( objmgr )
-		objmgr->SetPrimitiveType( eng->getPrimitiveTypeScriptData( argv[ 1 ] ) );
+	eng->ObjEffect_SetPrimitiveType( eng->getObjHandleScriptData( argv[ 0 ] ), eng->getPrimitiveTypeScriptData( argv[ 1 ] ) );
 }
 void natives::_Obj_SetRenderState( script_engine * eng, size_t * argv )
 {
-	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( obj )
-		obj->render = eng->getBlendModeScriptData( argv[ 1 ] );
+	eng->ObjEffect_SetRenderState( eng->getObjHandleScriptData( argv[ 0 ] ), eng->getBlendModeScriptData( argv[ 1 ] ) );
 }
 void natives::_Obj_SetVertexUV( script_engine * eng, size_t * argv )
 {
-	ObjMgr * objMgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( objMgr )
-	{
-		D3DSURFACE_DESC sd = objMgr->GetSurfaceDesc();
-		Vertex * v = objMgr->GetLibVertexPtr( (unsigned)eng->getRealScriptData( argv[ 1 ] ) );
-		v->tex = D3DXVECTOR2( eng->getRealScriptData( argv[ 2 ] ) / sd.Width, eng->getRealScriptData( argv[ 3 ] ) / sd.Height );
-	}
+	eng->ObjEffect_SetVertexUV( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ), D3DXVECTOR2( eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) ) );
 }
-void natives::_Obj_SetVertexXYZ( script_engine * eng, size_t * argv )
+void natives::_Obj_SetVertexXY( script_engine * eng, size_t * argv )
 {
-	ObjMgr * objMgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( objMgr )
-	{
-		Vertex * v = objMgr->GetLibVertexPtr( (unsigned)eng->getRealScriptData( argv[ 1 ] ) );
-		v->pos = D3DXVECTOR3( eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ), eng->getRealScriptData( argv[ 4 ] ) );
-	}
+	eng->ObjEffect_SetVertexXY( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ), D3DXVECTOR2( eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) ) );
 }
 void natives::_Obj_SetVertexColor( script_engine * eng, size_t * argv )
 {
-	ObjMgr * objMgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( objMgr )
-	{
-		Vertex * v = objMgr->GetLibVertexPtr( (unsigned)eng->getRealScriptData( argv[ 1 ] ) );
-		v->color = D3DCOLOR_ARGB( (UCHAR)eng->getRealScriptData( argv[ 2 ] ), (UCHAR)eng->getRealScriptData( argv[ 3 ] ), (UCHAR)eng->getRealScriptData( argv[ 4 ] ), (UCHAR)eng->getRealScriptData( argv[ 5 ] ) );
-	}
+	eng->ObjEffect_SetVertexColor( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ), D3DCOLOR_RGBA( (ULONG)eng->getRealScriptData( argv[ 2 ] ), (ULONG)eng->getRealScriptData( argv[ 3 ] ), (ULONG)eng->getRealScriptData( argv[ 4 ] ), (ULONG)eng->getRealScriptData( argv[ 5 ] ) ) );
+}
+void natives::_Obj_SetLayer( script_engine * eng, size_t * argv )
+{
+	eng->ObjEffect_SetLayer( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ) );
 }
 void natives::_ALPHA_BLEND( script_engine * eng, size_t * argv )
 {

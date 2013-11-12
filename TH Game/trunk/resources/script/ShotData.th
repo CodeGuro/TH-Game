@@ -14,7 +14,7 @@ DelayData
 ShotData
 {
 	id = 0
-	render = ALPHA_BLEND
+	render = SUBTRACTIVE_BLEND
 	delay = 0
 	angular_velocity = 0
 	pixel_perfect = FALSE
