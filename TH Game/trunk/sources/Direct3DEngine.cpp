@@ -198,7 +198,7 @@ unsigned Battery::CreateObject( unsigned short Layer ) //0 - BG, 4 - Bullet, 5 -
 		handle.VertexBuffer = VtxBuffIdx;
 		handle.ObjVector = ObjVector;
 		handle.ObjVectorIdx = vvObjects[ ObjVector ].size();
-		vvObjects[ ObjVector ].resize( 1 + handle.ObjVectorIdx );
+		handle.Type = Layer == 4 ? ObjShot : ObjEffect;
 		ObjMgr * objMgr = &(*GetLayers()[ Layer ].vObjMgr.insert( GetLayers()[ Layer ].vObjMgr.end(), ObjMgr() ) );
 		objMgr->SetVertexDeclaration( pDefaultVDeclaration );
 		objMgr->SetVertexShader( pDefault3DVShader );
@@ -206,6 +206,20 @@ unsigned Battery::CreateObject( unsigned short Layer ) //0 - BG, 4 - Bullet, 5 -
 		objMgr->SetVShaderConstTable( pDefaultConstable );
 		objMgr->SetVertexBufferIdx( VtxBuffIdx );
 		objMgr->SetObjBufferIdx( handle.ObjVector );
+		objMgr->SetBlendState( BlendAlpha );
+
+		vvObjects[ ObjVector ].resize( 1 + handle.ObjVectorIdx );
+		Object & obj = *GetObject( Result );
+		obj.orientvel = D3DXQUATERNION( 0, 0, 0, 1 );
+		obj.accel = D3DXVECTOR3( 0, 0, 0 );
+		obj.SetAngle( 0 );
+		obj.SetVelocity( D3DXVECTOR3( 0, 0, 0 ) );
+		obj.SetRotation( 0 );
+		obj.SetScale( D3DXVECTOR3( 1, 1, 1 ) );
+		obj.VertexOffset = 0;
+		obj.FlagMotion( 1 );
+		obj.FlagCollidable( 1 );
+		obj.FlagScreenDeletable( 1 );
 	}
 	else
 		Result = -1;
@@ -414,7 +428,10 @@ void Battery::ObjEffect_CreateVertex( unsigned HandleIdx, ULONG VertexCount )
 	{
 		ObjHandle & handle = vObjHandles[ HandleIdx ];
 		if( handle.VertexBuffer != -1 )
+		{
 			vVertexBuffers[ handle.VertexBuffer ].VertexBuffer.resize( VertexCount );
+			GetLayers()[ handle.Layer ].vObjMgr[ handle.MgrIdx ].SetVertexCount( VertexCount );
+		}
 	}
 }
 void Battery::ObjEffect_SetVertexXY( unsigned HandleIdx, ULONG VIndex,  D3DXVECTOR2 Posxy )

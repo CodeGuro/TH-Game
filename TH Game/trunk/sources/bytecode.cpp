@@ -314,7 +314,6 @@ void natives::_Obj_Delete( script_engine * eng, size_t * argv )
 {
 	unsigned objHandle = eng->getObjHandleScriptData( argv[ 0 ] );
 	eng->ReleaseObject( objHandle );
-	eng->ReleaseObjHandle( objHandle );
 }
 void natives::_Obj_SetPosition( script_engine * eng, size_t * argv )
 {

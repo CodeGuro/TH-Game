@@ -14,6 +14,7 @@ script_main main_script //main routine
 	{
 		LoadUserShotData( "C:\Users\Administrator\Documents\Visual Studio 2010\Projects\TH Game\TH Game\trunk\resources\script\ShotData.th" );
 		Task();
+		TestObj();
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{
@@ -45,39 +46,43 @@ task Task()
 	}
 }
 
-task TestObj( let angle, let posx, let posy )
+task TestObj()
 {
-	let obj = Obj_Create( 4 );
+	let obj = Obj_Create( 5 );
 	LoadTexture( "etama.png" );
 	Obj_SetTexture( obj, "etama.png" );
 
-	Obj_CreateVertex( obj, 4 );
-	Obj_SetPrimitiveType( obj, PRIMITIVE_TRIANGLESTRIP );
+	Obj_CreateVertex( obj, 6 );
+	Obj_SetPrimitiveType( obj, PRIMITIVE_TRIANGLELIST );
 	Obj_SetRenderState( obj, ALPHA_BLEND );
 
-	Obj_SetVertexUV( obj, 0, 80, 96 );
-	Obj_SetVertexUV( obj, 1, 96, 96 );
-	Obj_SetVertexUV( obj, 2, 80, 112 );
-	Obj_SetVertexUV( obj, 3, 96, 112 );
+	Obj_SetVertexUV( obj, 0, 0, 0 );
+	Obj_SetVertexUV( obj, 1, 1, 0 );
+	Obj_SetVertexUV( obj, 2, 0, 1 );
+	Obj_SetVertexUV( obj, 3, 1, 0 );
+	Obj_SetVertexUV( obj, 4, 1, 1 );
+	Obj_SetVertexUV( obj, 5, 0, 1 );
 
-	Obj_SetVertexXY( obj, 0, -8, -8 );
-	Obj_SetVertexXY( obj, 1, 8, -8 );
-	Obj_SetVertexXY( obj, 2, -8, 8 );
-	Obj_SetVertexXY( obj, 3, 8, 8 );
+	Obj_SetVertexXY( obj, 0, -128, -128 );
+	Obj_SetVertexXY( obj, 1, 128, -128 );
+	Obj_SetVertexXY( obj, 2, -128, 128 );
+	Obj_SetVertexXY( obj, 3, 128, -128 );
+	Obj_SetVertexXY( obj, 4, 128, 128 );
+	Obj_SetVertexXY( obj, 5, -128, 128 );
 
 	Obj_SetVertexColor( obj, 0, 255, 255, 255, 255 );
 	Obj_SetVertexColor( obj, 1, 255, 255, 255, 255 );
 	Obj_SetVertexColor( obj, 2, 255, 255, 255, 255 );
 	Obj_SetVertexColor( obj, 3, 255, 255, 255, 255 );
+	Obj_SetVertexColor( obj, 4, 255, 255, 255, 255 );
+	Obj_SetVertexColor( obj, 5, 255, 255, 255, 255 );
 
-
-	Obj_SetVelocity( obj, cos( angle ), sin( angle ), 0 );
-	Obj_SetAngle( obj, angle + 3.14159 / 2 );
-	Obj_SetPosition( obj, posx, posy, 0 );
-	wait( 30 );
-	let ang = rand_int( 0, 360 ) * 3.14159265 / 180;
-	Obj_SetVelocity( obj, cos( ang ), sin ( ang ), 0 );
-	Obj_SetAngle( obj, ang + 3.14159265/2 );
+	Obj_SetLayer( obj, 7 );
+	Obj_SetVelocity( obj, cos( 0 ), sin( 0 ), 0 );
+	Obj_SetAngle( obj, 3.14159 / 2 );
+	Obj_SetPosition( obj, 100, 100, 0 );
+	Obj_SetVelocity( obj, cos( 0 ), sin ( 0 ), 0 );
+	Obj_SetAngle( obj, 3.14159265/2 );
 	wait( 60 );
 	Obj_Delete( obj );
 	
