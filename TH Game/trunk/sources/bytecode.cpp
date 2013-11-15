@@ -315,6 +315,12 @@ void natives::_Obj_Delete( script_engine * eng, size_t * argv )
 	unsigned objHandle = eng->getObjHandleScriptData( argv[ 0 ] );
 	eng->ReleaseObject( objHandle );
 }
+void natives::_Obj_BeDeleted( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) ) == 0 );
+	eng->scriptDataAssign( argv[ 0 ], tmp );
+	eng->releaseScriptData( tmp );
+}
 void natives::_Obj_SetPosition( script_engine * eng, size_t * argv )
 {
 	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
@@ -378,6 +384,10 @@ void natives::_Obj_SetVertexColor( script_engine * eng, size_t * argv )
 void natives::_Obj_SetLayer( script_engine * eng, size_t * argv )
 {
 	eng->ObjEffect_SetLayer( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ) );
+}
+void natives::_Obj_SetScale( script_engine * eng, size_t * argv )
+{
+	eng->ObjEffect_SetScale( eng->getObjHandleScriptData( argv[ 0 ] ), D3DXVECTOR3( eng->getRealScriptData( argv[ 1 ] ), eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) ) );
 }
 void natives::_ALPHA_BLEND( script_engine * eng, size_t * argv )
 {

@@ -175,6 +175,7 @@ void Object::Advance()
 	D3DXQuaternionInverse( &inv, &direction );
 	if( FlagMotion( -1 ) )
 		position += velocity += accel;
+	bool val = FlagPixelPerfect( -1 );
 	orient = FlagPixelPerfect( - 1 )? D3DXQUATERNION( 0, 0, 0, 1 ) * inv : orient * orientvel;
 }
 bool Object::FlagMotion( int flag )
@@ -242,13 +243,13 @@ bool Object::FlagPixelPerfect( int flag )
 	switch( flag )
 	{
 	case -1:
-		return (flags & 0x16) != 0;
+		return (flags & 0x10) != 0;
 	case 0:
-		flags = flags & ~0x16;
+		flags = flags & ~0x10;
 		return false;
 	case 1:
 	default:
-		flags = flags | 0x16;
+		flags = flags | 0x10;
 		return true;
 	}
 }

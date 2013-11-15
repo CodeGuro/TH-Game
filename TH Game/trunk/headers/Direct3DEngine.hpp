@@ -92,6 +92,7 @@ protected:
 	void ObjEffect_SetRenderState( unsigned HandleIdx, BlendType BlendState );
 	void ObjEffect_SetPrimitiveType( unsigned HandleIdx, D3DPRIMITIVETYPE PrimitiveType );
 	void ObjEffect_SetLayer( unsigned HandleIdx, ULONG Layer );
+	void ObjEffect_SetScale( unsigned HandleIdx, D3DXVECTOR3 const & scale );
 
 public:
 	LPDIRECT3DTEXTURE9 GetTexture( std::string const & pathname );

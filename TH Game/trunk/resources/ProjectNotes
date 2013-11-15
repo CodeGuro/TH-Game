@@ -20,14 +20,19 @@ if a file has been parsed before, the export (top-level routines) symbols will b
 [X] the battery, instead of using a map-key container to directly refer to script_routine_cont using a
  string, use a second container (a vector of routine_cont) and have the map value type allow to refer to that.
 This will save space for the script_machine_cont container, it holding merely an offset (or in the script_machine itself, preferably).
-[ ] Implement cleaning functions to clean and and all resources in any possible conditions (normal engine shut-down, emergency engine shut-down, and clean all things associated)
+[x] Implement cleaning functions to clean and and all resources in any possible conditions (normal engine shut-down, emergency engine shut-down, and clean all things associated)
 
 -- some fixes needed with the script machine
 [X] Implement the advance() function for the script machine to operate as a virtual machine
-[ ] Implement two ways for the machine to clean itself: one operating with @Finalize before cleanup and one without
+[x] Implement two ways for the machine to clean itself: one operating with @Finalize before cleanup and one without
 
 -- some fixes needed with the parser
 
-[ ] Prepare for parsing files determined by the user via DirectX interface instead of GetOpenFile() using Explorer
-[ ] Operational testing of all functions, loops, subfunctions, script calls
+[x] Prepare for parsing files determined by the user via DirectX interface instead of GetOpenFile() using Explorer
+[x] Operational testing of all functions, loops, subfunctions, script calls
 [X] parser::parseInclude should be parser::parseDocument
+
+-- other notes
+
+game dimensions: 640 x 480
+STG rect ( 32, 16, 416, 464 )

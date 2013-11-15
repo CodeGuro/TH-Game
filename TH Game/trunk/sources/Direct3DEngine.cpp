@@ -42,6 +42,11 @@ Battery::Battery( HWND const hWnd ) : d3d( Direct3DCreate9( D3D_SDK_VERSION ) )
 	GetDevice()->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
 	GetDevice()->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
 	GetDevice()->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
+	
+	GetDevice()->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+	GetDevice()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+	GetDevice()->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
+	
 
 	GetDevice()->Clear( 0, 0, D3DCLEAR_TARGET, D3DCOLOR_XRGB( 100, 30, 180 ), 1.f, 0 );
 	GetDevice()->Present( NULL, NULL, NULL, NULL );
@@ -109,7 +114,8 @@ Battery::Battery( HWND const hWnd ) : d3d( Direct3DCreate9( D3D_SDK_VERSION ) )
 		mgr.SetObjBufferIdx( u );
 		mgr.SetBlendState( (BlendType)u );
 	}
-
+	RECT r = { 32, 16, 416, 464 };
+	GetDevice()->SetScissorRect( &r );
 }
 Battery::Battery()
 {
@@ -218,7 +224,8 @@ unsigned Battery::CreateObject( unsigned short Layer ) //0 - BG, 4 - Bullet, 5 -
 		obj.SetScale( D3DXVECTOR3( 1, 1, 1 ) );
 		obj.VertexOffset = 0;
 		obj.FlagMotion( 1 );
-		obj.FlagCollidable( 1 );
+		obj.FlagCollidable( 0 );
+		obj.FlagPixelPerfect( 0 );
 		obj.FlagScreenDeletable( 1 );
 	}
 	else
@@ -498,6 +505,13 @@ void Battery::ObjEffect_SetLayer( unsigned HandleIdx, ULONG Layer )
 		}
 	}
 }
+void Battery::ObjEffect_SetScale( unsigned HandleIdx, D3DXVECTOR3 const & scale )
+{
+	if( HandleIdx != -1 )
+	{
+		GetObject( HandleIdx )->scale = scale;
+	}
+}
 
 Direct3DEngine::Direct3DEngine()
 {
@@ -532,9 +546,9 @@ void Direct3DEngine::RenderFrame( MSG const msg )
 	GetDevice()->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB( 100, 30, 180 ), 1.f, 0 );
 	GetDevice()->BeginScene();
 	DrawGridTerrain( 1000, 1000, 1.f );
-	DrawTexture();
-	DrawFPS();
+//	DrawTexture();
 	DrawObjects();
+	DrawFPS();
 	GetDevice()->EndScene();
 	GetDevice()->Present( NULL, NULL, NULL, NULL );
 	ProcUserInput( msg );
@@ -647,6 +661,7 @@ void Direct3DEngine::DrawObjects()
 	GetDefaultConstable()->SetMatrix( GetDevice(), "WorldViewProjMat", &(world*view*proj) );
 	for( auto L = GetLayers().begin(); L < GetLayers().end(); ++L )
 	{
+		GetDevice()->SetRenderState( D3DRS_SCISSORTESTENABLE, (L > GetLayers().begin() && L < GetLayers().end() - 1)? TRUE : FALSE );
 		for( auto Obj = L->vObjMgr.begin(); Obj != L->vObjMgr.end(); ++Obj )
 			Obj->AdvanceDrawDanmaku( this );
 	}

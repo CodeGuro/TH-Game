@@ -504,7 +504,7 @@ void parser::parseClause()
 			std::string name = lexicon.getWord();
 			symbol * sym = search( name );
 			if( !sym )
-				raiseError( lexicon.getWord(), error::er_symbol );
+				raiseError( lexicon.getWord(), error::er_usymbol );
 			lexicon.advance();
 			if( sym->blockIndex != invalidIndex )
 			{
@@ -1450,6 +1450,7 @@ parser::parser()
 		{ "QueueScriptTermination", &natives::_QueueScriptTermination, 0 },
 		{ "Obj_Create", &natives::_Obj_Create, 1 },
 		{ "Obj_Delete", &natives::_Obj_Delete, 1 },
+		{ "Obj_BeDeleted", &natives::_Obj_BeDeleted, 1 },
 		{ "Obj_SetPosition", &natives::_Obj_SetPosition, 4 },
 		{ "Obj_SetTexture", &natives::_Obj_SetTexture, 2 },
 		{ "Obj_SetSpeed", &natives::_Obj_SetSpeed, 2 },
@@ -1463,6 +1464,7 @@ parser::parser()
 		{ "Obj_SetVertexXY", &natives::_Obj_SetVertexXY, 4 },
 		{ "Obj_SetVertexColor", &natives::_Obj_SetVertexColor, 6 },
 		{ "Obj_SetLayer", &natives::_Obj_SetLayer, 2 },
+		{ "Obj_SetScale", &natives::_Obj_SetScale, 4 },
 		{ "ALPHA_BLEND", &natives::_ALPHA_BLEND, 0 },
 		{ "ADDITIVE_BLEND", &natives::_ADDITIVE_BLEND, 0 },
 		{ "PRIMITIVE_TRIANGLELIST", &natives::_PRIMITIVE_TRIANGLELIST, 0 },

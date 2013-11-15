@@ -13,8 +13,8 @@ script_main main_script //main routine
 	@Initialize //routine called when the script machine initializes a new script
 	{
 		LoadUserShotData( "C:\Users\Administrator\Documents\Visual Studio 2010\Projects\TH Game\TH Game\trunk\resources\script\ShotData.th" );
+		STGFrame();
 		Task();
-		TestObj();
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{
@@ -29,46 +29,39 @@ script_main main_script //main routine
 	}
 }
 
-task Task()
+task FireRound( let x, let y, let looper, let a )
 {
-	loop
+	Delay( x, y );
+	loop( looper )
 	{
-		let a = 0;
-		let looper = rand_int( 10, 40 );
-		let x = rand_int( 100, 500 );
-		let y = rand_int( 0, 100 );
-		loop( looper )
-		{
-			CreateShot01( x, y, 1, a, rand_int(0,2) );
-			a = a + 2 * 3.1415926 / looper;
-		}
-		loop( rand_int( 5, 25) ){ yield; }
+		CreateShot01( x, y, 2, a, rand_int(0,2) );
+		a = a + 2 * 3.1415926 / looper;
 	}
-}
 
-task TestObj()
+}
+task STGFrame()
 {
-	let obj = Obj_Create( 5 );
-	LoadTexture( "etama.png" );
-	Obj_SetTexture( obj, "etama.png" );
+	let obj = Obj_Create( 0 );
+	LoadTexture( "STG Frame.png" );
+	Obj_SetTexture( obj, "STG Frame.png" );
 
 	Obj_CreateVertex( obj, 6 );
 	Obj_SetPrimitiveType( obj, PRIMITIVE_TRIANGLELIST );
 	Obj_SetRenderState( obj, ALPHA_BLEND );
 
-	Obj_SetVertexUV( obj, 0, 0, 0 );
-	Obj_SetVertexUV( obj, 1, 1, 0 );
-	Obj_SetVertexUV( obj, 2, 0, 1 );
-	Obj_SetVertexUV( obj, 3, 1, 0 );
-	Obj_SetVertexUV( obj, 4, 1, 1 );
-	Obj_SetVertexUV( obj, 5, 0, 1 );
+	Obj_SetVertexUV( obj, 0, 0/1024, 0/512 );
+	Obj_SetVertexUV( obj, 1, 640/1024, 0/512 );
+	Obj_SetVertexUV( obj, 2, 0/1024, 480/512 );
+	Obj_SetVertexUV( obj, 3, 640/1024, 0/512 );
+	Obj_SetVertexUV( obj, 4, 640/1024, 480/512 );
+	Obj_SetVertexUV( obj, 5, 0/1024, 480/512 );
 
-	Obj_SetVertexXY( obj, 0, -128, -128 );
-	Obj_SetVertexXY( obj, 1, 128, -128 );
-	Obj_SetVertexXY( obj, 2, -128, 128 );
-	Obj_SetVertexXY( obj, 3, 128, -128 );
-	Obj_SetVertexXY( obj, 4, 128, 128 );
-	Obj_SetVertexXY( obj, 5, -128, 128 );
+	Obj_SetVertexXY( obj, 0, 0, 0 );
+	Obj_SetVertexXY( obj, 1, 640, 0 );
+	Obj_SetVertexXY( obj, 2, 0, 480 );
+	Obj_SetVertexXY( obj, 3, 640, 0 );
+	Obj_SetVertexXY( obj, 4, 640, 480 );
+	Obj_SetVertexXY( obj, 5, 0, 480 );
 
 	Obj_SetVertexColor( obj, 0, 255, 255, 255, 255 );
 	Obj_SetVertexColor( obj, 1, 255, 255, 255, 255 );
@@ -77,13 +70,74 @@ task TestObj()
 	Obj_SetVertexColor( obj, 4, 255, 255, 255, 255 );
 	Obj_SetVertexColor( obj, 5, 255, 255, 255, 255 );
 
-	Obj_SetLayer( obj, 7 );
-	Obj_SetVelocity( obj, cos( 0 ), sin( 0 ), 0 );
-	Obj_SetAngle( obj, 3.14159 / 2 );
-	Obj_SetPosition( obj, 100, 100, 0 );
-	Obj_SetVelocity( obj, cos( 0 ), sin ( 0 ), 0 );
+	Obj_SetPosition( obj, 0, 0, 0 );
+	Obj_SetVelocity( obj, 0.0, 0.0, 0 );
+	while( true )
+	{
+		yield;
+	}
+}
+task Task()
+{
+	let i = 1;
+	loop( 4 )
+	{
+		let x = 250 + 250 * i;
+		let y = 50;
+		loop( 15 )
+		{
+			let a = 0;
+			let looper = rand_int( 10, 40 );
+			FireRound( x, y, looper, a );
+			loop( 5 ){ yield; }
+			x = x - 30 * i;
+		}
+	i = i * -1;
+	wait( 30 );
+	}
+}
+
+function Delay( let x, let y)
+{
+	let obj = Obj_Create( 6 );
+	LoadTexture( "etama.png" );
+	Obj_SetTexture( obj, "etama.png" );
+
+	Obj_CreateVertex( obj, 6 );
+	Obj_SetPrimitiveType( obj, PRIMITIVE_TRIANGLELIST );
+	Obj_SetRenderState( obj, ALPHA_BLEND );
+
+	Obj_SetVertexUV( obj, 0, 32/256, 208/256 );
+	Obj_SetVertexUV( obj, 1, 64/256, 208/256 );
+	Obj_SetVertexUV( obj, 2, 32/256, 238/256 );
+	Obj_SetVertexUV( obj, 3, 64/256, 208/256 );
+	Obj_SetVertexUV( obj, 4, 64/256, 238/256 );
+	Obj_SetVertexUV( obj, 5, 32/256, 238/256 );
+
+	Obj_SetVertexXY( obj, 0, -16, -14 );
+	Obj_SetVertexXY( obj, 1, 16, -14 );
+	Obj_SetVertexXY( obj, 2, -16, 16 );
+	Obj_SetVertexXY( obj, 3, 16, -14 );
+	Obj_SetVertexXY( obj, 4, 16, 16 );
+	Obj_SetVertexXY( obj, 5, -16, 16 );
+
+	Obj_SetVertexColor( obj, 0, 255, 255, 255, 255 );
+	Obj_SetVertexColor( obj, 1, 255, 255, 255, 255 );
+	Obj_SetVertexColor( obj, 2, 255, 255, 255, 255 );
+	Obj_SetVertexColor( obj, 3, 255, 255, 255, 255 );
+	Obj_SetVertexColor( obj, 4, 255, 255, 255, 255 );
+	Obj_SetVertexColor( obj, 5, 255, 255, 255, 255 );
+
+	Obj_SetPosition( obj, x, y, 0.5 );
+	Obj_SetVelocity( obj, 0, 0, 0 );
 	Obj_SetAngle( obj, 3.14159265/2 );
-	wait( 60 );
+	let sca = 3;
+	loop( 15 )
+	{
+		sca = sca - 1/7;
+		Obj_SetScale( obj, sca, sca, 1 );
+		yield;
+	}
 	Obj_Delete( obj );
 	
 
