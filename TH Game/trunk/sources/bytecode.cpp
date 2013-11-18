@@ -40,11 +40,11 @@ code::code() : command( vc_invalid )
 code::code( instruction c ) : command( c )
 {
 }
-code code::varLev( instruction c, size_t varIndex, size_t levelUp )
+code code::varSub( instruction c, size_t varIndex, size_t subIndex )
 {
 	code res = code( c );
 	res.variableIndex = varIndex;
-	res.variableLevel = levelUp;
+	res.blockIndex = subIndex;
 	return res;
 }
 code code::subArg( instruction c, size_t subIndex, size_t subArgc )

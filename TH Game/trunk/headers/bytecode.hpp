@@ -56,7 +56,7 @@ struct code
 		struct //for assigning data on a virtual stack
 		{
 			size_t variableIndex; //in the stack
-			size_t variableLevel; // # of routines up from the callee
+			size_t blockIndex; // # of routines up from the callee
 		};
 		struct //for calling routines
 		{
@@ -78,7 +78,7 @@ struct code
 	code();
 	code( instruction c );
 	//named constructor idom
-	static code varLev( instruction c, size_t varIndex, size_t levelUp );
+	static code varSub( instruction c, size_t varIndex, size_t subIndex );
 	static code subArg( instruction c, size_t subIndex, size_t subArgc );
 	static code loop( instruction c, size_t loopBackIndex );
 	static code dat( instruction c, size_t scriptDataIdx );

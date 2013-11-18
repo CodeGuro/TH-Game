@@ -81,6 +81,7 @@ private:
 
 	symbol * search( std::string const & name );
 	symbol * searchResult();
+	size_t getBlockIndex();
 	void findDocument( std::string const & pathDoc );
 	void writeOperation( std::string const & nativeFunc );
 	void parseExpression();

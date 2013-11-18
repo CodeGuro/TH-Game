@@ -44,9 +44,8 @@ bool script_machine::advance( script_engine & eng )
 	{
 	case vc_assign:
 		{
-			script_environment * e = &env;
-			for( unsigned u = 0; u < current_code.variableLevel; ++u )
-				e = &eng.getScriptEnvironment( e->parentIndex );
+			script_environment * e;
+			for( e = &env; e->blockIndex != current_code.blockIndex; e = &eng.getScriptEnvironment( e->parentIndex ) );
 			if( e->values.size() <= current_code.variableIndex )
 				e->values.resize( 4 + 2 * e->values.size(), invalidIndex );
 			eng.scriptDataAssign( e->values[ current_code.variableIndex ], env.stack.back() );
@@ -69,9 +68,8 @@ bool script_machine::advance( script_engine & eng )
 		break;
 	case vc_pushVar:
 		{
-			script_environment * e = &env;
-			for( unsigned u = 0; u < current_code.variableLevel; ++u )
-				e = &eng.getScriptEnvironment( e->parentIndex );
+			script_environment * e;
+			for( e = &env; e->blockIndex != current_code.blockIndex; e = &eng.getScriptEnvironment( e->parentIndex ) );
 			env.stack.push_back( invalidIndex );
 			eng.scriptDataAssign( env.stack.back(), e->values[ current_code.variableIndex ] );
 		}

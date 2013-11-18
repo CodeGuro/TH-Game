@@ -516,7 +516,7 @@ void parser::parseClause()
 				pushCode( code::subArg( vc_callFunctionPush, sym->blockIndex, argc ) );
 			}
 			else
-				pushCode( code::varLev( vc_pushVar, sym->id, vecScope.size() - sym->level ) );
+				pushCode( code::varSub( vc_pushVar, sym->id, vecScope[ sym->level ].blockIndex ) );
 
 		}
 		break;
@@ -579,7 +579,7 @@ unsigned parser::parseArguments()
 }
 block & parser::getBlock()
 {
-	return inventory::getBlock( vecScope[ vecScope.size() - 1 ].blockIndex );
+	return inventory::getBlock( getBlockIndex() );
 }
 void parser::pushCode( code const & val )
 {
@@ -650,6 +650,10 @@ parser::symbol * parser::searchResult()
 	std::string str = CSTRFUNCRESULT;
 	return search( str );
 }
+size_t parser::getBlockIndex()
+{
+	return vecScope[ vecScope.size() - 1 ].blockIndex;
+}
 void parser::parseScript( std::string const & scriptPath )
 {
 	try
@@ -685,7 +689,7 @@ void parser::parseBlock( symbol const symSub, vector< std::string > const & args
 	vecScope[ vecScope.size() - 1 ].blockIndex = symSub.blockIndex;
 	scanCurrentScope( inventory::getBlock( symSub.blockIndex ).kind, args );
 	for( unsigned i = 0; i < args.size(); ++i )
-		pushCode( code::varLev( vc_assign, search( args[i] )->id, 0 ) );
+		pushCode( code::varSub( vc_assign, search( args[ i ] )->id, vecScope[ search( args[ i ] )->level ].blockIndex  ) );
 	parseStatements();
 	vecScope.pop_back();
 
@@ -712,7 +716,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 {
 	//if it's a function, allow a result
 	unsigned id = 0;
-	unsigned level = vecScope.size();
+	unsigned level = vecScope.size() - 1;
 	scope & currentScope = vecScope[ vecScope.size() -1 ];
 	if( kind == block::bk_function )
 	{
@@ -914,7 +918,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 				symbol * res = searchResult();
 				if( !res )
 					raiseError( "\"return\" not nested within a functional scope", error::er_syntax );
-				pushCode( code::varLev( vc_assign, res->id, vecScope.size() - res->level ) );
+				pushCode( code::varSub( vc_assign, res->id, vecScope[ res->level ].blockIndex ) );
 			}
 			pushCode( code::code( vc_breakRoutine )  );
 		}
@@ -930,7 +934,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			{
 				lexicon.advance();
 				parseExpression();
-				pushCode( code::varLev( vc_assign, declsym->id, vecScope.size() - declsym->level ) );
+				pushCode( code::varSub( vc_assign, declsym->id, vecScope[ declsym->level ].blockIndex ) );
 			}
 		}
 		
@@ -944,11 +948,11 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			{
 				lexicon.advance();
 				parseExpression();
-				pushCode( code::varLev( vc_assign, sym->id, vecScope.size() - sym->level ) );
+				pushCode( code::varSub( vc_assign, sym->id, vecScope[ sym->level ].blockIndex ) );
 			}
 			else if( lexicon.getToken() == tk_openbra )
 			{
-				pushCode( code::varLev( vc_pushVar, sym->id, vecScope.size() - sym->level ) );
+				pushCode( code::varSub( vc_pushVar, sym->id, vecScope[ sym->level ].blockIndex ) );
 				while( lexicon.getToken() == tk_openbra && sym->id != invalidIndex ) //word[32][32]='5';
 				{
 					lexicon.advance();
@@ -966,9 +970,9 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			}
 			else if( lexicon.getToken() == tk_increment || lexicon.getToken() == tk_decrement )
 			{
-				pushCode( code::varLev( vc_pushVar, sym->id, vecScope.size() - sym->level ) );
+				pushCode( code::varSub( vc_pushVar, sym->id, vecScope[ sym->level ].blockIndex ) );
 				writeOperation( std::string() + (lexicon.getToken() == tk_increment ? "increment" : "decrement" ) );
-				pushCode( code::varLev( vc_assign, sym->id, vecScope.size() - sym->level ) );
+				pushCode( code::varSub( vc_assign, sym->id, vecScope[ sym->level ].blockIndex ) );
 				lexicon.advance();
 			}
 			else

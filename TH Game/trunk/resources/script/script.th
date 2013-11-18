@@ -16,7 +16,7 @@ script_main main_script //main routine
 		LoadUserShotData( "C:\Users\Administrator\Documents\Visual Studio 2010\Projects\TH Game\TH Game\trunk\resources\script\ShotData.th" );
 		LoadSound( sound );
 		STGFrame();
-		Task( sound );
+		Task();
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{
@@ -29,7 +29,7 @@ script_main main_script //main routine
 	@BackGround //routine called when the script is a stage
 	{
 	}
-	task Task( let sound )
+	task Task()
 	{
 		let i = 1;
 		loop( 4 )
@@ -40,7 +40,7 @@ script_main main_script //main routine
 			{
 				let a = 0;
 				let looper = rand_int( 10, 40 );
-				FireRound( x, y, looper, a, sound );
+				FireRound( x, y, looper, a );
 				loop( 5 ){ yield; }
 				x = x - 30 * i;
 			}
@@ -48,7 +48,7 @@ script_main main_script //main routine
 		wait( 30 );
 		}
 	}
-	task FireRound( let x, let y, let looper, let a , let sound )
+	task FireRound( let x, let y, let looper, let a )
 	{
 		PlaySound( sound );
 		Delay( x, y );
