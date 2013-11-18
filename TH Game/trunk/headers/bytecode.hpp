@@ -165,6 +165,9 @@ private:
 	static void _CreateEnemyFromScript( script_engine * eng, size_t * argv );
 	static void _CreateEnemyFromFile( script_engine * eng, size_t * argv );
 	static void _QueueScriptTermination( script_engine * eng, size_t * argv );
+	static void _LoadSound( script_engine * eng, size_t * argv );
+	static void _PlaySound( script_engine * eng, size_t * argv );
+	static void _DeleteSound( script_engine * eng, size_t * argv );
 	static void _Obj_Create( script_engine * eng, size_t * argv );
 	static void _Obj_Delete( script_engine * eng, size_t * argv );
 	static void _Obj_BeDeleted( script_engine * eng, size_t * argv );

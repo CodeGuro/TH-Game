@@ -304,6 +304,18 @@ void natives::_QueueScriptTermination( script_engine * eng, size_t * argv )
 	script_queue const queue = { script_queue::Termination, eng->currentRunningMachine };
 	eng->setQueueScriptMachine( queue );
 }
+void natives::_LoadSound( script_engine * eng, size_t * argv )
+{
+	eng->LoadSound( eng->getStringScriptData( argv[ 0 ] ) );
+}
+void natives::_PlaySound( script_engine * eng, size_t * argv )
+{
+	eng->PlaySound( eng->getStringScriptData( argv[ 0 ] ) );
+}
+void natives::_DeleteSound( script_engine * eng, size_t * argv )
+{
+	eng->DeleteSound( eng->getStringScriptData( argv[ 0 ] ) );
+}
 void natives::_Obj_Create( script_engine * eng, size_t * argv )
 {
 	size_t tmp = eng->fetchScriptData( (size_t)eng->getRealScriptData( argv[ 0 ] ) );

@@ -1,7 +1,9 @@
 #include <Direct3DEngine.hpp>
 #include <ObjMgr.hpp>
 #include <sstream>
+#include <fstream>
 #include <cassert>
+#include <MMSystem.h>
 
 Battery::Battery( HWND const hWnd ) : d3d( Direct3DCreate9( D3D_SDK_VERSION ) ) 
 {
@@ -88,6 +90,9 @@ Battery::Battery( HWND const hWnd ) : d3d( Direct3DCreate9( D3D_SDK_VERSION ) )
 	if( !PipelineVertexBuffer.Buffer )
 		d3ddev->CreateVertexBuffer( PipelineVertexBuffer.BufferSize = 1000, D3DUSAGE_WRITEONLY, 0, D3DPOOL_MANAGED, &PipelineVertexBuffer.Buffer, NULL );
 
+	DirectSoundCreate8( NULL, &dsound, NULL );
+	GetDSound()->SetCooperativeLevel( hWnd, DSSCL_PRIORITY );
+
 	//0 - background
 	//1 - 3D
 	//2 - enemy boss
@@ -143,6 +148,10 @@ LPDIRECT3DPIXELSHADER9 Battery::GetDefaultPShader() const
 LPD3DXCONSTANTTABLE Battery::GetDefaultConstable() const
 {
 	return pDefaultConstable;
+}
+LPDIRECTSOUND8 Battery::GetDSound() const
+{
+	return dsound;
 }
 Battery::vLayer_t & Battery::GetLayers()
 {
@@ -313,10 +322,88 @@ void Battery::DeleteTexture( std::string const pathname )
 {
 	auto it = mapTextures.find( pathname );
 	if( it != mapTextures.end() )
-	{
-		it->second->Release();
 		mapTextures.erase( it );
-	}
+}
+void Battery::LoadSound( std::string const & pathname )
+{
+	if( mapSoundEffects.find( pathname ) != mapSoundEffects.end() )
+		return;
+	mapSoundEffects[ pathname ];
+
+	LPDIRECTSOUNDBUFFER8 & SoundBuffer = mapSoundEffects[ pathname ];
+	
+	std::ifstream SoundFile = std::ifstream( pathname, std::ifstream::binary );
+	ULONG FileSize;
+	WaveHeaderType WaveFileHeader;
+	WAVEFORMATEX WaveFormat;
+	DSBUFFERDESC BufferDesc;
+	SoundFile.seekg( 0, SoundFile.end );
+	FileSize = (ULONG)SoundFile.tellg();
+	SoundFile.seekg( 0, SoundFile.beg );
+	LPVOID AudioPtr;
+	DWORD AudioBytes;
+
+	SoundFile.read( (char*)&WaveFileHeader, sizeof( WaveFileHeader ) );
+
+	if( ( WaveFileHeader.chunkId[ 0 ] != 'R' ) || ( WaveFileHeader.chunkId[ 1 ] != 'I' ) || 
+	   ( WaveFileHeader.chunkId[ 2 ] != 'F' ) || ( WaveFileHeader.chunkId[ 3 ] != 'F' ) )
+		return;
+	if( ( WaveFileHeader.format[ 0 ] != 'W' ) || ( WaveFileHeader.format[ 1 ] != 'A' ) ||
+	   ( WaveFileHeader.format[ 2 ] != 'V' ) || ( WaveFileHeader.format[ 3 ] != 'E' ) )
+		return;
+
+	if( ( WaveFileHeader.subChunkId[ 0 ] != 'f' ) || ( WaveFileHeader.subChunkId[ 1 ] != 'm' ) ||
+	   ( WaveFileHeader.subChunkId[ 2 ] != 't' ) || ( WaveFileHeader.subChunkId[ 3 ] != ' ' ) )
+		return;
+
+	if( ( WaveFileHeader.dataChunkId[ 0 ] != 'd' ) || ( WaveFileHeader.dataChunkId[ 1 ] != 'a' ) ||
+	   ( WaveFileHeader.dataChunkId[ 2 ] != 't' ) || ( WaveFileHeader.dataChunkId[ 3 ] != 'a' ) )
+		return;
+
+	WaveFormat.wFormatTag = WaveFileHeader.audioFormat;
+	WaveFormat.nSamplesPerSec = WaveFileHeader.sampleRate;
+	WaveFormat.wBitsPerSample = WaveFileHeader.bitsPerSample;
+	WaveFormat.nChannels = WaveFileHeader.numChannels;
+	WaveFormat.nBlockAlign = (WaveFormat.wBitsPerSample / 8) * WaveFormat.nChannels;
+	WaveFormat.nAvgBytesPerSec = WaveFormat.nSamplesPerSec * WaveFormat.nBlockAlign;
+	WaveFormat.cbSize = 0;
+
+	BufferDesc.dwSize = sizeof(DSBUFFERDESC);
+	BufferDesc.dwFlags = DSBCAPS_CTRLVOLUME;
+	BufferDesc.dwBufferBytes = WaveFileHeader.dataSize;
+	BufferDesc.dwReserved = 0;
+	BufferDesc.lpwfxFormat = &WaveFormat;
+	BufferDesc.guid3DAlgorithm = GUID_NULL;
+
+	LPDIRECTSOUNDBUFFER TmpBuffer;
+	GetDSound()->CreateSoundBuffer( &BufferDesc, &TmpBuffer, NULL );
+	TmpBuffer->QueryInterface( IID_IDirectSoundBuffer8, (LPVOID*)&SoundBuffer );
+	TmpBuffer->Release();
+
+	SoundBuffer->Lock( 0, WaveFileHeader.dataSize, &AudioPtr, &AudioBytes, NULL, NULL, 0 );
+	SoundFile.read( (char*)AudioPtr, AudioBytes );
+	SoundBuffer->Unlock( AudioPtr, AudioBytes, NULL, NULL );
+
+	SoundFile.close();
+}
+void Battery::PlaySound( std::string const & pathname )
+{
+	auto it = mapSoundEffects.find( pathname );
+	if( it == mapSoundEffects.end() )
+		return;
+
+	LPDIRECTSOUNDBUFFER8 buffer = it->second;
+
+	buffer->SetCurrentPosition( 0 );
+	buffer->SetVolume( DSBVOLUME_MAX );
+	buffer->Play( 0, 0, 0 );
+
+}
+void Battery::DeleteSound( std::string const & pathname )
+{
+	auto it = mapSoundEffects.find( pathname );
+	if( it != mapSoundEffects.end() )
+		mapSoundEffects.erase( it );
 }
 unsigned Battery::CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed, FLOAT const direction, FLOAT const graphic )
 {
@@ -548,7 +635,7 @@ void Direct3DEngine::RenderFrame( MSG const msg )
 	DrawGridTerrain( 1000, 1000, 1.f );
 //	DrawTexture();
 	DrawObjects();
-	DrawFPS();
+//	DrawFPS();
 	GetDevice()->EndScene();
 	GetDevice()->Present( NULL, NULL, NULL, NULL );
 	ProcUserInput( msg );

@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <string>
 #include <Windows.h>
+#include <DSound.h>
 #include <ObjMgr.hpp>
 #include <D3DSmartPtr.hpp>
 
@@ -42,6 +43,23 @@ struct D3DVBuffer
 	ULONG BufferSize;
 };
 
+struct WaveHeaderType
+{
+		char chunkId[4];
+		unsigned long chunkSize;
+		char format[4];
+		char subChunkId[4];
+		unsigned long subChunkSize;
+		unsigned short audioFormat;
+		unsigned short numChannels;
+		unsigned long sampleRate;
+		unsigned long bytesPerSecond;
+		unsigned short blockAlign;
+		unsigned short bitsPerSample;
+		char dataChunkId[4];
+		unsigned long dataSize;
+};
+
 class Battery
 {
 private:
@@ -52,10 +70,12 @@ friend class ObjMgr;
 	D3DSmartPtr< LPDIRECT3DVERTEXSHADER9 > pDefault3DVShader;
 	D3DSmartPtr< LPDIRECT3DPIXELSHADER9 > pDefault3DPShader;
 	D3DSmartPtr< LPD3DXCONSTANTTABLE > pDefaultConstable;
+	D3DSmartPtr< LPDIRECTSOUND8 > dsound;
 	
 	typedef std::vector< Layer > vLayer_t;
 	D3DVBuffer PipelineVertexBuffer;
-	std::map< std::string, LPDIRECT3DTEXTURE9 > mapTextures;
+	std::map< std::string, D3DSmartPtr< LPDIRECT3DTEXTURE9 > > mapTextures;
+	std::map< std::string, D3DSmartPtr< LPDIRECTSOUNDBUFFER8 > > mapSoundEffects;
 	vLayer_t vLayers;
 	std::vector< ShotData > Bullet_Templates;
 	std::vector< DelayData > Bullet_Delays;
@@ -66,23 +86,50 @@ friend class ObjMgr;
 	std::vector< VBuffer > vVertexBuffers;
 	std::vector< unsigned > vVertexBuffersGC;
 	std::string ShotImagePath;
+
 protected:
 	D3DXMATRIX WorldMatrix;
 	D3DXMATRIX ViewMatrix;
 	D3DXMATRIX ProjectionMatrix;
+
 	vLayer_t & GetLayers();
+	LPDIRECT3DTEXTURE9 GetTexture( std::string const & pathname );
+	LPDIRECT3DDEVICE9 & GetDevice();
+	LPDIRECT3D9 & GetD3D();
+	D3DVBuffer & GetPipelineVBuffer();
+	LPDIRECT3DVERTEXDECLARATION9 GetDefaultVDeclaration() const;
+	LPDIRECT3DVERTEXSHADER9 GetDefaultVShader() const;
+	LPDIRECT3DPIXELSHADER9 GetDefaultPShader() const;
+	LPD3DXCONSTANTTABLE GetDefaultConstable() const;
+	LPDIRECTSOUND8 GetDSound() const;
+
+	//objects
 	unsigned CreateObject( unsigned short Layer );
 	void AddRefObjHandle( unsigned HandleIdx );
 	void ReleaseObjHandle( unsigned HandleIdx );
 	void ReleaseObject( unsigned HandleIdx );
 	Object * GetObject( unsigned HandleIdx );
+
+	//object factory
 	ObjMgr * GetObjMgr( unsigned HandleIdx );
+
+	//textures
 	void LoadTexture( std::string const pathname );
 	void DeleteTexture( std::string const pathname );
 
+	//sounds
+	void LoadSound( std::string const & pathname );
+	void PlaySound( std::string const & pathname );
+	void DeleteSound( std::string const & pathname );
+
+	//shot
 	unsigned CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed, FLOAT const direction, FLOAT const graphic );
 	void PushQuadShotBuffer( RECT const Quad, D3DCOLOR const Color );
 	void LoadShotImage( std::string const & pathname );
+	void CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT const & rect, D3DCOLOR color, DWORD flags, std::vector< std::vector< float > > const & AnimationData );
+	void CreateDelayShotData( unsigned ID, RECT const & rect, D3DCOLOR const color, FLOAT const Scale, ULONG const DelayFrames );
+	ShotData const & GetBulletTemplates( unsigned const graphic ) const;
+	unsigned GetDelayDataSize() const;
 
 	//ObjEffect Functions
 	void ObjEffect_CreateVertex( unsigned HandleIdx, ULONG VertexCount );
@@ -94,20 +141,7 @@ protected:
 	void ObjEffect_SetLayer( unsigned HandleIdx, ULONG Layer );
 	void ObjEffect_SetScale( unsigned HandleIdx, D3DXVECTOR3 const & scale );
 
-public:
-	LPDIRECT3DTEXTURE9 GetTexture( std::string const & pathname );
-	LPDIRECT3DDEVICE9 & GetDevice();
-	LPDIRECT3D9 & GetD3D();
-	D3DVBuffer & GetPipelineVBuffer();
-	LPDIRECT3DVERTEXDECLARATION9 GetDefaultVDeclaration() const;
-	LPDIRECT3DVERTEXSHADER9 GetDefaultVShader() const;
-	LPDIRECT3DPIXELSHADER9 GetDefaultPShader() const;
-	LPD3DXCONSTANTTABLE GetDefaultConstable() const;
-
-	void CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT const & rect, D3DCOLOR color, DWORD flags, std::vector< std::vector< float > > const & AnimationData );
-	void CreateDelayShotData( unsigned ID, RECT const & rect, D3DCOLOR const color, FLOAT const Scale, ULONG const DelayFrames );
-	ShotData const & GetBulletTemplates( unsigned const graphic ) const;
-	unsigned GetDelayDataSize() const;
+	//constructor
 	Battery( HWND const hWnd );
 	Battery();
 };

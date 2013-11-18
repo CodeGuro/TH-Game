@@ -9,12 +9,14 @@ function foo( let val )
 
 script_main main_script //main routine
 {
+	let sound = "se_tan02.wav";
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
 	{
 		LoadUserShotData( "C:\Users\Administrator\Documents\Visual Studio 2010\Projects\TH Game\TH Game\trunk\resources\script\ShotData.th" );
+		LoadSound( sound );
 		STGFrame();
-		Task();
+		Task( sound );
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{
@@ -27,73 +29,35 @@ script_main main_script //main routine
 	@BackGround //routine called when the script is a stage
 	{
 	}
-}
-
-task FireRound( let x, let y, let looper, let a )
-{
-	Delay( x, y );
-	loop( looper )
+	task Task( let sound )
 	{
-		CreateShot01( x, y, 2, a, rand_int(0,2) );
-		a = a + 2 * 3.1415926 / looper;
-	}
-
-}
-task STGFrame()
-{
-	let obj = Obj_Create( 0 );
-	LoadTexture( "STG Frame.png" );
-	Obj_SetTexture( obj, "STG Frame.png" );
-
-	Obj_CreateVertex( obj, 6 );
-	Obj_SetPrimitiveType( obj, PRIMITIVE_TRIANGLELIST );
-	Obj_SetRenderState( obj, ALPHA_BLEND );
-
-	Obj_SetVertexUV( obj, 0, 0/1024, 0/512 );
-	Obj_SetVertexUV( obj, 1, 640/1024, 0/512 );
-	Obj_SetVertexUV( obj, 2, 0/1024, 480/512 );
-	Obj_SetVertexUV( obj, 3, 640/1024, 0/512 );
-	Obj_SetVertexUV( obj, 4, 640/1024, 480/512 );
-	Obj_SetVertexUV( obj, 5, 0/1024, 480/512 );
-
-	Obj_SetVertexXY( obj, 0, 0, 0 );
-	Obj_SetVertexXY( obj, 1, 640, 0 );
-	Obj_SetVertexXY( obj, 2, 0, 480 );
-	Obj_SetVertexXY( obj, 3, 640, 0 );
-	Obj_SetVertexXY( obj, 4, 640, 480 );
-	Obj_SetVertexXY( obj, 5, 0, 480 );
-
-	Obj_SetVertexColor( obj, 0, 255, 255, 255, 255 );
-	Obj_SetVertexColor( obj, 1, 255, 255, 255, 255 );
-	Obj_SetVertexColor( obj, 2, 255, 255, 255, 255 );
-	Obj_SetVertexColor( obj, 3, 255, 255, 255, 255 );
-	Obj_SetVertexColor( obj, 4, 255, 255, 255, 255 );
-	Obj_SetVertexColor( obj, 5, 255, 255, 255, 255 );
-
-	Obj_SetPosition( obj, 0, 0, 0 );
-	Obj_SetVelocity( obj, 0.0, 0.0, 0 );
-	while( true )
-	{
-		yield;
-	}
-}
-task Task()
-{
-	let i = 1;
-	loop( 4 )
-	{
-		let x = 250 + 250 * i;
-		let y = 50;
-		loop( 15 )
+		let i = 1;
+		loop( 4 )
 		{
-			let a = 0;
-			let looper = rand_int( 10, 40 );
-			FireRound( x, y, looper, a );
-			loop( 5 ){ yield; }
-			x = x - 30 * i;
+			let x = 250 + 250 * i;
+			let y = 50;
+			loop( 15 )
+			{
+				let a = 0;
+				let looper = rand_int( 10, 40 );
+				FireRound( x, y, looper, a, sound );
+				loop( 5 ){ yield; }
+				x = x - 30 * i;
+			}
+		i = i * -1;
+		wait( 30 );
 		}
-	i = i * -1;
-	wait( 30 );
+	}
+	task FireRound( let x, let y, let looper, let a , let sound )
+	{
+		PlaySound( sound );
+		Delay( x, y );
+		loop( looper )
+		{
+			CreateShot01( x, y, 2, a, rand_int(0,2) );
+			a = a + 2 * 3.1415926 / looper;
+		}
+
 	}
 }
 
@@ -139,8 +103,45 @@ function Delay( let x, let y)
 		yield;
 	}
 	Obj_Delete( obj );
-	
+}
 
+task STGFrame()
+{
+	let obj = Obj_Create( 0 );
+	LoadTexture( "STG Frame.png" );
+	Obj_SetTexture( obj, "STG Frame.png" );
+
+	Obj_CreateVertex( obj, 6 );
+	Obj_SetPrimitiveType( obj, PRIMITIVE_TRIANGLELIST );
+	Obj_SetRenderState( obj, ALPHA_BLEND );
+
+	Obj_SetVertexUV( obj, 0, 0/1024, 0/512 );
+	Obj_SetVertexUV( obj, 1, 640/1024, 0/512 );
+	Obj_SetVertexUV( obj, 2, 0/1024, 480/512 );
+	Obj_SetVertexUV( obj, 3, 640/1024, 0/512 );
+	Obj_SetVertexUV( obj, 4, 640/1024, 480/512 );
+	Obj_SetVertexUV( obj, 5, 0/1024, 480/512 );
+
+	Obj_SetVertexXY( obj, 0, 0, 0 );
+	Obj_SetVertexXY( obj, 1, 640, 0 );
+	Obj_SetVertexXY( obj, 2, 0, 480 );
+	Obj_SetVertexXY( obj, 3, 640, 0 );
+	Obj_SetVertexXY( obj, 4, 640, 480 );
+	Obj_SetVertexXY( obj, 5, 0, 480 );
+
+	Obj_SetVertexColor( obj, 0, 255, 255, 255, 255 );
+	Obj_SetVertexColor( obj, 1, 255, 255, 255, 255 );
+	Obj_SetVertexColor( obj, 2, 255, 255, 255, 255 );
+	Obj_SetVertexColor( obj, 3, 255, 255, 255, 255 );
+	Obj_SetVertexColor( obj, 4, 255, 255, 255, 255 );
+	Obj_SetVertexColor( obj, 5, 255, 255, 255, 255 );
+
+	Obj_SetPosition( obj, 0, 0, 0 );
+	Obj_SetVelocity( obj, 0.0, 0.0, 0 );
+	while( true )
+	{
+		yield;
+	}
 }
 function wait( let v )
 {
