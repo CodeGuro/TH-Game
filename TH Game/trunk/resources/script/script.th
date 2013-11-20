@@ -55,7 +55,7 @@ script_main main_script //main routine
 		loop( looper )
 		{
 			CreateShot01( x, y, 2, a, rand_int(0,2) );
-			a = a + 2 * 3.1415926 / looper;
+			a = a + 2 * PI / looper;
 		}
 
 	}
@@ -94,7 +94,7 @@ function Delay( let x, let y)
 
 	Obj_SetPosition( obj, x, y, 0.5 );
 	Obj_SetVelocity( obj, 0, 0, 0 );
-	Obj_SetAngle( obj, 3.14159265/2 );
+	Obj_SetAngle( obj, PI/2 );
 	let sca = 3;
 	loop( 15 )
 	{

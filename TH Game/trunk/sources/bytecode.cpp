@@ -231,6 +231,12 @@ void natives::_false( script_engine * eng, size_t * argv )
 	eng->scriptDataAssign( argv[0], tmp );
 	eng->releaseScriptData( tmp );
 }
+void natives::_PI( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( D3DX_PI );
+	eng->scriptDataAssign( argv[0], tmp );
+	eng->releaseScriptData( tmp );
+}
 void natives::_increment( script_engine * eng, size_t * argv )
 {
 	size_t tmp = eng->fetchScriptData( 1.f + eng->getRealScriptData( argv[0] ) );

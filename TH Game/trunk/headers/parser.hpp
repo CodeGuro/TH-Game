@@ -74,7 +74,6 @@ private:
 		std::string fivelines;
 		std::string errmsg;
 	};
-
 	scriptHandler scriptMgr;
 	lexer lexicon;
 	vector< scope > vecScope;
@@ -98,8 +97,6 @@ private:
 	void parseInlineBlock( block::block_kind const bk_kind ); //auto-call (if/loops)
 	void parseBlock( symbol const symSub, vector< std::string > const & args );
 	void scanCurrentScope( block::block_kind kind, vector< std::string > const & args );
-	void parseShotData();
-	void parseDelayData();
 	block & getBlock(); //get the current working block
 	void pushCode( code const & val ); //on the current working block
 	void mapScriptPaths( std::string const & pathStart );

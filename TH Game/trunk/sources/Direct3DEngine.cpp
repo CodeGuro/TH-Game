@@ -302,7 +302,7 @@ ObjMgr * Battery::GetObjMgr( unsigned HandleIdx )
 	}
 	return 0;
 }
-void Battery::LoadTexture( std::string const pathname )
+void Battery::LoadTexture( std::string const & pathname )
 {
 	auto it = mapTextures.find( pathname );
 	if( it == mapTextures.end() )
@@ -318,7 +318,7 @@ LPDIRECT3DTEXTURE9 Battery::GetTexture( std::string const & pathname )
 		return 0;
 	return it->second;
 }
-void Battery::DeleteTexture( std::string const pathname )
+void Battery::DeleteTexture( std::string const & pathname )
 {
 	auto it = mapTextures.find( pathname );
 	if( it != mapTextures.end() )
@@ -778,6 +778,5 @@ void Direct3DEngine::ProcUserInput( MSG const Msg )
 			D3DXMatrixIdentity( &DisplaceMat );
 		}
 		ViewMatrix *= DisplaceMat;
-		
 	}
 }

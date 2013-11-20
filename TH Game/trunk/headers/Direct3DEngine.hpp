@@ -93,7 +93,6 @@ protected:
 	D3DXMATRIX ProjectionMatrix;
 
 	vLayer_t & GetLayers();
-	LPDIRECT3DTEXTURE9 GetTexture( std::string const & pathname );
 	LPDIRECT3DDEVICE9 & GetDevice();
 	LPDIRECT3D9 & GetD3D();
 	D3DVBuffer & GetPipelineVBuffer();
@@ -114,8 +113,9 @@ protected:
 	ObjMgr * GetObjMgr( unsigned HandleIdx );
 
 	//textures
-	void LoadTexture( std::string const pathname );
-	void DeleteTexture( std::string const pathname );
+	void LoadTexture( std::string const & pathname );
+	LPDIRECT3DTEXTURE9 GetTexture( std::string const & pathname );
+	void DeleteTexture( std::string const & pathname );
 
 	//sounds
 	void LoadSound( std::string const & pathname );
