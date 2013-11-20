@@ -447,7 +447,7 @@ unsigned Battery::CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed,
 	}
 	return -1;
 }
-void Battery::CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT const & rect, D3DCOLOR color, DWORD flags, std::vector< std::vector< float > > const & AnimationData )
+void Battery::CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT const & rect, D3DCOLOR color, DWORD flags, vector< vector< float > > const & AnimationData )
 {
 	assert( GetLayers().size() > 4 );
 	ShotData shot_data;

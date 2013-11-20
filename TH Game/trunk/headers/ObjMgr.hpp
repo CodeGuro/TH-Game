@@ -22,10 +22,10 @@ enum BlendType
 struct Object
 {
 	D3DXVECTOR3 position;
-	D3DXVECTOR3 velocity;
+	D3DXVECTOR3 velocity; //this should perhaps also be un-normalized direction
 	D3DXVECTOR3 accel;
 	D3DXVECTOR3 scale;
-	D3DXQUATERNION direction;
+	D3DXQUATERNION direction; //this should perhaps not exist
 	D3DXQUATERNION orient;
 	D3DXQUATERNION orientvel;
 	ULONG VertexOffset;
@@ -42,6 +42,10 @@ struct Object
 	void SetRotationEx( D3DXVECTOR3 Axis, float Theta );
 	void SetRotationVelocity( float Theta );
 	void SetRotationVelocityEx( D3DXVECTOR3 Axis, float Theta );
+
+	float GetSpeed() const;
+	float GetAngle() const;
+
 
 	//flags, -1 to get, 1 for on, 0 for off
 	bool FlagMotion( int flag );

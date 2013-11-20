@@ -127,6 +127,8 @@ void ObjMgr::AdvanceDrawDanmaku( Direct3DEngine * D3DEng )
 
 void Object::SetSpeed( float Speed )
 {
+	FLOAT placeholder;
+	D3DXQuaternionToAxisAngle( &direction, &velocity, &placeholder );
 	D3DXVec3Scale( &velocity, &velocity, Speed / D3DXVec3Length( &velocity ) );
 }
 void Object::SetVelocity( D3DXVECTOR3 Velocity )
@@ -175,7 +177,6 @@ void Object::Advance()
 	D3DXQuaternionInverse( &inv, &direction );
 	if( FlagMotion( -1 ) )
 		position += velocity += accel;
-	bool val = FlagPixelPerfect( -1 );
 	orient = FlagPixelPerfect( - 1 )? D3DXQUATERNION( 0, 0, 0, 1 ) * inv : orient * orientvel;
 }
 bool Object::FlagMotion( int flag )

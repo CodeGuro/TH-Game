@@ -1182,8 +1182,8 @@ void parser::parseShotScript( std::string const & scriptPath )
 			float id = -1;
 			float scale = 1;
 			float delayframes = 10;
-			std::vector< float > rect;
-			std::vector< float > col;
+			vector< float > rect;
+			vector< float > col;
 			if( lexicon.getToken() != tk_opencur )
 				raiseError( "\"{\" expected", error::er_syntax );
 			lexicon.advance();

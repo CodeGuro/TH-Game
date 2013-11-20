@@ -9,6 +9,7 @@
 #include <DSound.h>
 #include <ObjMgr.hpp>
 #include <D3DSmartPtr.hpp>
+#include <defstypedefs.hpp>
 
 enum ObjType
 {
@@ -28,12 +29,12 @@ struct ObjHandle
 
 struct Layer
 {
-	std::vector< ObjMgr > vObjMgr;
+	vector< ObjMgr > vObjMgr;
 };
 
 struct VBuffer
 {
-	std::vector< Vertex > VertexBuffer;
+	vector< Vertex > VertexBuffer;
 	ULONG RefCount;
 };
 
@@ -72,19 +73,19 @@ friend class ObjMgr;
 	D3DSmartPtr< LPD3DXCONSTANTTABLE > pDefaultConstable;
 	D3DSmartPtr< LPDIRECTSOUND8 > dsound;
 	
-	typedef std::vector< Layer > vLayer_t;
+	typedef vector< Layer > vLayer_t;
 	D3DVBuffer PipelineVertexBuffer;
 	std::map< std::string, D3DSmartPtr< LPDIRECT3DTEXTURE9 > > mapTextures;
 	std::map< std::string, D3DSmartPtr< LPDIRECTSOUNDBUFFER8 > > mapSoundEffects;
 	vLayer_t vLayers;
-	std::vector< ShotData > Bullet_Templates;
-	std::vector< DelayData > Bullet_Delays;
-	std::vector< std::vector< Object > > vvObjects;
-	std::vector< unsigned > vvObjectsGC;
-	std::vector< ObjHandle > vObjHandles;
-	std::vector< unsigned > vObjHandlesGC;
-	std::vector< VBuffer > vVertexBuffers;
-	std::vector< unsigned > vVertexBuffersGC;
+	vector< ShotData > Bullet_Templates;
+	vector< DelayData > Bullet_Delays;
+	vector< vector< Object > > vvObjects;
+	vector< unsigned > vvObjectsGC;
+	vector< ObjHandle > vObjHandles;
+	vector< unsigned > vObjHandlesGC;
+	vector< VBuffer > vVertexBuffers;
+	vector< unsigned > vVertexBuffersGC;
 	std::string ShotImagePath;
 
 protected:
@@ -126,7 +127,7 @@ protected:
 	unsigned CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed, FLOAT const direction, FLOAT const graphic );
 	void PushQuadShotBuffer( RECT const Quad, D3DCOLOR const Color );
 	void LoadShotImage( std::string const & pathname );
-	void CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT const & rect, D3DCOLOR color, DWORD flags, std::vector< std::vector< float > > const & AnimationData );
+	void CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT const & rect, D3DCOLOR color, DWORD flags, vector< vector< float > > const & AnimationData );
 	void CreateDelayShotData( unsigned ID, RECT const & rect, D3DCOLOR const color, FLOAT const Scale, ULONG const DelayFrames );
 	ShotData const & GetBulletTemplates( unsigned const graphic ) const;
 	unsigned GetDelayDataSize() const;

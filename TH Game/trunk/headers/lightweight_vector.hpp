@@ -76,11 +76,35 @@ public:
 			at = n;
 		}
 	}
-	void resize(unsigned newSize)
+	void resize( unsigned newSize )
 	{
 		while( capacity < newSize )
 			expand();
 		length = newSize;
+	}
+	void resize( unsigned newSize, T & newVal )
+	{
+		if( length < newSize )
+			length = newSize;
+		else
+		{
+			while( capacity < newSize )
+				expand();
+			while( length < newSize )
+				at[ length++ ] = newVal;
+		}
+	}
+	void resize( unsigned newSize, T newVal )
+	{
+		if( length > newSize )
+			length = newSize;
+		else
+		{
+			while( capacity < newSize )
+				expand();
+			while( length < newSize )
+				at[ length++ ] = newVal;
+		}
 	}
 	void clear_heavy() //heavy function to empty the vector and deallocate memory in the array
 	{
@@ -124,6 +148,13 @@ public:
 		--length;
 		for( T * i = pos; i < at + length; ++i )
 			*i = *(i + 1);
+	}
+	void erase( T * posbeg, T * posend )
+	{
+		unsigned count = end() - posend;
+		for( unsigned u = 0; u < count; ++u )
+			posbeg[ u ] = posend[ u ];
+		length = length - (posend - posbeg );
 	}
 	T * begin() const
 	{

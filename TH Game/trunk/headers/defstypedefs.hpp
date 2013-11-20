@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
+//#include <lightweight_vector.hpp>
 using std::vector;
-//#define vector std::vector
 //#define vector lightweight_vector
 typedef unsigned size_t;
 
