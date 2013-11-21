@@ -17,4 +17,5 @@ public:
 	void initialize( script_engine & engine, size_t script_index );
 	void clean( script_engine & engine );
 	bool isOperable();
+	size_t getScriptIndex() const;
 };

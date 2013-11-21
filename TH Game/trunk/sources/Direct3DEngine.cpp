@@ -592,13 +592,6 @@ void Battery::ObjEffect_SetLayer( unsigned HandleIdx, ULONG Layer )
 		}
 	}
 }
-void Battery::ObjEffect_SetScale( unsigned HandleIdx, D3DXVECTOR3 const & scale )
-{
-	if( HandleIdx != -1 )
-	{
-		GetObject( HandleIdx )->scale = scale;
-	}
-}
 
 Direct3DEngine::Direct3DEngine()
 {

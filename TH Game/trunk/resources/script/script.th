@@ -9,11 +9,13 @@ function foo( let val )
 
 script_main main_script //main routine
 {
-	let sound = "se_tan02.wav";
+	let sound = GetCurrentScriptDirectory() ~ "se_tan02.wav";
+	let bulletTexture = GetCurrentScriptDirectory() ~ "etama.png";
+	let stgframeTexture = GetCurrentScriptDirectory() ~ "STG Frame.png";
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
 	{
-		LoadUserShotData( "C:\Users\Administrator\Documents\Visual Studio 2010\Projects\TH Game\TH Game\trunk\resources\script\ShotData.th" );
+		LoadUserShotData( GetCurrentScriptDirectory() ~ "ShotData.th" );
 		LoadSound( sound );
 		STGFrame();
 		Task();
@@ -59,88 +61,87 @@ script_main main_script //main routine
 		}
 
 	}
-}
-
-function Delay( let x, let y)
-{
-	let obj = Obj_Create( 6 );
-	LoadTexture( "etama.png" );
-	Obj_SetTexture( obj, "etama.png" );
-
-	Obj_CreateVertex( obj, 6 );
-	Obj_SetPrimitiveType( obj, PRIMITIVE_TRIANGLELIST );
-	Obj_SetRenderState( obj, ALPHA_BLEND );
-
-	Obj_SetVertexUV( obj, 0, 32/256, 208/256 );
-	Obj_SetVertexUV( obj, 1, 64/256, 208/256 );
-	Obj_SetVertexUV( obj, 2, 32/256, 238/256 );
-	Obj_SetVertexUV( obj, 3, 64/256, 208/256 );
-	Obj_SetVertexUV( obj, 4, 64/256, 238/256 );
-	Obj_SetVertexUV( obj, 5, 32/256, 238/256 );
-
-	Obj_SetVertexXY( obj, 0, -16, -14 );
-	Obj_SetVertexXY( obj, 1, 16, -14 );
-	Obj_SetVertexXY( obj, 2, -16, 16 );
-	Obj_SetVertexXY( obj, 3, 16, -14 );
-	Obj_SetVertexXY( obj, 4, 16, 16 );
-	Obj_SetVertexXY( obj, 5, -16, 16 );
-
-	Obj_SetVertexColor( obj, 0, 255, 255, 255, 255 );
-	Obj_SetVertexColor( obj, 1, 255, 255, 255, 255 );
-	Obj_SetVertexColor( obj, 2, 255, 255, 255, 255 );
-	Obj_SetVertexColor( obj, 3, 255, 255, 255, 255 );
-	Obj_SetVertexColor( obj, 4, 255, 255, 255, 255 );
-	Obj_SetVertexColor( obj, 5, 255, 255, 255, 255 );
-
-	Obj_SetPosition( obj, x, y, 0.5 );
-	Obj_SetVelocity( obj, 0, 0, 0 );
-	Obj_SetAngle( obj, PI/2 );
-	let sca = 3;
-	loop( 15 )
+	function Delay( let x, let y)
 	{
-		sca = sca - 1/7;
-		Obj_SetScale( obj, sca, sca, 1 );
-		yield;
+		let obj = Obj_Create( 6 );
+		LoadTexture( bulletTexture );
+		Obj_SetTexture( obj, bulletTexture );
+
+		Obj_CreateVertex( obj, 6 );
+		Obj_SetPrimitiveType( obj, PRIMITIVE_TRIANGLELIST );
+		Obj_SetRenderState( obj, ALPHA_BLEND );
+
+		Obj_SetVertexUV( obj, 0, 32/256, 208/256 );
+		Obj_SetVertexUV( obj, 1, 64/256, 208/256 );
+		Obj_SetVertexUV( obj, 2, 32/256, 238/256 );
+		Obj_SetVertexUV( obj, 3, 64/256, 208/256 );
+		Obj_SetVertexUV( obj, 4, 64/256, 238/256 );
+		Obj_SetVertexUV( obj, 5, 32/256, 238/256 );
+
+		Obj_SetVertexXY( obj, 0, -16, -14 );
+		Obj_SetVertexXY( obj, 1, 16, -14 );
+		Obj_SetVertexXY( obj, 2, -16, 16 );
+		Obj_SetVertexXY( obj, 3, 16, -14 );
+		Obj_SetVertexXY( obj, 4, 16, 16 );
+		Obj_SetVertexXY( obj, 5, -16, 16 );
+
+		Obj_SetVertexColor( obj, 0, 255, 255, 255, 255 );
+		Obj_SetVertexColor( obj, 1, 255, 255, 255, 255 );
+		Obj_SetVertexColor( obj, 2, 255, 255, 255, 255 );
+		Obj_SetVertexColor( obj, 3, 255, 255, 255, 255 );
+		Obj_SetVertexColor( obj, 4, 255, 255, 255, 255 );
+		Obj_SetVertexColor( obj, 5, 255, 255, 255, 255 );
+
+		Obj_SetPosition( obj, x, y );
+		Obj_SetVelocity( obj, 0, 0, 0 );
+		Obj_SetAngle( obj, PI/2 );
+		let sca = 3;
+		loop( 15 )
+		{
+			sca = sca - 1/7;
+			Obj_SetScale( obj, sca, sca );
+			yield;
+		}
+		Obj_Delete( obj );
 	}
-	Obj_Delete( obj );
-}
 
-task STGFrame()
-{
-	let obj = Obj_Create( 0 );
-	LoadTexture( "STG Frame.png" );
-	Obj_SetTexture( obj, "STG Frame.png" );
-
-	Obj_CreateVertex( obj, 6 );
-	Obj_SetPrimitiveType( obj, PRIMITIVE_TRIANGLELIST );
-	Obj_SetRenderState( obj, ALPHA_BLEND );
-
-	Obj_SetVertexUV( obj, 0, 0/1024, 0/512 );
-	Obj_SetVertexUV( obj, 1, 640/1024, 0/512 );
-	Obj_SetVertexUV( obj, 2, 0/1024, 480/512 );
-	Obj_SetVertexUV( obj, 3, 640/1024, 0/512 );
-	Obj_SetVertexUV( obj, 4, 640/1024, 480/512 );
-	Obj_SetVertexUV( obj, 5, 0/1024, 480/512 );
-
-	Obj_SetVertexXY( obj, 0, 0, 0 );
-	Obj_SetVertexXY( obj, 1, 640, 0 );
-	Obj_SetVertexXY( obj, 2, 0, 480 );
-	Obj_SetVertexXY( obj, 3, 640, 0 );
-	Obj_SetVertexXY( obj, 4, 640, 480 );
-	Obj_SetVertexXY( obj, 5, 0, 480 );
-
-	Obj_SetVertexColor( obj, 0, 255, 255, 255, 255 );
-	Obj_SetVertexColor( obj, 1, 255, 255, 255, 255 );
-	Obj_SetVertexColor( obj, 2, 255, 255, 255, 255 );
-	Obj_SetVertexColor( obj, 3, 255, 255, 255, 255 );
-	Obj_SetVertexColor( obj, 4, 255, 255, 255, 255 );
-	Obj_SetVertexColor( obj, 5, 255, 255, 255, 255 );
-
-	Obj_SetPosition( obj, 0, 0, 0 );
-	Obj_SetVelocity( obj, 0.0, 0.0, 0 );
-	while( true )
+	task STGFrame()
 	{
-		yield;
+		let obj = Obj_Create( 0 );
+		LoadTexture( stgframeTexture );
+		Obj_SetTexture( obj, stgframeTexture );
+
+		Obj_CreateVertex( obj, 6 );
+		Obj_SetPrimitiveType( obj, PRIMITIVE_TRIANGLELIST );
+		Obj_SetRenderState( obj, ALPHA_BLEND );
+
+		Obj_SetVertexUV( obj, 0, 0/1024, 0/512 );
+		Obj_SetVertexUV( obj, 1, 640/1024, 0/512 );
+		Obj_SetVertexUV( obj, 2, 0/1024, 480/512 );
+		Obj_SetVertexUV( obj, 3, 640/1024, 0/512 );
+		Obj_SetVertexUV( obj, 4, 640/1024, 480/512 );
+		Obj_SetVertexUV( obj, 5, 0/1024, 480/512 );
+
+		Obj_SetVertexXY( obj, 0, 0, 0 );
+		Obj_SetVertexXY( obj, 1, 640, 0 );
+		Obj_SetVertexXY( obj, 2, 0, 480 );
+		Obj_SetVertexXY( obj, 3, 640, 0 );
+		Obj_SetVertexXY( obj, 4, 640, 480 );
+		Obj_SetVertexXY( obj, 5, 0, 480 );
+
+		Obj_SetVertexColor( obj, 0, 255, 255, 255, 255 );
+		Obj_SetVertexColor( obj, 1, 255, 255, 255, 255 );
+		Obj_SetVertexColor( obj, 2, 255, 255, 255, 255 );
+		Obj_SetVertexColor( obj, 3, 255, 255, 255, 255 );
+		Obj_SetVertexColor( obj, 4, 255, 255, 255, 255 );
+		Obj_SetVertexColor( obj, 5, 255, 255, 255, 255 );
+
+		Obj_SetPosition( obj, 0, 0 );
+		Obj_SetVelocity( obj, 0.0, 0.0, 0 );
+		while( true )
+		{
+			yield;
+		}
 	}
 }
 function wait( let v )

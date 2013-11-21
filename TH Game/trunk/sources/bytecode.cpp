@@ -310,6 +310,12 @@ void natives::_QueueScriptTermination( script_engine * eng, size_t * argv )
 	script_queue const queue = { script_queue::Termination, eng->currentRunningMachine };
 	eng->setQueueScriptMachine( queue );
 }
+void natives::_GetCurrentScriptDirectory( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( eng->getCurrentScriptDirectory( eng->currentRunningMachine ) );
+	eng->scriptDataAssign( argv[ 0 ], tmp );
+	eng->releaseScriptData( tmp );
+}
 void natives::_LoadSound( script_engine * eng, size_t * argv )
 {
 	eng->LoadSound( eng->getStringScriptData( argv[ 0 ] ) );
@@ -343,7 +349,7 @@ void natives::_Obj_SetPosition( script_engine * eng, size_t * argv )
 {
 	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
 	if( obj )
-		obj->SetPosition( D3DXVECTOR3( eng->getRealScriptData( argv[ 1 ] ), eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) ) );
+		obj->SetPosition( D3DXVECTOR3( eng->getRealScriptData( argv[ 1 ] ), eng->getRealScriptData( argv[ 2 ] ), 0.0f ) );
 }
 void natives::_Obj_SetTexture( script_engine * eng, size_t * argv )
 {
@@ -405,7 +411,9 @@ void natives::_Obj_SetLayer( script_engine * eng, size_t * argv )
 }
 void natives::_Obj_SetScale( script_engine * eng, size_t * argv )
 {
-	eng->ObjEffect_SetScale( eng->getObjHandleScriptData( argv[ 0 ] ), D3DXVECTOR3( eng->getRealScriptData( argv[ 1 ] ), eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) ) );
+	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( obj )
+		obj->SetScale( D3DXVECTOR3( eng->getRealScriptData( argv[ 1 ] ), eng->getRealScriptData( argv[ 2 ] ), 1.f ) );
 }
 void natives::_ALPHA_BLEND( script_engine * eng, size_t * argv )
 {

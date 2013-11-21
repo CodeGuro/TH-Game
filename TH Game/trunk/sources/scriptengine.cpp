@@ -5,8 +5,6 @@
 #include <assert.h>
 #include <Windows.h>
 
-
-
 //script engine - public functions, called from the outside
 script_engine::script_engine() : error( false ), currentRunningMachine( invalidIndex )
 {

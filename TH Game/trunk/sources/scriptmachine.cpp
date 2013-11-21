@@ -224,3 +224,7 @@ bool script_machine::isOperable()
 {
 	return current_script_index != invalidIndex;
 }
+size_t script_machine::getScriptIndex() const
+{
+	return current_script_index;
+}

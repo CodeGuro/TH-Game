@@ -783,7 +783,10 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 					if( tok == tk_SCRIPT_MAIN || tok == tk_SCRIPT_ENEMY )
 					{
 						tok == tk_SCRIPT_MAIN ? inventory::registerMainScript( scriptMgr.currentScriptPath, subroutine ) : inventory::registerScript( subroutine );
-						inventory::getScript( subroutine )->ScriptBlock = routine.blockIndex;
+						script_container * sc = inventory::getScript( subroutine );
+						sc->ScriptBlock = routine.blockIndex;
+						sc->ScriptDirectory = inventory::findScriptDirectory( scriptMgr.currentScriptPath );
+
 					}
 					else if( lexicon.advance() == tk_lparen )
 					{
@@ -1150,15 +1153,32 @@ void parser::parseShotScript( std::string const & scriptPath )
 	{
 		typedef parser::error error;
 		lexer lexsave = lexicon;
+		std::string ShotImagePath;
 		do
 		{
 			if( lexicon.getToken() == tk_word && lexicon.getWord() == "ShotImage" )
 			{
 				if( lexicon.advance() != tk_assign )
 					raiseError( "\"=\" expected", error::er_syntax );
-				if( lexicon.advance() != tk_string )
+				if( lexicon.advance() == tk_word && lexicon.getWord() == "GetCurrentScriptDirectory" )
+				{
+					if( lexicon.advance() == tk_lparen )
+						if( lexicon.advance() != tk_rparen )
+							raiseError( "\")\" expected", error::er_syntax );
+						else
+							lexicon.advance();
+					if( lexicon.getToken() == tk_tilde )
+					{
+						lexicon.advance();
+						ShotImagePath = scriptPath;
+						do
+							ShotImagePath.pop_back();
+						while( !(ShotImagePath.back() == '\\' || ShotImagePath.back() =='/') );
+					}
+				}
+				if( lexicon.getToken() != tk_string )
 					raiseError( "lexer::tk_string expected", error::er_syntax );
-				LoadShotImage( lexicon.getString() );
+				LoadShotImage( ShotImagePath + lexicon.getString() );
 				break;
 			}
 			else lexicon.advance();
@@ -1461,13 +1481,14 @@ parser::parser()
 		{ "CreateEnemyFromScript", &natives::_CreateEnemyFromScript, 1 },
 		{ "CreateEnemyFromFile", &natives::_CreateEnemyFromFile, 1 },
 		{ "QueueScriptTermination", &natives::_QueueScriptTermination, 0 },
+		{ "GetCurrentScriptDirectory", &natives::_GetCurrentScriptDirectory, 0 },
 		{ "LoadSound", &natives::_LoadSound, 1 },
 		{ "PlaySound", &natives::_PlaySound, 1 },
 		{ "DeleteSound", &natives::_DeleteSound, 1 },
 		{ "Obj_Create", &natives::_Obj_Create, 1 },
 		{ "Obj_Delete", &natives::_Obj_Delete, 1 },
 		{ "Obj_BeDeleted", &natives::_Obj_BeDeleted, 1 },
-		{ "Obj_SetPosition", &natives::_Obj_SetPosition, 4 },
+		{ "Obj_SetPosition", &natives::_Obj_SetPosition, 3 },
 		{ "Obj_SetTexture", &natives::_Obj_SetTexture, 2 },
 		{ "Obj_SetSpeed", &natives::_Obj_SetSpeed, 2 },
 		{ "Obj_SetAcceleration", &natives::_Obj_SetAcceleration, 4 },
@@ -1480,7 +1501,7 @@ parser::parser()
 		{ "Obj_SetVertexXY", &natives::_Obj_SetVertexXY, 4 },
 		{ "Obj_SetVertexColor", &natives::_Obj_SetVertexColor, 6 },
 		{ "Obj_SetLayer", &natives::_Obj_SetLayer, 2 },
-		{ "Obj_SetScale", &natives::_Obj_SetScale, 4 },
+		{ "Obj_SetScale", &natives::_Obj_SetScale, 3 },
 		{ "ALPHA_BLEND", &natives::_ALPHA_BLEND, 0 },
 		{ "ADDITIVE_BLEND", &natives::_ADDITIVE_BLEND, 0 },
 		{ "PRIMITIVE_TRIANGLELIST", &natives::_PRIMITIVE_TRIANGLELIST, 0 },

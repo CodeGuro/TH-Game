@@ -121,6 +121,7 @@ struct script_container
 	size_t MainLoopBlock;
 	size_t FinalizeBlock;
 	size_t BackGroundBlock;
+	size_t ScriptDirectory;
 };
 
 struct natives
@@ -166,6 +167,7 @@ private:
 	static void _CreateEnemyFromScript( script_engine * eng, size_t * argv );
 	static void _CreateEnemyFromFile( script_engine * eng, size_t * argv );
 	static void _QueueScriptTermination( script_engine * eng, size_t * argv );
+	static void _GetCurrentScriptDirectory( script_engine * eng, size_t * argv );
 	static void _LoadSound( script_engine * eng, size_t * argv );
 	static void _PlaySound( script_engine * eng, size_t * argv );
 	static void _DeleteSound( script_engine * eng, size_t * argv );

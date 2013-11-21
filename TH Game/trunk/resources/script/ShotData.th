@@ -1,6 +1,6 @@
 #UserShotData
 
-ShotImage = "etama.png"
+ShotImage = GetCurrentScriptDirectory() ~ "etama.png"
 
 DelayData
 {

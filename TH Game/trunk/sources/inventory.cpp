@@ -105,6 +105,26 @@ size_t inventory::findScriptFromFile( std::string const & scriptPath )
 		return it->second;
 	return invalidIndex;
 }
+size_t inventory::findScriptDirectory( std::string const & scriptPath )
+{
+	size_t u;
+	std::string path = scriptPath;
+	do
+		path.pop_back();
+	while( !(path.back() == '\\' || path.back() =='/') );
+
+	for( u = 0; u < vecScriptDirectories.size(); ++u )
+	{
+		if( vecScriptDirectories[ u ] == path )
+			return u;
+	}
+	vecScriptDirectories.push_back( path );
+	return u;
+}
+std::string const & inventory::getCurrentScriptDirectory( size_t machineIdx ) const
+{
+	return vecScriptDirectories[ vecScripts[ vecMachines[ machineIdx ].getScriptIndex() ].ScriptDirectory ];
+}
 
 //script engine - script data - related functions
 size_t inventory::fetchScriptData()

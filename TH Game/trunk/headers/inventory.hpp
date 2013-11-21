@@ -32,6 +32,7 @@ private:
 	vector< size_t > vecRoutinesGabage;
 	vector< size_t > vecMachinesGarbage;
 	vector< script_container > vecScripts;
+	vector< std::string > vecScriptDirectories;
 	std::map< std::string, size_t > mappedScripts;
 	std::map< std::string, size_t > mappedMainScripts;
 	std::map< std::string, size_t > mappedShotScripts;
@@ -77,4 +78,6 @@ protected:
 	script_container & getScript( size_t index );
 	size_t findScript( std::string const & scriptName );
 	size_t findScriptFromFile( std::string const & scriptPath );
+	size_t findScriptDirectory( std::string const & scriptPath );
+	std::string const & getCurrentScriptDirectory( size_t machineIdx ) const;
 };
