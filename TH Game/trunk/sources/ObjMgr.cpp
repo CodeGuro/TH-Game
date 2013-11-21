@@ -64,7 +64,7 @@ void ObjMgr::AdvanceDrawDanmaku( Direct3DEngine * D3DEng )
 	for( unsigned u = 0; u < vObjects.size(); ++u )
 	{
 		Vertex * src = &D3DEng->vVertexBuffers[ VertexBufferIdx ].VertexBuffer[ vObjects[ u ].VertexOffset ];
-		D3DXMatrixTransformation( &mat, NULL, NULL, &vObjects[ u ].scale, NULL, &( vObjects[ u ].direction * vObjects[ u ].orient ), vObjects[ u ].FlagPixelPerfect( -1 ) ? &D3DXVECTOR3( floor( vObjects[ u ].position.x + 0.5f), floor(vObjects[ u ].position.y + 0.5f), floor( vObjects[ u ].position.z + 0.5f ) ) : &vObjects[ u ].position );
+		D3DXMatrixTransformation( &mat, NULL, NULL, &vObjects[ u ].scale, NULL, &vObjects[ u ].orient, vObjects[ u ].FlagPixelPerfect( -1 ) ? &D3DXVECTOR3( floor( vObjects[ u ].position.x + 0.5f), floor(vObjects[ u ].position.y + 0.5f), floor( vObjects[ u ].position.z + 0.5f ) ) : &vObjects[ u ].position );
 
 		for( unsigned v = 0; v < VertexCount; ++v )
 		{
@@ -127,9 +127,12 @@ void ObjMgr::AdvanceDrawDanmaku( Direct3DEngine * D3DEng )
 
 void Object::SetSpeed( float Speed )
 {
-	FLOAT placeholder;
-	D3DXQuaternionToAxisAngle( &direction, &velocity, &placeholder );
-	D3DXVec3Scale( &velocity, &velocity, Speed / D3DXVec3Length( &velocity ) );
+	if( Speed != 0.f )
+	{
+		D3DXVec3Scale( &velocity, &velocity, Speed / D3DXVec3Length( &velocity ) );
+		FlagMotion( 1 );
+	}
+	else FlagMotion( 0 );
 }
 void Object::SetVelocity( D3DXVECTOR3 Velocity )
 {
@@ -149,11 +152,13 @@ void Object::SetScale( D3DXVECTOR3 Scaling )
 }
 void Object::SetAngle( float Theta )
 {
-	D3DXQuaternionRotationAxis( &direction, &D3DXVECTOR3( 0, 0, 1 ), Theta );
+	FLOAT speed = D3DXVec3Length( &velocity );
+	velocity = D3DXVECTOR3( speed * cos( Theta ), speed * sin( Theta ), 0.f );
+	D3DXQuaternionRotationAxis( &orient, &D3DXVECTOR3( 0, 0, 1 ), Theta + (FlagBullet( -1 ) ? D3DX_PI/2 : 0) );
 }
 void Object::SetAngleEx( D3DXVECTOR3 Axis, float Theta )
 {
-	D3DXQuaternionRotationAxis( &direction, &Axis, Theta );
+	D3DXQuaternionRotationAxis( &orient, D3DXVec3Scale( &velocity, &Axis, D3DXVec3Length( &velocity ) / D3DXVec3Length( &Axis ) ), Theta );
 }
 void Object::SetRotation( float Theta )
 {
@@ -173,11 +178,9 @@ void Object::SetRotationVelocityEx( D3DXVECTOR3 Axis, float Theta )
 }
 void Object::Advance()
 {
-	D3DXQUATERNION inv;
-	D3DXQuaternionInverse( &inv, &direction );
 	if( FlagMotion( -1 ) )
 		position += velocity += accel;
-	orient = FlagPixelPerfect( - 1 )? D3DXQUATERNION( 0, 0, 0, 1 ) * inv : orient * orientvel;
+	orient = FlagPixelPerfect( - 1 )? D3DXQUATERNION( 0, 0, 0, 1 ) : orient * orientvel;
 }
 bool Object::FlagMotion( int flag )
 {
@@ -251,6 +254,21 @@ bool Object::FlagPixelPerfect( int flag )
 	case 1:
 	default:
 		flags = flags | 0x10;
+		return true;
+	}
+}
+bool Object::FlagBullet( int flag )
+{
+	switch( flag )
+	{
+	case -1:
+		return (flags & 0x20) != 0;
+	case 0:
+		flags = flags & ~0x20;
+		return false;
+	case 1:
+	default:
+		flags = flags | 0x20;
 		return true;
 	}
 }

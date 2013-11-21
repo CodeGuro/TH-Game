@@ -93,7 +93,7 @@ script_main main_script //main routine
 		Obj_SetVertexColor( obj, 5, 255, 255, 255, 255 );
 
 		Obj_SetPosition( obj, x, y );
-		Obj_SetVelocity( obj, 0, 0, 0 );
+		Obj_SetSpeed( obj, 0 );
 		Obj_SetAngle( obj, PI/2 );
 		let sca = 3;
 		loop( 15 )

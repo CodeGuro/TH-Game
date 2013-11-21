@@ -25,7 +25,6 @@ struct Object
 	D3DXVECTOR3 velocity; //this should perhaps also be un-normalized direction
 	D3DXVECTOR3 accel;
 	D3DXVECTOR3 scale;
-	D3DXQUATERNION direction; //this should perhaps not exist
 	D3DXQUATERNION orient;
 	D3DXQUATERNION orientvel;
 	ULONG VertexOffset;
@@ -53,6 +52,7 @@ struct Object
 	bool FlagScreenDeletable( int flag );
 	bool FlagGraze( int flag );
 	bool FlagPixelPerfect( int flag );
+	bool FlagBullet( int flag );
 	void Advance();
 };
 

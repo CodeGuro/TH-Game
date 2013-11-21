@@ -225,17 +225,19 @@ unsigned Battery::CreateObject( unsigned short Layer ) //0 - BG, 4 - Bullet, 5 -
 
 		vvObjects[ ObjVector ].resize( 1 + handle.ObjVectorIdx );
 		Object & obj = *GetObject( Result );
-		obj.orientvel = D3DXQUATERNION( 0, 0, 0, 1 );
-		obj.accel = D3DXVECTOR3( 0, 0, 0 );
-		obj.SetAngle( 0 );
-		obj.SetVelocity( D3DXVECTOR3( 0, 0, 0 ) );
-		obj.SetRotation( 0 );
-		obj.SetScale( D3DXVECTOR3( 1, 1, 1 ) );
-		obj.VertexOffset = 0;
-		obj.FlagMotion( 1 );
 		obj.FlagCollidable( 0 );
 		obj.FlagPixelPerfect( 0 );
 		obj.FlagScreenDeletable( 1 );
+		obj.FlagBullet( 0 );
+		obj.FlagGraze( 0 );
+		obj.SetVelocity( D3DXVECTOR3( 1, 0, 0 ) );
+		obj.SetSpeed( 0 );
+		obj.SetAngle( 0 );
+		obj.SetRotationVelocity( 0 );
+		obj.SetAccel( D3DXVECTOR3( 0, 0, 0 ) );
+		obj.SetScale( D3DXVECTOR3( 1, 1, 1 ) );
+		obj.VertexOffset = 0;
+
 	}
 	else
 		Result = -1;
@@ -432,14 +434,13 @@ unsigned Battery::CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed,
 		vvObjects[ handle.ObjVector ].resize( 1 + handle.ObjVectorIdx );
 		Object & obj = *GetObject( Result );
 		obj.position = D3DXVECTOR3( position.x, position.y, 0.f );
-		obj.velocity = D3DXVECTOR3( speed * cos( direction ), speed * sin( direction ), 0.f );
+		obj.SetSpeed( speed );
 		obj.orientvel = D3DXQUATERNION( 0, 0, 0, 1 );
 		obj.accel = D3DXVECTOR3( 0, 0, 0 );
-		obj.SetRotation( D3DX_PI / 2 );
+		obj.FlagBullet( 1 );
 		obj.SetAngle( direction );
 		obj.SetScale( D3DXVECTOR3( 1, 1, 1 ) );
 		obj.VertexOffset= shot_data.VtxOffset;
-		obj.FlagMotion( 1 );
 		obj.FlagCollidable( 1 );
 		obj.FlagScreenDeletable( 1 );
 		obj.FlagPixelPerfect( shot_data.Flags & 0x16 ? 1 : 0 );
