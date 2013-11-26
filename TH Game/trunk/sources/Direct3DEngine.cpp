@@ -205,6 +205,7 @@ unsigned Battery::CreateObject( unsigned short Layer ) //0 - BG, 4 - Bullet, 5 -
 				VtxBuffIdx = vVertexBuffers.size();
 				vVertexBuffers.resize( 1 + VtxBuffIdx );
 			}
+			vVertexBuffers[ VtxBuffIdx ].RefCount = 1;
 		}
 		else
 			VtxBuffIdx = -1;
@@ -279,13 +280,17 @@ void Battery::ReleaseObject( unsigned HandleIdx )
 				if( CheckValidIdx( handle.MgrIdx ) )
 				{
 					auto objmgr_it = Layer.vObjMgr.begin() + handle.MgrIdx;
-					vvObjectsGC.push_back( objmgr_it->ObjBufferIdx );
-					vVertexBuffers[ objmgr_it->VertexBufferIdx ].VertexBuffer.resize( 0 );
-					vVertexBuffersGC.push_back( objmgr_it->VertexBufferIdx );
+					assert( handle.ObjVector == objmgr_it->ObjBufferIdx );
+					assert( handle.MgrIdx == objmgr_it - Layer.vObjMgr.begin() );
+					assert( handle.VertexBuffer == objmgr_it->VertexBufferIdx );
+					vvObjectsGC.push_back( handle.ObjVector );
 					Layer.vObjMgr.erase( objmgr_it );
 					if( CheckValidIdx( handle.VertexBuffer ) )
 						if( !--(vVertexBuffers[ handle.VertexBuffer ].RefCount) )
+						{
+							vVertexBuffers[ handle.VertexBuffer ].VertexBuffer.resize( 0 );
 							vVertexBuffersGC.push_back( handle.VertexBuffer );
+						}
 					for( auto it = vObjHandles.begin(); it != vObjHandles.end(); ++it )
 						if( it->Layer == handle.Layer && it->MgrIdx > handle.MgrIdx )
 							--(it->MgrIdx);
