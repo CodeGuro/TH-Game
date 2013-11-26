@@ -6,12 +6,12 @@
 #include <Windows.h>
 
 //script engine - public functions, called from the outside
-script_engine::script_engine() : error( false ), currentRunningMachine( invalidIndex )
+script_engine::script_engine() : error( false ), currentRunningMachine( -1 )
 {
 }
 void script_engine::cleanEngine()
 {
-	currentRunningMachine = invalidIndex;
+	currentRunningMachine = -1;
 	typeManager = script_type_manager();
 }
 void script_engine::start()
@@ -41,7 +41,7 @@ void script_engine::start()
 	parseScriptFromFile( scriptPath );
 	if( error ) return;
 	size_t scriptIdx = findScriptFromFile( getCurrentScriptPath() );
-	if( scriptIdx == invalidIndex ) return;
+	if( !CheckValidIdx( scriptIdx ) ) return;
 	currentRunningMachine = fetchScriptMachine();
 	script_machine & machine = getScriptMachine( currentRunningMachine );
 	machine.initialize( *this, scriptIdx );
@@ -77,14 +77,14 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 	unsigned prevMachine = currentRunningMachine;
 	currentRunningMachine = machineIndex;
 	script_machine & m = getScriptMachine( machineIndex );
-	assert( m.current_thread_index != invalidIndex && m.current_script_index != invalidIndex );
-	size_t blockIndex = invalidIndex;
+	assert( CheckValidIdx( m.current_thread_index ) && CheckValidIdx( m.current_script_index ) );
+	size_t blockIndex = -1;
 	script_container & sc = vecScripts[ m.current_script_index ];
 	//initializing
 	if( !m.threads.size() )
 	{
 		m.threads.push_back( fetchScriptEnvironment( getScript( m.current_script_index ).ScriptBlock ) );
-		getScriptEnvironment( m.threads[ 0 ] ).parentIndex = invalidIndex;
+		getScriptEnvironment( m.threads[ 0 ] ).parentIndex = -1;
 		getScriptEnvironment( m.threads[ 0 ] ).hasResult = false;
 		m.current_thread_index = 0;
 		while( !m.advance( *this ) );
@@ -107,7 +107,7 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 		blockIndex = sc.BackGroundBlock;
 		break;
 	}
-	if( blockIndex != invalidIndex )
+	if( CheckValidIdx( blockIndex ) )
 	{
 		++getScriptEnvironment( m.threads[ m.current_thread_index ] ).refCount;
 		size_t calledEnv = fetchScriptEnvironment( blockIndex );

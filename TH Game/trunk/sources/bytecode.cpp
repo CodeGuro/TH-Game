@@ -3,7 +3,7 @@
 #include <iostream>
 #include <assert.h>
 
-type_data::type_data() : kind( tk_invalid ), element( invalidIndex )
+type_data::type_data() : kind( tk_invalid ), element( -1 )
 {
 }
 type_data::type_data( type_kind k, size_t e ) : kind(k), element(e)
@@ -18,7 +18,7 @@ size_t type_data::get_element() const
 	return element;
 }
 
-script_data::script_data() : type( type_data::tk_invalid, invalidIndex )
+script_data::script_data() : type( type_data::tk_invalid, -1 )
 {
 }
 script_data::script_data( float real, size_t elementIndex ) : real(real), type(type_data::tk_real, elementIndex)
@@ -109,7 +109,7 @@ void natives::_concatenate( script_engine * eng, size_t * argv )
 	unsigned s = eng->getScriptData( argv[1] ).vec.size();
 	for( unsigned i = 0; i < s; ++i )
 	{
-		size_t idx = invalidIndex;
+		size_t idx = -1;
 		eng->scriptDataAssign( idx, eng->getScriptData( argv[1] ).vec[i] );
 		eng->getScriptData( argv[0] ).vec.push_back( idx );
 	}
@@ -192,9 +192,8 @@ void natives::_index( script_engine * eng, size_t * argv )
 }
 void natives::_appendArray( script_engine * eng, size_t * argv )
 {
-	size_t idx = invalidIndex;
-	eng->scriptDataAssign( idx, argv[1] );
-	eng->getScriptData( argv[0] ).vec.push_back( idx );
+	eng->getScriptData( argv[ 0 ] ).vec.push_back( -1 );
+	eng->scriptDataAssign( eng->getScriptData( argv[ 0 ] ).vec.back(), argv[1] );
 }
 void natives::_uniqueize( script_engine * eng, size_t * argv )
 {
@@ -221,18 +220,21 @@ void natives::_print( script_engine * eng, size_t * argv )
 }
 void natives::_true( script_engine * eng, size_t * argv )
 {
+	assert( !CheckValidIdx( argv[ 0 ] ) );
 	size_t tmp = eng->fetchScriptData( true );
 	eng->scriptDataAssign( argv[0], tmp );
 	eng->releaseScriptData( tmp );
 }
 void natives::_false( script_engine * eng, size_t * argv )
 {
+	assert( !CheckValidIdx( argv[ 0 ] ) );
 	size_t tmp = eng->fetchScriptData( false );
 	eng->scriptDataAssign( argv[0], tmp );
 	eng->releaseScriptData( tmp );
 }
 void natives::_PI( script_engine * eng, size_t * argv )
 {
+	assert( !CheckValidIdx( argv[ 0 ] ) );
 	size_t tmp = eng->fetchScriptData( D3DX_PI );
 	eng->scriptDataAssign( argv[0], tmp );
 	eng->releaseScriptData( tmp );
@@ -288,7 +290,7 @@ void natives::_atan2( script_engine * eng, size_t * argv )
 void natives::_CreateEnemyFromScript( script_engine * eng, size_t * argv )
 {
 	size_t scriptIndex = eng->findScript( eng->getStringScriptData( argv[ 0 ] ) );
-	if( scriptIndex != invalidIndex )
+	if( CheckValidIdx( scriptIndex ) )
 	{
 		script_queue sq = { script_queue::Initialization, scriptIndex };
 		eng->setQueueScriptMachine( sq );
@@ -299,7 +301,7 @@ void natives::_CreateEnemyFromFile( script_engine * eng, size_t * argv )
 	std::string scriptPath = eng->getStringScriptData( argv[ 0 ] );
 	eng->parseScriptFromFile( scriptPath );
 	size_t scriptIndex;
-	if( (scriptIndex = eng->findScriptFromFile( scriptPath )) != invalidIndex )
+	if( CheckValidIdx( (scriptIndex = eng->findScriptFromFile( scriptPath )) ) )
 	{
 		script_queue sq = { script_queue::Initialization, scriptIndex };
 		eng->setQueueScriptMachine( sq );
@@ -417,27 +419,27 @@ void natives::_Obj_SetScale( script_engine * eng, size_t * argv )
 }
 void natives::_ALPHA_BLEND( script_engine * eng, size_t * argv )
 {
-	assert( argv[ 0 ] == invalidIndex );
+	assert( !CheckValidIdx( argv[ 0 ] ) );
 	argv[ 0 ] = eng->fetchScriptData( BlendAlpha );
 }
 void natives::_ADDITIVE_BLEND( script_engine * eng, size_t * argv )
 {
-	assert( argv[ 0 ] == invalidIndex );
+	assert( !CheckValidIdx( argv[ 0 ] ) );
 	argv[ 0 ] = eng->fetchScriptData( BlendAdd );
 }
 void natives::_PRIMITIVE_TRIANGLELIST( script_engine * eng, size_t * argv )
 {
-	assert( argv[ 0 ] == invalidIndex );
+	assert( !CheckValidIdx( argv[ 0 ] ) );
 	argv[ 0 ] = eng->fetchScriptData( D3DPT_TRIANGLELIST );
 }	
 void natives::_PRIMITIVE_TRIANGLESTRIP( script_engine * eng, size_t * argv )
 {
-	assert( argv[ 0 ] == invalidIndex );
+	assert( !CheckValidIdx( argv[ 0 ] ) );
 	argv[ 0 ] = eng->fetchScriptData( D3DPT_TRIANGLESTRIP );
 }
 void natives::_PRIMITIVE_TRIANGLEFAN( script_engine * eng, size_t * argv )
 {
-	assert( argv[ 0 ] == invalidIndex );
+	assert( !CheckValidIdx( argv[ 0 ] ) );
 	argv[ 0 ] = eng->fetchScriptData( D3DPT_TRIANGLEFAN );
 }
 void natives::_LoadTexture( script_engine * eng, size_t * argv )

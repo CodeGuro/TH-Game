@@ -64,7 +64,6 @@ struct WaveHeaderType
 class Battery
 {
 private:
-friend class ObjMgr;
 	D3DSmartPtr< LPDIRECT3D9 > d3d;
 	D3DSmartPtr< LPDIRECT3DDEVICE9 > d3ddev;
 	D3DSmartPtr< LPDIRECT3DVERTEXDECLARATION9 > pDefaultVDeclaration;
@@ -141,6 +140,9 @@ protected:
 	void ObjEffect_SetPrimitiveType( unsigned HandleIdx, D3DPRIMITIVETYPE PrimitiveType );
 	void ObjEffect_SetLayer( unsigned HandleIdx, ULONG Layer );
 
+	//misc
+	void DrawObjects();
+
 	//constructor
 	Battery( HWND const hWnd );
 	Battery();
@@ -158,7 +160,6 @@ public:
 	void DrawGridTerrain( unsigned Rows, unsigned Columns, float Spacing );
 	void DrawTexture();
 	void DrawFPS();
-	void DrawObjects();
 	void RenderFrame( MSG const Msg );
 	void ProcUserInput( MSG const Msg );
 

@@ -15,7 +15,7 @@ bool script_machine::advance( script_engine & eng )
 	if( env.codeIndex >= eng.getBlock( env.blockIndex ).vecCodes.size() )
 	{
 		size_t disposing = threads[ current_thread_index ];
-		if( eng.getScriptEnvironment( disposing ).parentIndex == invalidIndex )
+		if( !CheckValidIdx( eng.getScriptEnvironment( disposing ).parentIndex ) )
 			return true; //do not dispose initial environment
 		script_environment & disposing_env = eng.getScriptEnvironment( threads[ current_thread_index ] );
 		threads[ current_thread_index ] = disposing_env.parentIndex;
@@ -47,7 +47,7 @@ bool script_machine::advance( script_engine & eng )
 			script_environment * e;
 			for( e = &env; e->blockIndex != current_code.blockIndex; e = &eng.getScriptEnvironment( e->parentIndex ) );
 			if( e->values.size() <= current_code.variableIndex )
-				e->values.resize( 4 + 2 * e->values.size(), invalidIndex );
+				e->values.resize( 4 + 2 * e->values.size(), -1 );
 			eng.scriptDataAssign( e->values[ current_code.variableIndex ], env.stack.back() );
 			eng.releaseScriptData( env.stack.back() );
 			env.stack.pop_back();
@@ -62,7 +62,7 @@ bool script_machine::advance( script_engine & eng )
 		break;
 	case vc_pushVal:
 		{
-			env.stack.push_back( invalidIndex );
+			env.stack.push_back( -1 );
 			eng.scriptDataAssign( env.stack.back(), current_code.scriptDataIndex );
 		}
 		break;
@@ -70,7 +70,7 @@ bool script_machine::advance( script_engine & eng )
 		{
 			script_environment * e;
 			for( e = &env; e->blockIndex != current_code.blockIndex; e = &eng.getScriptEnvironment( e->parentIndex ) );
-			env.stack.push_back( invalidIndex );
+			env.stack.push_back( -1 );
 			eng.scriptDataAssign( env.stack.back(), e->values[ current_code.variableIndex ] );
 		}
 		break;
@@ -81,7 +81,7 @@ bool script_machine::advance( script_engine & eng )
 			block & b = eng.getBlock( current_code.subIndex );
 			if( b.nativeCallBack ) //always functional
 			{
-				env.stack.push_back( invalidIndex );
+				env.stack.push_back( -1 );
 				unsigned popCount = current_code.argc + (current_code.command != vc_callFunctionPush ? 1 : 0 );
 				b.nativeCallBack( &eng, &env.stack[ env.stack.size() - ( 1 + current_code.argc ) ] );
 				for( unsigned u = 0; u < popCount; ++ u )
@@ -116,7 +116,7 @@ bool script_machine::advance( script_engine & eng )
 			{
 				block const & b = eng.getBlock( e->blockIndex );
 				e->codeIndex = b.vecCodes.size();
-				if( !(b.kind == block::bk_function || b.kind == block::bk_task || b.kind == block::bk_sub) && e->parentIndex != invalidIndex )
+				if( !(b.kind == block::bk_function || b.kind == block::bk_task || b.kind == block::bk_sub) && CheckValidIdx( e->parentIndex ) )
 					e = &eng.getScriptEnvironment( e->parentIndex );
 				else
 					BaseRoutine = true;
@@ -212,17 +212,18 @@ bool script_machine::advance( script_engine & eng )
 void script_machine::clean( script_engine & eng )
 {
 	do
-		eng.getScriptEnvironment( threads[ current_thread_index ] ).codeIndex = invalidIndex;
+		eng.getScriptEnvironment( threads[ current_thread_index ] ).codeIndex = -1;
 	while( !advance( eng ) );
 	eng.releaseScriptEnvironment( threads[ current_thread_index ] );
 	threads.pop_back();
-	current_script_index = invalidIndex;
-	current_thread_index = invalidIndex;
+
+	current_script_index = -1;
+	current_thread_index = -1;
 	assert( !threads.size() );
 }
 bool script_machine::isOperable()
 {
-	return current_script_index != invalidIndex;
+	return CheckValidIdx( current_script_index );
 }
 size_t script_machine::getScriptIndex() const
 {

@@ -6,25 +6,25 @@
 //script type manager, script_engine::getScriptTypeManager
 script_type_manager::script_type_manager()
 {
-	types.push_back( type_data( type_data::tk_real, invalidIndex ) );
-	types.push_back( type_data( type_data::tk_boolean, invalidIndex ) );
-	types.push_back( type_data( type_data::tk_char, invalidIndex ) );
-	types.push_back( type_data( type_data::tk_array, invalidIndex) );
-	types.push_back( type_data( type_data::tk_array, (size_t)2 ) );
-	types.push_back( type_data( type_data::tk_object, invalidIndex ) );
-	types.push_back( type_data( type_data::tk_misc, invalidIndex ) );
+	types.push_back( type_data( type_data::tk_real, -1 ) );
+	types.push_back( type_data( type_data::tk_boolean, -1 ) );
+	types.push_back( type_data( type_data::tk_char, -1 ) );
+	types.push_back( type_data( type_data::tk_array, -1) );
+	types.push_back( type_data( type_data::tk_array, 2 ) );
+	types.push_back( type_data( type_data::tk_object, -1 ) );
+	types.push_back( type_data( type_data::tk_misc, -1 ) );
 }
 type_data script_type_manager::getRealType() const
 {
-	return type_data( type_data::tk_real, invalidIndex );
+	return type_data( type_data::tk_real, -1 );
 }
 type_data script_type_manager::getBooleanType() const
 {
-	return type_data( type_data::tk_boolean, invalidIndex );
+	return type_data( type_data::tk_boolean, -1 );
 }
 type_data script_type_manager::getCharacterType() const
 {
-	return type_data( type_data::tk_char, invalidIndex );
+	return type_data( type_data::tk_char, -1 );
 }
 type_data script_type_manager::getStringType() const
 {
@@ -32,15 +32,15 @@ type_data script_type_manager::getStringType() const
 }
 type_data script_type_manager::getObjectType() const
 {
-	return type_data( type_data::tk_object, invalidIndex );
+	return type_data( type_data::tk_object, -1 );
 }
 type_data script_type_manager::getMiscType() const
 {
-	return type_data( type_data::tk_misc, invalidIndex );
+	return type_data( type_data::tk_misc, -1 );
 }
 type_data script_type_manager::getArrayType() const
 {
-	return type_data( type_data::tk_array, invalidIndex );
+	return type_data( type_data::tk_array, -1 );
 }
 type_data script_type_manager::getArrayType( size_t element )
 {
@@ -68,7 +68,7 @@ void inventory::registerScript( std::string const scriptName )
 {
 	mappedScripts[ scriptName ] = vecScripts.size();
 	script_container new_cont;
-	memset( &new_cont, invalidIndex, sizeof( new_cont) );
+	memset( &new_cont, -1, sizeof( new_cont ) );
 	vecScripts.push_back( new_cont );
 }
 void inventory::registerMainScript( std::string const scriptPath, std::string const scriptName )
@@ -78,7 +78,7 @@ void inventory::registerMainScript( std::string const scriptPath, std::string co
 }
 void inventory::registerInvalidMainScript( std::string const scriptPath )
 {
-	mappedMainScripts[ scriptPath ] = invalidIndex;
+	mappedMainScripts[ scriptPath ] = -1;
 }
 script_container * inventory::getScript( std::string const & scriptName )
 {
@@ -96,14 +96,14 @@ size_t inventory::findScript( std::string const & scriptName )
 	std::map< std::string, unsigned >::iterator it = mappedScripts.find( scriptName );
 	if( it != mappedScripts.end() )
 		return it->second;
-	return invalidIndex;
+	return -1;
 }
 size_t inventory::findScriptFromFile( std::string const & scriptPath )
 {
 	std::map< std::string, unsigned >::iterator it = mappedMainScripts.find( scriptPath );
 	if( it != mappedMainScripts.end() )
 		return it->second;
-	return invalidIndex;
+	return -1;
 }
 size_t inventory::findScriptDirectory( std::string const & scriptPath )
 {
@@ -207,12 +207,12 @@ script_data & inventory::getScriptData( size_t index )
 }
 void inventory::addRefScriptData( size_t index ) //interface function
 {
-	if( index != invalidIndex )
+	if( CheckValidIdx( index ) )
 		++getScriptData( index ).refCount;
 }
 void inventory::releaseScriptData( size_t & index ) //interface function
 {
-	if( index != invalidIndex )
+	if( CheckValidIdx( index ) )
 	{
 		script_data & dat = getScriptData( index );
 		if( !(--dat.refCount) )
@@ -224,7 +224,7 @@ void inventory::releaseScriptData( size_t & index ) //interface function
 			if( dat.type.get_kind() == getObjectType().get_kind() )
 				ReleaseObjHandle( dat.objIndex );
 		}
-		index = invalidIndex;
+		index = -1;
 	}
 }
 void inventory::scriptDataAssign( size_t & dst, size_t src ) //index copy
@@ -235,7 +235,7 @@ void inventory::scriptDataAssign( size_t & dst, size_t src ) //index copy
 }
 void inventory::copyScriptData( size_t & dst, size_t & src ) //contents copy, including vector
 {
-	if( dst == invalidIndex )
+	if( !CheckValidIdx( dst ) )
 		dst = fetchScriptData();
 	script_data & destDat = getScriptData( dst );
 
@@ -243,7 +243,7 @@ void inventory::copyScriptData( size_t & dst, size_t & src ) //contents copy, in
 		releaseScriptData( destDat.vec[i] );
 	destDat.vec.resize( 0 );
 
-	if( src != invalidIndex )
+	if( CheckValidIdx( src ) )
 	{
 		script_data & sourDat = getScriptData( src );
 		switch( ( destDat.type = sourDat.type ).get_kind() )
@@ -263,7 +263,7 @@ void inventory::copyScriptData( size_t & dst, size_t & src ) //contents copy, in
 			{
 				destDat.vec.resize( sourDat.vec.size() );
 				for( unsigned i = 0; i < sourDat.vec.size(); ++i )
-					(sourDat.vec[i] == invalidIndex) ? (destDat.vec[i] = invalidIndex) : (copyScriptData( ( destDat.vec[i] = fetchScriptData() ), sourDat.vec[i] ));
+					(!CheckValidIdx( sourDat.vec[i] )) ? (destDat.vec[i] = -1) : (copyScriptData( ( destDat.vec[i] = fetchScriptData() ), sourDat.vec[i] ));
 			}
 			break;
 		}
@@ -271,7 +271,7 @@ void inventory::copyScriptData( size_t & dst, size_t & src ) //contents copy, in
 }
 void inventory::uniqueizeScriptData( size_t & dst )
 {
-	if( dst != invalidIndex )
+	if( CheckValidIdx( dst ) )
 	{
 		if( getScriptData( dst ).refCount > 1 )
 		{
@@ -312,7 +312,7 @@ void inventory::uniqueizeScriptData( size_t & dst )
 std::string inventory::getStringScriptData( size_t index )
 {
 	std::string result;
-	if( index != invalidIndex )
+	if( CheckValidIdx( index ) )
 	{
 		script_data const & dat = getScriptData( index );
 		switch( dat.type.get_kind() )
@@ -359,38 +359,38 @@ std::string inventory::getStringScriptData( size_t index )
 }
 float inventory::getRealScriptData( size_t index ) const
 {
-	if( index != invalidIndex )
+	if( CheckValidIdx( index ) )
 		return vecScriptData[ index ].real;
 	return -1;
 }
 bool inventory::getBooleanScriptData( size_t index ) const
 {
-	if( index != invalidIndex )
+	if( CheckValidIdx( index ) )
 		return vecScriptData[ index ].real != 0;
 	return true;
 
 }
 char inventory::getCharacterScriptData( size_t index ) const
 {
-	if( index != invalidIndex )
+	if( CheckValidIdx( index ) )
 		return vecScriptData[ index ].character;
 	return -1;
 }
 unsigned inventory::getObjHandleScriptData( size_t index ) const
 {
-	if( index != invalidIndex )
+	if( CheckValidIdx( index ) )
 		return vecScriptData[ index ].objIndex;
 	return -1;
 }
 D3DPRIMITIVETYPE inventory::getPrimitiveTypeScriptData( size_t index ) const
 {
-	if( index != invalidIndex )
+	if( CheckValidIdx( index ) )
 		return vecScriptData[ index ].primitiveType;
 	return (D3DPRIMITIVETYPE)-1;
 }
 BlendType inventory::getBlendModeScriptData( size_t index ) const
 {
-	if( index != invalidIndex )
+	if( CheckValidIdx( index ) )
 		return vecScriptData[ index ].blendMode;
 	return (BlendType)-1;
 }
@@ -421,12 +421,12 @@ script_environment & inventory::getScriptEnvironment( size_t index )
 }
 void inventory::addRefScriptEnvironment( size_t index )
 {
-	if( index != invalidIndex )
+	if( CheckValidIdx( index ) )
 		++getScriptEnvironment( index ).refCount;
 }
 void inventory::releaseScriptEnvironment( size_t & index )
 {
-	if( index != invalidIndex )
+	if( CheckValidIdx( index ) )
 	{
 		script_environment & env = getScriptEnvironment( index );
 		if( !( --env.refCount ) )
@@ -439,7 +439,7 @@ void inventory::releaseScriptEnvironment( size_t & index )
 			env.values.resize( 0 );
 			vecRoutinesGabage.push_back( index );
 		}
-		index = invalidIndex;
+		index = -1;
 	}
 }
 
@@ -465,9 +465,9 @@ script_machine & inventory::getScriptMachine( size_t index )
 }
 void inventory::releaseScriptMachine( size_t & index )
 {
-	if( index != invalidIndex )
+	if( CheckValidIdx( index ) )
 		vecMachinesGarbage.push_back( index );
-	index = invalidIndex;
+	index = -1;
 }
 void inventory::setQueueScriptMachine( script_queue const queue )
 {

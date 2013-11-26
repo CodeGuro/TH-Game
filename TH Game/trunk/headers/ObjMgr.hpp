@@ -77,11 +77,13 @@ struct DelayData
 class ObjMgr
 {
 private:
+	friend class Battery;
 	unsigned VertexCount;
 	unsigned VertexBufferIdx;
 	unsigned ObjBufferIdx;
 	D3DPRIMITIVETYPE PrimitiveType;
 	BlendType BlendState;
+	ULONG Flags;
 	D3DSmartPtr< LPDIRECT3DTEXTURE9 > pTexture;
 	D3DSmartPtr< LPDIRECT3DVERTEXDECLARATION9 > VDeclaration;
 	D3DSmartPtr< LPDIRECT3DVERTEXSHADER9 > VShader;
@@ -100,5 +102,5 @@ public:
 	void SetVShaderConstTable( LPD3DXCONSTANTTABLE Table );
 	void SetPrimitiveType( D3DPRIMITIVETYPE PrimType );
 	void SetBlendState( BlendType const Blend);
-	void AdvanceDrawDanmaku( Direct3DEngine * D3DEng );
+	void AdvanceDraw( Direct3DEngine * D3DEng, unsigned const Layer, unsigned const MgrIdx );
 };

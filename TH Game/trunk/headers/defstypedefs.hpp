@@ -5,4 +5,8 @@ using std::vector;
 //#define vector lightweight_vector
 typedef unsigned size_t;
 
-#define invalidIndex (size_t)-1
+template< typename T >
+inline bool CheckValidIdx( T const val )
+{
+	return val != (T)-1;
+}
