@@ -19,6 +19,7 @@ script_main main_script //main routine
 		LoadSound( sound );
 		STGFrame();
 		Task();
+		Font();
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{
@@ -41,7 +42,7 @@ script_main main_script //main routine
 			loop( 15 )
 			{
 				let a = 0;
-				let looper = rand_int( 10, 40 );
+				let looper = 40;
 				FireRound( x, y, looper, a );
 				loop( 5 ){ yield; }
 				x = x - 30 * i;
@@ -56,14 +57,14 @@ script_main main_script //main routine
 		Delay( x, y );
 		loop( looper )
 		{
-			CreateShot01( x, y, 2, a, rand_int(0,2) );
+			CreateShot01( x, y, 2, a, rand_int(1,2) );
 			a = a + 2 * PI / looper;
 		}
 
 	}
 	function Delay( let x, let y)
 	{
-		let obj = Obj_Create( 6 );
+		let obj = Obj_Create( 5 );
 		LoadTexture( bulletTexture );
 		Obj_SetTexture( obj, bulletTexture );
 
@@ -104,10 +105,20 @@ script_main main_script //main routine
 		}
 		Obj_Delete( obj );
 	}
-
+	task Font()
+	{
+		let obj = Obj_Create( 7 );
+		ObjFont_SetString( obj, "ObjFont Success!" );
+		ObjFont_SetColor( obj, 255, 255, 255, 255 );
+		ObjFont_SetRect( obj, 200, 200, 400, 400 );
+		while( !Obj_BeDeleted( obj ) )
+		{
+			yield;
+		}
+	}
 	task STGFrame()
 	{
-		let obj = Obj_Create( 0 );
+		let obj = Obj_Create( 1 );
 		LoadTexture( stgframeTexture );
 		Obj_SetTexture( obj, stgframeTexture );
 
@@ -138,7 +149,7 @@ script_main main_script //main routine
 
 		Obj_SetPosition( obj, 0, 0 );
 		Obj_SetVelocity( obj, 0.0, 0.0, 0 );
-		while( true )
+		while( !Obj_BeDeleted( obj ) )
 		{
 			yield;
 		}

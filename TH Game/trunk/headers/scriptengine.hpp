@@ -1,7 +1,6 @@
 #pragma once
 #include <map>
 #include <string>
-
 #include "defstypedefs.hpp"
 #include "bytecode.hpp"
 #include "scriptmachine.hpp"

@@ -188,6 +188,10 @@ private:
 	static void _Obj_SetVertexColor( script_engine * eng, size_t * argv );
 	static void _Obj_SetLayer( script_engine * eng, size_t * argv );
 	static void _Obj_SetScale( script_engine * eng, size_t * argv );
+	static void _Obj_SetAutoDelete( script_engine * eng, size_t * argv );
+	static void _ObjFont_SetRect( script_engine * eng, size_t * argv );
+	static void _ObjFont_SetString( script_engine * eng, size_t * argv );
+	static void _ObjFont_SetColor( script_engine * eng, size_t * argv );
 	static void _ALPHA_BLEND( script_engine * eng, size_t * argv );
 	static void _ADDITIVE_BLEND( script_engine * eng, size_t * argv );
 	static void _PRIMITIVE_TRIANGLELIST( script_engine * eng, size_t * argv );

@@ -74,13 +74,12 @@ struct DelayData
 	FLOAT Scale;
 };
 
-class ObjMgr
+struct ObjMgr
 {
-private:
-	friend class Battery;
 	unsigned VertexCount;
 	unsigned VertexBufferIdx;
 	unsigned ObjBufferIdx;
+	unsigned ObjFontIdx;
 	D3DPRIMITIVETYPE PrimitiveType;
 	BlendType BlendState;
 	ULONG Flags;
@@ -90,17 +89,5 @@ private:
 	D3DSmartPtr< LPDIRECT3DPIXELSHADER9 > PShader;
 	D3DSmartPtr< LPD3DXCONSTANTTABLE > Constable;
 
-public:
 	ObjMgr();
-	void SetVertexCount( unsigned const Count );
-	void SetVertexBufferIdx( unsigned const Idx );
-	void SetObjBufferIdx( unsigned const Idx );
-	void SetTexture( LPDIRECT3DTEXTURE9 pTex );
-	void SetVertexDeclaration( LPDIRECT3DVERTEXDECLARATION9 VDecl );
-	void SetVertexShader( LPDIRECT3DVERTEXSHADER9 Shader );
-	void SetPixelShader( LPDIRECT3DPIXELSHADER9 Shader );
-	void SetVShaderConstTable( LPD3DXCONSTANTTABLE Table );
-	void SetPrimitiveType( D3DPRIMITIVETYPE PrimType );
-	void SetBlendState( BlendType const Blend);
-	void AdvanceDraw( Direct3DEngine * D3DEng, unsigned const Layer, unsigned const MgrIdx );
 };

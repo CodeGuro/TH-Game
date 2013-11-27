@@ -357,7 +357,7 @@ void natives::_Obj_SetTexture( script_engine * eng, size_t * argv )
 {
 	ObjMgr * objmgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
 	if( objmgr )
-		objmgr->SetTexture( eng->GetTexture( eng->getStringScriptData( argv[ 1 ] ) ) );
+		objmgr->pTexture = eng->GetTexture( eng->getStringScriptData( argv[ 1 ] ) );
 }
 void natives::_Obj_SetSpeed( script_engine * eng, size_t * argv )
 {
@@ -416,6 +416,35 @@ void natives::_Obj_SetScale( script_engine * eng, size_t * argv )
 	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
 	if( obj )
 		obj->SetScale( D3DXVECTOR3( eng->getRealScriptData( argv[ 1 ] ), eng->getRealScriptData( argv[ 2 ] ), 1.f ) );
+}
+void natives::_Obj_SetAutoDelete( script_engine * eng, size_t * argv )
+{
+	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( obj )
+		obj->FlagScreenDeletable( (int)eng->getBooleanScriptData( argv[ 1 ] ) );
+}
+void natives::_ObjFont_SetRect( script_engine * eng, size_t * argv )
+{
+	FontObject * obj = eng->GetFontObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( obj )
+	{
+		RECT r = { (UINT)eng->getRealScriptData( argv[ 1 ] ), (UINT)eng->getRealScriptData( argv[ 2 ] ),
+			(UINT)eng->getRealScriptData( argv[ 3 ] ), (UINT)eng->getRealScriptData( argv[ 4 ] ) };
+		obj->Rect = r;
+	}
+}
+void natives::_ObjFont_SetString( script_engine * eng, size_t * argv )
+{
+	FontObject * obj = eng->GetFontObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( obj )
+		obj->String = eng->getStringScriptData( argv[ 1 ] );
+}
+void natives::_ObjFont_SetColor( script_engine * eng, size_t * argv )
+{
+	FontObject * obj = eng->GetFontObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	if( obj )
+		obj->Color = D3DCOLOR_RGBA( (UINT)eng->getRealScriptData( argv[ 1 ] ), (UINT)eng->getRealScriptData( argv[ 2 ] ),
+			(UINT)eng->getRealScriptData( argv[ 3 ] ), (UINT)eng->getRealScriptData( argv[ 4 ] ) );
 }
 void natives::_ALPHA_BLEND( script_engine * eng, size_t * argv )
 {

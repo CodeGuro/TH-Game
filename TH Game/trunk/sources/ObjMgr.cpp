@@ -4,46 +4,6 @@
 ObjMgr::ObjMgr() : VertexCount( 0 ), PrimitiveType( D3DPT_TRIANGLELIST )
 {
 }
-void ObjMgr::SetVertexCount( unsigned const Count )
-{
-	VertexCount = Count;
-}
-void ObjMgr::SetTexture( LPDIRECT3DTEXTURE9 pTex )
-{
-	pTexture = pTex;
-};
-void ObjMgr::SetVertexDeclaration( LPDIRECT3DVERTEXDECLARATION9 VDecl )
-{
-	VDeclaration = VDecl;
-}
-void ObjMgr::SetVertexShader( LPDIRECT3DVERTEXSHADER9 Shader )
-{
-	VShader = Shader;
-}
-void ObjMgr::SetPixelShader( LPDIRECT3DPIXELSHADER9 Shader )
-{
-	PShader = Shader;
-}
-void ObjMgr::SetVShaderConstTable( LPD3DXCONSTANTTABLE Table )
-{
-	Constable = Table;
-}
-void ObjMgr::SetPrimitiveType( D3DPRIMITIVETYPE PrimType )
-{
-	PrimitiveType = PrimType;
-}
-void ObjMgr::SetVertexBufferIdx( unsigned const Idx )
-{
-	VertexBufferIdx = Idx;
-}
-void ObjMgr::SetObjBufferIdx( unsigned const Idx )
-{
-	ObjBufferIdx = Idx;
-}
-void ObjMgr::SetBlendState( BlendType const Blend )
-{
-	BlendState = Blend;
-}
 
 void Object::SetSpeed( float Speed )
 {

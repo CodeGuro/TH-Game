@@ -3,7 +3,6 @@
 #include <d3dx9.h>
 #include <vector>
 #include <map>
-#include <unordered_map>
 #include <string>
 #include <Windows.h>
 #include <DSound.h>
@@ -13,7 +12,7 @@
 
 enum ObjType
 {
-	ObjShot, ObjEffect
+	ObjShot, ObjEffect, ObjFont
 };
 
 struct ObjHandle
@@ -24,6 +23,7 @@ struct ObjHandle
 	unsigned ObjVector;
 	unsigned ObjVectorIdx;
 	unsigned VertexBuffer;
+	unsigned ObjFontIdx;
 	ObjType Type;
 };
 
@@ -32,16 +32,37 @@ struct Layer
 	vector< ObjMgr > vObjMgr;
 };
 
-struct VBuffer
-{
-	vector< Vertex > VertexBuffer;
-	ULONG RefCount;
-};
-
 struct D3DVBuffer
 {
 	D3DSmartPtr< LPDIRECT3DVERTEXBUFFER9 > Buffer;
 	ULONG BufferSize;
+};
+
+class VBufferMgr
+{
+private:
+	struct VBuffer
+	{
+		vector< Vertex > VertexBuffer;
+		ULONG RefCount;
+	};
+	vector< VBuffer > VertexBuffers;
+	vector< ULONG > GC;
+
+protected:
+	unsigned FetchVertexBuffer();
+	vector< Vertex > & GetVertexBuffer( unsigned Idx );
+	void AddRefVertexBuffer( unsigned Idx );
+	void DisposeVertexBuffer( unsigned Idx );
+};
+
+struct FontObject
+{
+	D3DSmartPtr< LPD3DXFONT > pFont;
+	std::string String;
+	RECT Rect;
+	DWORD Format;
+	D3DCOLOR Color;
 };
 
 struct WaveHeaderType
@@ -61,7 +82,7 @@ struct WaveHeaderType
 		unsigned long dataSize;
 };
 
-class Battery
+class Battery : private VBufferMgr
 {
 private:
 	D3DSmartPtr< LPDIRECT3D9 > d3d;
@@ -76,15 +97,15 @@ private:
 	D3DVBuffer PipelineVertexBuffer;
 	std::map< std::string, D3DSmartPtr< LPDIRECT3DTEXTURE9 > > mapTextures;
 	std::map< std::string, D3DSmartPtr< LPDIRECTSOUNDBUFFER8 > > mapSoundEffects;
+
 	vLayer_t vLayers;
 	vector< ShotData > Bullet_Templates;
 	vector< DelayData > Bullet_Delays;
+	vector< FontObject > vFontObjects;
 	vector< vector< Object > > vvObjects;
 	vector< unsigned > vvObjectsGC;
 	vector< ObjHandle > vObjHandles;
 	vector< unsigned > vObjHandlesGC;
-	vector< VBuffer > vVertexBuffers;
-	vector< unsigned > vVertexBuffersGC;
 	std::string ShotImagePath;
 
 protected:
@@ -95,7 +116,6 @@ protected:
 	vLayer_t & GetLayers();
 	LPDIRECT3DDEVICE9 & GetDevice();
 	LPDIRECT3D9 & GetD3D();
-	D3DVBuffer & GetPipelineVBuffer();
 	LPDIRECT3DVERTEXDECLARATION9 GetDefaultVDeclaration() const;
 	LPDIRECT3DVERTEXSHADER9 GetDefaultVShader() const;
 	LPDIRECT3DPIXELSHADER9 GetDefaultPShader() const;
@@ -121,6 +141,10 @@ protected:
 	void LoadSound( std::string const & pathname );
 	void PlaySound( std::string const & pathname );
 	void DeleteSound( std::string const & pathname );
+
+	//text
+	unsigned CreateFontObject();
+	FontObject * GetFontObject( unsigned HandleIdx );
 
 	//shot
 	unsigned CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed, FLOAT const direction, FLOAT const graphic );
@@ -151,7 +175,7 @@ protected:
 class Direct3DEngine : protected virtual Battery
 {
 public:
-	friend class ObjMgr;
+	//friend class ObjMgr;
 	Direct3DEngine();
 	/* We will probably not need move semantics
 	Direct3DEngine & operator = ( Direct3DEngine && source );
