@@ -100,7 +100,8 @@ private:
 
 	vLayer_t vLayers;
 	vector< ShotData > Bullet_Templates;
-	vector< DelayData > Bullet_Delays;
+	vector< unsigned > Bullet_TemplateOffsets;
+	//vector< DelayData > Bullet_Delays;
 	vector< FontObject > vFontObjects;
 	vector< vector< Object > > vvObjects;
 	vector< unsigned > vvObjectsGC;
@@ -150,10 +151,7 @@ protected:
 	unsigned CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed, FLOAT const direction, FLOAT const graphic );
 	void PushQuadShotBuffer( RECT const Quad, D3DCOLOR const Color );
 	void LoadShotImage( std::string const & pathname );
-	void CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT const & rect, D3DCOLOR color, DWORD flags, vector< vector< float > > const & AnimationData );
-	void CreateDelayShotData( unsigned ID, RECT const & rect, D3DCOLOR const color, FLOAT const Scale, ULONG const DelayFrames );
-	ShotData const & GetBulletTemplates( unsigned const graphic ) const;
-	unsigned GetDelayDataSize() const;
+	void CreateShotData( unsigned ID, BlendType blend, RECT const & rect, D3DCOLOR color, DWORD flags, vector< vector< float > > const & AnimationData );
 
 	//ObjEffect Functions
 	void ObjEffect_CreateVertex( unsigned HandleIdx, ULONG VertexCount );
@@ -163,6 +161,9 @@ protected:
 	void ObjEffect_SetRenderState( unsigned HandleIdx, BlendType BlendState );
 	void ObjEffect_SetPrimitiveType( unsigned HandleIdx, D3DPRIMITIVETYPE PrimitiveType );
 	void ObjEffect_SetLayer( unsigned HandleIdx, ULONG Layer );
+
+	//ObjShot Functions
+	void ObjShot_SetGraphic( unsigned HandleIdx, ULONG ID );
 
 	//misc
 	void DrawObjects();

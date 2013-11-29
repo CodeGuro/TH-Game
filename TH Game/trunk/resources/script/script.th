@@ -57,7 +57,7 @@ script_main main_script //main routine
 		Delay( x, y );
 		loop( looper )
 		{
-			CreateShot01( x, y, 2, a, rand_int(1,2) );
+			CreateShot01( x, y, 2, a, rand_int(2,3) );
 			a = a + 2 * PI / looper;
 		}
 
@@ -66,32 +66,32 @@ script_main main_script //main routine
 	{
 		let obj = Obj_Create( 5 );
 		LoadTexture( bulletTexture );
-		Obj_SetTexture( obj, bulletTexture );
+		ObjEffect_SetTexture( obj, bulletTexture );
 
-		Obj_CreateVertex( obj, 6 );
-		Obj_SetPrimitiveType( obj, PRIMITIVE_TRIANGLELIST );
-		Obj_SetRenderState( obj, ALPHA_BLEND );
+		ObjEffect_CreateVertex( obj, 6 );
+		ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLELIST );
+		ObjEffect_SetRenderState( obj, ALPHA_BLEND );
 
-		Obj_SetVertexUV( obj, 0, 32/256, 208/256 );
-		Obj_SetVertexUV( obj, 1, 64/256, 208/256 );
-		Obj_SetVertexUV( obj, 2, 32/256, 238/256 );
-		Obj_SetVertexUV( obj, 3, 64/256, 208/256 );
-		Obj_SetVertexUV( obj, 4, 64/256, 238/256 );
-		Obj_SetVertexUV( obj, 5, 32/256, 238/256 );
+		ObjEffect_SetVertexUV( obj, 0, 32/256, 208/256 );
+		ObjEffect_SetVertexUV( obj, 1, 64/256, 208/256 );
+		ObjEffect_SetVertexUV( obj, 2, 32/256, 238/256 );
+		ObjEffect_SetVertexUV( obj, 3, 64/256, 208/256 );
+		ObjEffect_SetVertexUV( obj, 4, 64/256, 238/256 );
+		ObjEffect_SetVertexUV( obj, 5, 32/256, 238/256 );
 
-		Obj_SetVertexXY( obj, 0, -16, -14 );
-		Obj_SetVertexXY( obj, 1, 16, -14 );
-		Obj_SetVertexXY( obj, 2, -16, 16 );
-		Obj_SetVertexXY( obj, 3, 16, -14 );
-		Obj_SetVertexXY( obj, 4, 16, 16 );
-		Obj_SetVertexXY( obj, 5, -16, 16 );
+		ObjEffect_SetVertexXY( obj, 0, -16, -14 );
+		ObjEffect_SetVertexXY( obj, 1, 16, -14 );
+		ObjEffect_SetVertexXY( obj, 2, -16, 16 );
+		ObjEffect_SetVertexXY( obj, 3, 16, -14 );
+		ObjEffect_SetVertexXY( obj, 4, 16, 16 );
+		ObjEffect_SetVertexXY( obj, 5, -16, 16 );
 
-		Obj_SetVertexColor( obj, 0, 255, 255, 255, 255 );
-		Obj_SetVertexColor( obj, 1, 255, 255, 255, 255 );
-		Obj_SetVertexColor( obj, 2, 255, 255, 255, 255 );
-		Obj_SetVertexColor( obj, 3, 255, 255, 255, 255 );
-		Obj_SetVertexColor( obj, 4, 255, 255, 255, 255 );
-		Obj_SetVertexColor( obj, 5, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 0, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 1, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 2, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 3, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 4, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 5, 255, 255, 255, 255 );
 
 		Obj_SetPosition( obj, x, y );
 		Obj_SetSpeed( obj, 0 );
@@ -100,7 +100,7 @@ script_main main_script //main routine
 		loop( 15 )
 		{
 			sca = sca - 1/7;
-			Obj_SetScale( obj, sca, sca );
+			ObjEffect_SetScale( obj, sca, sca );
 			yield;
 		}
 		Obj_Delete( obj );
@@ -120,35 +120,35 @@ script_main main_script //main routine
 	{
 		let obj = Obj_Create( 1 );
 		LoadTexture( stgframeTexture );
-		Obj_SetTexture( obj, stgframeTexture );
+		ObjEffect_SetTexture( obj, stgframeTexture );
 
-		Obj_CreateVertex( obj, 6 );
-		Obj_SetPrimitiveType( obj, PRIMITIVE_TRIANGLELIST );
-		Obj_SetRenderState( obj, ALPHA_BLEND );
+		ObjEffect_CreateVertex( obj, 6 );
+		ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLELIST );
+		ObjEffect_SetRenderState( obj, ALPHA_BLEND );
 
-		Obj_SetVertexUV( obj, 0, 0/1024, 0/512 );
-		Obj_SetVertexUV( obj, 1, 640/1024, 0/512 );
-		Obj_SetVertexUV( obj, 2, 0/1024, 480/512 );
-		Obj_SetVertexUV( obj, 3, 640/1024, 0/512 );
-		Obj_SetVertexUV( obj, 4, 640/1024, 480/512 );
-		Obj_SetVertexUV( obj, 5, 0/1024, 480/512 );
+		ObjEffect_SetVertexUV( obj, 0, 0/1024, 0/512 );
+		ObjEffect_SetVertexUV( obj, 1, 640/1024, 0/512 );
+		ObjEffect_SetVertexUV( obj, 2, 0/1024, 480/512 );
+		ObjEffect_SetVertexUV( obj, 3, 640/1024, 0/512 );
+		ObjEffect_SetVertexUV( obj, 4, 640/1024, 480/512 );
+		ObjEffect_SetVertexUV( obj, 5, 0/1024, 480/512 );
 
-		Obj_SetVertexXY( obj, 0, 0, 0 );
-		Obj_SetVertexXY( obj, 1, 640, 0 );
-		Obj_SetVertexXY( obj, 2, 0, 480 );
-		Obj_SetVertexXY( obj, 3, 640, 0 );
-		Obj_SetVertexXY( obj, 4, 640, 480 );
-		Obj_SetVertexXY( obj, 5, 0, 480 );
+		ObjEffect_SetVertexXY( obj, 0, 0, 0 );
+		ObjEffect_SetVertexXY( obj, 1, 640, 0 );
+		ObjEffect_SetVertexXY( obj, 2, 0, 480 );
+		ObjEffect_SetVertexXY( obj, 3, 640, 0 );
+		ObjEffect_SetVertexXY( obj, 4, 640, 480 );
+		ObjEffect_SetVertexXY( obj, 5, 0, 480 );
 
-		Obj_SetVertexColor( obj, 0, 255, 255, 255, 255 );
-		Obj_SetVertexColor( obj, 1, 255, 255, 255, 255 );
-		Obj_SetVertexColor( obj, 2, 255, 255, 255, 255 );
-		Obj_SetVertexColor( obj, 3, 255, 255, 255, 255 );
-		Obj_SetVertexColor( obj, 4, 255, 255, 255, 255 );
-		Obj_SetVertexColor( obj, 5, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 0, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 1, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 2, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 3, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 4, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 5, 255, 255, 255, 255 );
 
 		Obj_SetPosition( obj, 0, 0 );
-		Obj_SetVelocity( obj, 0.0, 0.0, 0 );
+		Obj_SetSpeed( obj, 0 );
 		while( !Obj_BeDeleted( obj ) )
 		{
 			yield;

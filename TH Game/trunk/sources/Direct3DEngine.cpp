@@ -503,7 +503,8 @@ unsigned Battery::CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed,
 		handle.Layer = 4;
 		handle.RefCount = 1;
 		/*Get ObjMgr from graphic*/
-		ShotData const & shot_data= Bullet_Templates[ (unsigned)graphic ];
+		unsigned const TemplateOffset = Bullet_TemplateOffsets[ (unsigned)graphic ];
+		ShotData const & shot_data= Bullet_Templates[ TemplateOffset ];
 		handle.ObjVector = (ULONG)shot_data.Render;
 		handle.ObjVectorIdx = vvObjects[ handle.ObjVector ].size();
 		vvObjects[ handle.ObjVector ].resize( 1 + handle.ObjVectorIdx );
@@ -516,23 +517,24 @@ unsigned Battery::CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed,
 		obj.FlagBullet( 1 );
 		obj.SetAngle( direction );
 		obj.SetScale( D3DXVECTOR3( 1, 1, 1 ) );
-		obj.VertexOffset= shot_data.VtxOffset;
 		obj.FlagCollidable( 1 );
 		obj.FlagScreenDeletable( 1 );
-		obj.FlagPixelPerfect( shot_data.Flags & 0x16 ? 1 : 0 );
+		obj.SetShotDataParams( shot_data, TemplateOffset );
 		return Result;
 	}
 	return -1;
 }
-void Battery::CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT const & rect, D3DCOLOR color, DWORD flags, vector< vector< float > > const & AnimationData )
+void Battery::CreateShotData( unsigned ID, BlendType blend, RECT const & rect, D3DCOLOR color, DWORD flags, vector< vector< float > > const & AnimationData )
 {
 	assert( GetLayers().size() > 4 );
 	ShotData shot_data;
+	if( Bullet_TemplateOffsets.size() <= ID )
+		Bullet_TemplateOffsets.resize( 1 + ID );
+	Bullet_TemplateOffsets[ ID ] = Bullet_Templates.size();
 	unsigned i = 0;
 	do
 	{
 		shot_data.VtxOffset = GetVertexBuffer( 0 ).size();
-		shot_data.Delay = delay;
 		shot_data.Flags = flags;
 		shot_data.Render = blend;
 		shot_data.NextShot = AnimationData.size() ? 1 + Bullet_Templates.size() - (( i < AnimationData.size() - 1 )? 0 : i + 1 ) : Bullet_Templates.size();
@@ -540,37 +542,19 @@ void Battery::CreateShotData( unsigned ID, BlendType blend, unsigned delay, RECT
 		if( AnimationData.size() )
 		{
 			shot_data.AnimationTime = (ULONG)AnimationData[ i ][ 0 ];
-			shot_data.Radius = (ULONG)pow( pow( AnimationData[ i ][ 3 ] - AnimationData[ i ][ 1 ], 2.f ) + pow( AnimationData[ i ][ 4 ] - AnimationData[ i ][ 2 ], 2.f ), 0.5f );
+			shot_data.Radius = pow( pow( AnimationData[ i ][ 3 ] - AnimationData[ i ][ 1 ], 2.f ) + pow( AnimationData[ i ][ 4 ] - AnimationData[ i ][ 2 ], 2.f ), 0.5f );
 			RECT r2 = { (ULONG)AnimationData[ i ][ 1 ], (ULONG)AnimationData[ i ][ 2 ], (ULONG)AnimationData[ i ][ 3 ], (ULONG)AnimationData[ i ][ 4 ] };
 			r = r2;
 		}
 		else
 		{
-			shot_data.AnimationTime = 0;
-			shot_data.Radius = (ULONG)pow( pow( (float)(rect.right - rect.left), 2.f ) + pow( (float)(rect.bottom - rect.top), 2.f ), 0.5f );
+			shot_data.AnimationTime = -1;
+			shot_data.Radius = pow( pow( (float)(rect.right - rect.left), 2.f ) + pow( (float)(rect.bottom - rect.top), 2.f ), 0.5f );
 			r = rect;
 		}
 		PushQuadShotBuffer( r, color );
 		Bullet_Templates.push_back( shot_data );
 	}while( ++i < AnimationData.size() );
-}
-void Battery::CreateDelayShotData( unsigned ID, RECT const & rect, D3DCOLOR const color, FLOAT const Scale, ULONG const DelayFrames )
-{
-	assert( GetLayers().size() > 4 );
-	ObjMgr & bullet_mgr = GetLayers()[ 4 ].vObjMgr[ 0 ];
-	bullet_mgr.VertexCount = 6;
-	if( ID >= Bullet_Delays.size() ) Bullet_Delays.resize( 1 + ID );
-	DelayData delaydata = { GetVertexBuffer( 0 ).size(), DelayFrames, Scale };
-	PushQuadShotBuffer( rect, color );
-	Bullet_Delays[ ID ] = delaydata;
-}
-ShotData const & Battery::GetBulletTemplates( unsigned const graphic ) const
-{
-	return Bullet_Templates[ graphic ];
-}
-unsigned Battery::GetDelayDataSize() const
-{
-	return Bullet_Delays.size();
 }
 void Battery::PushQuadShotBuffer( RECT const Quad, D3DCOLOR const Color )
 {
@@ -666,6 +650,25 @@ void Battery::ObjEffect_SetLayer( unsigned HandleIdx, ULONG Layer )
 	}
 }
 
+//ObjShot functions
+void Battery::ObjShot_SetGraphic( unsigned HandleIdx, ULONG ID )
+{
+	Object * pObj = GetObject( HandleIdx );
+	if( pObj && ID < Bullet_TemplateOffsets.size() && pObj->FlagBullet( -1 ) )
+	{
+		//create a new shot -> copy old shot to new shot with new ID -> release old handle -> copy new handle to new handle -> release new handle
+		ULONG BufferOffset = Bullet_TemplateOffsets[ ID ];
+		ShotData const & shot_data = Bullet_Templates[ BufferOffset ];
+		pObj->SetShotDataParams( shot_data, BufferOffset );
+		Object ObjCopy = *pObj;
+		unsigned ResHandle = CreateShot01( D3DXVECTOR2(), 1.f, 0.f, (FLOAT)ID );
+		*GetObject( ResHandle ) = *pObj;
+		ReleaseObject( HandleIdx );
+		vObjHandles[ HandleIdx ] = vObjHandles[ ResHandle ];
+		ReleaseObjHandle( ResHandle );
+	}
+}
+
 //misc
 void Battery::DrawObjects()
 {
@@ -697,6 +700,14 @@ void Battery::DrawObjects()
 
 				for( auto pObj = vObjects.begin(); pObj < vObjects.end(); )
 				{
+					if( pObj->FlagBullet( -1 ) )
+					{
+						if( !pObj->Time-- )
+						{
+							ULONG NextShot = Bullet_Templates[ pObj->BufferOffset ].NextShot;
+							pObj->SetShotDataParams( Bullet_Templates[ NextShot ], NextShot );
+						}
+					}
 					Vertex * src = &GetVertexBuffer( Objmgr->VertexBufferIdx )[ pObj->VertexOffset ];
 					D3DXMatrixTransformation( &mat, NULL, NULL, &pObj->scale, NULL, &pObj->orient, pObj->FlagPixelPerfect( -1 ) ? &D3DXVECTOR3( floor( pObj->position.x + 0.5f), floor( pObj->position.y + 0.5f), floor( pObj->position.z + 0.5f ) ) : &pObj->position );
 
@@ -819,7 +830,6 @@ void Direct3DEngine::ToggleWindowed()
 	AdjustWindowRect( &rec, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE, FALSE );
 	if( d3dpp.Windowed )
 		MoveWindow( d3dpp.hDeviceWindow, 100, 100, rec.right - rec.left, rec.bottom - rec.top, FALSE );
-	
 }
 void Direct3DEngine::RenderFrame( MSG const msg )
 {

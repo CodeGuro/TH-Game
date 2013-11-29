@@ -2,20 +2,10 @@
 
 ShotImage = GetCurrentScriptDirectory() ~ "etama.png"
 
-DelayData
-{
-	id = 0
-	frames = 10
-	scale = 1
-	rect = ( 0, 0, 16, 16 )
-	color = ( 255, 255, 255, 255 )
-}
-
 ShotData
 {
 	id = 0
 	render = ALPHA_BLEND
-	delay = 0
 	angular_velocity = 0
 	pixel_perfect = FALSE
 	rect = ( 16, 16, 32, 32 )
@@ -25,7 +15,6 @@ ShotData
 {
 	id = 1
 	render = ALPHA_BLEND
-	delay = 0
 	angular_velocity = 0
 	pixel_perfect = TRUE
 	rect = ( 64, 32, 80, 48 )
@@ -35,7 +24,6 @@ ShotData
 {
 	id = 2
 	render = ALPHA_BLEND
-	delay = 0
 	angular_velocity = 0
 	pixel_perfect = TRUE
 	rect = ( 48, 48, 64, 64 )
@@ -44,13 +32,14 @@ ShotData
 ShotData
 {
 	id = 3
-	render = ADDITIVE_BLEND
-	delay = 0
+	render = ALPHA_BLEND
 	AnimationData
 	{
-		animation_data = ( 16, 0, 0, 16, 16 )
-		animation_data = ( 16, 16, 0, 32, 16 )
-		animation_data = ( 16, 32, 0, 48, 16 )
-		animation_data = ( 16, 48, 0, 64, 16 )
+		animation_data = ( 16, 00, 16, 16, 32 )
+		animation_data = ( 16, 16, 16, 32, 32 )
+		animation_data = ( 16, 32, 16, 48, 32 )
+		animation_data = ( 16, 48, 16, 64, 32 )
+		animation_data = ( 16, 64, 16, 80, 32 )
+		animation_data = ( 16, 80, 16, 96, 32 )
 	}
 }

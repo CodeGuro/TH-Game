@@ -6,6 +6,7 @@
 #include <cassert>
 
 class Direct3DEngine;
+struct ShotData;
 
 struct Vertex
 {
@@ -22,12 +23,15 @@ enum BlendType
 struct Object
 {
 	D3DXVECTOR3 position;
-	D3DXVECTOR3 velocity; //this should perhaps also be un-normalized direction
+	D3DXVECTOR3 velocity;
 	D3DXVECTOR3 accel;
 	D3DXVECTOR3 scale;
 	D3DXQUATERNION orient;
 	D3DXQUATERNION orientvel;
+	ULONG BufferOffset;
 	ULONG VertexOffset;
+	ULONG Time;
+	FLOAT Radius;
 	DWORD flags;
 
 	void SetSpeed( float Speed );
@@ -41,6 +45,7 @@ struct Object
 	void SetRotationEx( D3DXVECTOR3 Axis, float Theta );
 	void SetRotationVelocity( float Theta );
 	void SetRotationVelocityEx( D3DXVECTOR3 Axis, float Theta );
+	void SetShotDataParams( ShotData const & Shot_Data, ULONG Buffer_Offset );
 
 	float GetSpeed() const;
 	float GetAngle() const;
@@ -59,19 +64,11 @@ struct Object
 struct ShotData
 {
 	ULONG VtxOffset;
-	ULONG Delay;
-	ULONG Radius;
+	FLOAT Radius;
 	ULONG AnimationTime;
 	BlendType Render;
 	DWORD Flags;
 	ULONG NextShot;
-};
-
-struct DelayData
-{
-	ULONG VtxOffset;
-	ULONG DelayFrames;
-	FLOAT Scale;
 };
 
 struct ObjMgr

@@ -1186,70 +1186,6 @@ void parser::parseShotScript( std::string const & scriptPath )
 		}while( lexicon.getToken() != tk_end );
 		lexicon = lexsave;
 	};
-	auto parseDelayData = [ & ]()->void
-	{
-		typedef parser::error error;
-		lexer lexsave = lexicon;
-		do
-		{
-			token tok = lexicon.getToken();
-			lexicon.advance();
-			if( tok != tk_word )
-				continue;
-			else if( lexicon.getWord() != "DelayData" )
-				continue;
-
-			float id = -1;
-			float scale = 1;
-			float delayframes = 10;
-			vector< float > rect;
-			vector< float > col;
-			if( lexicon.getToken() != tk_opencur )
-				raiseError( "\"{\" expected", error::er_syntax );
-			lexicon.advance();
-
-			while( lexicon.getToken() == tk_word )
-			{
-				std::string word = lexicon.getWord();
-				lexicon.advance();
-				if( word == "id" || word == "frames" || word == "scale" )
-				{
-					if( lexicon.getToken() != tk_assign )
-						raiseError( "\"=\" expected", error::er_syntax );
-					if( lexicon.advance() != tk_real )
-						raiseError( "id lexer::tk_real expected", error::er_syntax );
-					((word == "id")? id : ((word == "scale")? scale : delayframes) ) = lexicon.getReal();
-					lexicon.advance();
-				}
-				else if( word == "rect" || word == "color" )
-				{
-					if( lexicon.getToken() != tk_assign ) raiseError( "\"=\" expected", error::er_syntax );
-					if( lexicon.advance() != tk_lparen ) raiseError( "\"(\" expected", error::er_syntax );
-					for( unsigned u = 0; u < 4 && lexicon.advance() == tk_real; ++u )
-					{
-						word == "rect"? rect.push_back( lexicon.getReal() ) : col.push_back( lexicon.getReal() ); ;
-						if( lexicon.advance() != tk_comma )
-							break;
-					}
-					if( lexicon.getToken() != tk_rparen )
-						raiseError( "\")\" expected", error::er_syntax );
-					lexicon.advance();
-					if( rect.size() != 4 ) raiseError( std::string() + "\"" + word + "\" size expected to have 4 elements", error::er_syntax );
-				}
-
-			}
-
-			if( lexicon.getToken() != tk_closecur )
-				raiseError( "\"}\" expected", error::er_syntax );
-			lexicon.advance();
-
-			if( !CheckValidIdx( id ) ) raiseError( "\"id\" must be provided with a real number", error::er_syntax );
-			RECT r = { (ULONG)rect[ 0 ], (ULONG)rect[ 1 ], (ULONG)rect[ 2 ], (ULONG)rect[ 3 ] };
-			D3DCOLOR color = D3DCOLOR_RGBA( (UCHAR)col[ 0 ], (UCHAR)col[ 1 ], (UCHAR)col[ 2 ], (UCHAR)col[ 3 ] );
-			CreateDelayShotData( (ULONG)id, r, color, 1.f, 0 );
-		}while( lexicon.getToken() != tk_end );
-		lexicon = lexsave;
-	};
 	auto parseShotData = [ & ]()->void
 	{
 		typedef parser::error error;
@@ -1273,7 +1209,6 @@ void parser::parseShotScript( std::string const & scriptPath )
 				float rec[4] = { 0, 0, 0, 0 };
 				float col[4] = { 255, 255, 255, 255 };
 				vector< vector< float > > animation_data;
-				unsigned delay = 0;
 				DWORD flags = 0;
 
 				while( lexicon.getToken() == tk_word )
@@ -1382,16 +1317,6 @@ void parser::parseShotScript( std::string const & scriptPath )
 						if( lexicon.getToken() != tk_closecur )
 							raiseError( "\"}\" expected", error::er_syntax );
 					}
-					else if( lexicon.getWord() == "delay" )
-					{
-						if( lexicon.advance() != tk_assign )
-							raiseError( "\"=\" expected", error::er_syntax );
-						if( lexicon.advance() != tk_real )
-							raiseError( "lexer::tk_real expected", error::er_syntax );
-						delay = (unsigned)lexicon.getReal();
-						if( GetDelayDataSize() < 1 + delay ) raiseError( "No such delay ID exists", error::er_syntax );
-						lexicon.advance();
-					}
 					else if( lexicon.getWord() == "pixel_perfect" )
 					{
 						if( lexicon.advance() != tk_assign )
@@ -1413,7 +1338,7 @@ void parser::parseShotScript( std::string const & scriptPath )
 				lexicon.advance();
 				if( !CheckValidIdx( id ) ) raiseError( "\"id\" must be provided with a real number", error::er_syntax );
 				RECT r = { (ULONG)rec[ 0 ], (ULONG)rec[ 1 ], (ULONG)rec[ 2 ], (ULONG)rec[ 3 ] };
-				CreateShotData( id, render, delay, r, D3DCOLOR_RGBA( (UCHAR)col[ 0 ], (UCHAR)col[ 1 ], (UCHAR)col[ 2 ], (UCHAR)col[ 3 ] ), flags, animation_data );
+				CreateShotData( id, render, r, D3DCOLOR_RGBA( (UCHAR)col[ 0 ], (UCHAR)col[ 1 ], (UCHAR)col[ 2 ], (UCHAR)col[ 3 ] ), flags, animation_data );
 			}
 		} while( lexicon.getToken() != tk_end );
 		lexicon = lexsave;
@@ -1426,7 +1351,6 @@ void parser::parseShotScript( std::string const & scriptPath )
 			raiseError( "User shot data did not load", error::er_parser );
 		lexicon = lexer( scriptMgr.scriptString.c_str() );
 		parseShotImage();
-		parseDelayData();
 		parseShotData();
 	}
 	catch( error const & err )
@@ -1489,20 +1413,22 @@ parser::parser()
 		{ "Obj_Delete", &natives::_Obj_Delete, 1 },
 		{ "Obj_BeDeleted", &natives::_Obj_BeDeleted, 1 },
 		{ "Obj_SetPosition", &natives::_Obj_SetPosition, 3 },
-		{ "Obj_SetTexture", &natives::_Obj_SetTexture, 2 },
+		{ "Obj_SetPosition3D", &natives::_Obj_SetPosition3D, 4 },
 		{ "Obj_SetSpeed", &natives::_Obj_SetSpeed, 2 },
 		{ "Obj_SetAcceleration", &natives::_Obj_SetAcceleration, 4 },
 		{ "Obj_SetAngle", &natives::_Obj_SetAngle, 2 },
 		{ "Obj_SetVelocity", &natives::_Obj_SetVelocity, 4 },
-		{ "Obj_CreateVertex", &natives::_Obj_CreateVertex, 2 },
-		{ "Obj_SetPrimitiveType", &natives::_Obj_SetPrimitiveType, 2 },
-		{ "Obj_SetRenderState", &natives::_Obj_SetRenderState, 2 },
-		{ "Obj_SetVertexUV", &natives::_Obj_SetVertexUV, 4 },
-		{ "Obj_SetVertexXY", &natives::_Obj_SetVertexXY, 4 },
-		{ "Obj_SetVertexColor", &natives::_Obj_SetVertexColor, 6 },
-		{ "Obj_SetLayer", &natives::_Obj_SetLayer, 2 },
-		{ "Obj_SetScale", &natives::_Obj_SetScale, 3 },
 		{ "Obj_SetAutoDelete", &natives::_Obj_SetAutoDelete, 2 },
+		{ "ObjEffect_SetTexture", &natives::_ObjEffect_SetTexture, 2 },
+		{ "ObjEffect_CreateVertex", &natives::_ObjEffect_CreateVertex, 2 },
+		{ "ObjEffect_SetPrimitiveType", &natives::_ObjEffect_SetPrimitiveType, 2 },
+		{ "ObjEffect_SetRenderState", &natives::_ObjEffect_SetRenderState, 2 },
+		{ "ObjEffect_SetVertexUV", &natives::_ObjEffect_SetVertexUV, 4 },
+		{ "ObjEffect_SetVertexXY", &natives::_ObjEffect_SetVertexXY, 4 },
+		{ "ObjEffect_SetVertexColor", &natives::_ObjEffect_SetVertexColor, 6 },
+		{ "ObjEffect_SetLayer", &natives::_ObjEffect_SetLayer, 2 },
+		{ "ObjEffect_SetScale", &natives::_ObjEffect_SetScale, 3 },
+		{ "ObjShot_SetGraphic", &natives::_ObjShot_SetGraphic, 2 },
 		{ "ObjFont_SetRect", &natives::_ObjFont_SetRect, 5 },
 		{ "ObjFont_SetString", &natives::_ObjFont_SetString, 2 },
 		{ "ObjFont_SetColor", &natives::_ObjFont_SetColor, 5 },

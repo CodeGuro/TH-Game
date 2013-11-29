@@ -62,6 +62,14 @@ void Object::Advance()
 		position += velocity += accel;
 	orient = FlagPixelPerfect( - 1 )? D3DXQUATERNION( 0, 0, 0, 1 ) : orient * orientvel;
 }
+void Object::SetShotDataParams( ShotData const & Shot_Data, ULONG Buffer_Offset )
+{
+	BufferOffset = Buffer_Offset;
+	VertexOffset = Shot_Data.VtxOffset;
+	Time = Shot_Data.AnimationTime;
+	Radius = Shot_Data.Radius;
+	FlagPixelPerfect( Shot_Data.Flags & 0x10 ? 1 : 0 );
+}
 bool Object::FlagMotion( int flag )
 {
 	switch( flag )
