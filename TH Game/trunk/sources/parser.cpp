@@ -656,6 +656,8 @@ size_t parser::getBlockIndex()
 }
 void parser::parseScript( std::string const & scriptPath )
 {
+	if( mappedMainScripts.find( scriptPath ) != mappedMainScripts.end() )
+		return;
 	try
 	{
 		vecScope.resize( 1 );

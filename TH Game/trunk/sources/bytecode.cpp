@@ -299,7 +299,7 @@ void natives::_CreateEnemyFromScript( script_engine * eng, size_t * argv )
 void natives::_CreateEnemyFromFile( script_engine * eng, size_t * argv )
 {
 	std::string scriptPath = eng->getStringScriptData( argv[ 0 ] );
-	eng->parseScriptFromFile( scriptPath );
+	eng->parseScript( scriptPath );
 	size_t scriptIndex;
 	if( CheckValidIdx( (scriptIndex = eng->findScriptFromFile( scriptPath )) ) )
 	{

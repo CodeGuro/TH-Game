@@ -23,6 +23,7 @@ public:
 class inventory : protected script_type_manager, protected virtual Battery
 {
 	friend class script_engine;
+	friend class parser;
 private:
 	vector< script_data > vecScriptData;
 	vector< script_environment > vecScriptEnvironment;

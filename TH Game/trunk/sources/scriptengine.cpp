@@ -38,7 +38,7 @@ void script_engine::start()
 		MessageBox( NULL, "File not selected", "script_engine::start", NULL );
 		return;
 	}
-	parseScriptFromFile( scriptPath );
+	parseScript( scriptPath );
 	if( error ) return;
 	size_t scriptIdx = findScriptFromFile( getCurrentScriptPath() );
 	if( !CheckValidIdx( scriptIdx ) ) return;
@@ -120,26 +120,6 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 
 	currentRunningMachine = prevMachine;
 }
-void script_engine::parseScriptFromFile( std::string const & scriptPath )
-{
-	try
-	{
-		if( inventory::mappedMainScripts.find( scriptPath ) == inventory::mappedMainScripts.end() )
-			parseScript( scriptPath );
-	}
-	catch( ... )
-	{
-	}
-}
 script_engine::~script_engine()
 {
-}
-
-//script engine - miscellanious functions
-void script_engine::raiseError( std::string const errMsg )
-{
-	errorMessage = errMsg;
-	error = true;
-	MessageBox( NULL, errorMessage.c_str(), "script_engine", NULL );
-	throw;
 }

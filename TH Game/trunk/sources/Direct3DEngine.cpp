@@ -5,6 +5,8 @@
 #include <cassert>
 #include <MMSystem.h>
 
+extern const std::string DefaultShader;
+
 unsigned VBufferMgr::FetchVertexBuffer()
 {
 	unsigned res;
@@ -108,7 +110,7 @@ Battery::Battery( HWND const hWnd ) : d3d( Direct3DCreate9( D3D_SDK_VERSION ) )
 
 	if( !pDefault3DVShader && !pDefaultConstable )
 	{
-		if( D3D_OK != D3DXCompileShaderFromFile( "Default3D.vs", NULL, NULL, "vs_main", "vs_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, &pDefaultConstable ) )
+		if( D3D_OK != D3DXCompileShader( DefaultShader.c_str(), DefaultShader.size(), NULL, NULL, "vs_main", "vs_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, &pDefaultConstable ) )
 			MessageBox( NULL, pshadererrbuff? (LPCSTR)pshadererrbuff->GetBufferPointer() : "Vertex Shader Compiler Error", "DX Shader Error", NULL );
 		GetDevice()->CreateVertexShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &pDefault3DVShader );
 		pshaderbuff->Release();
@@ -116,7 +118,7 @@ Battery::Battery( HWND const hWnd ) : d3d( Direct3DCreate9( D3D_SDK_VERSION ) )
 	}
 	if( !pDefault3DPShader )
 	{
-		if( D3D_OK != D3DXCompileShaderFromFile( "Default3D.ps", NULL, NULL, "ps_main", "ps_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, NULL ) )
+		if( D3D_OK != D3DXCompileShader( DefaultShader.c_str(), DefaultShader.size(), NULL, NULL, "ps_main", "ps_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, NULL ) )
 			MessageBox( NULL, pshadererrbuff? (LPCSTR)pshadererrbuff->GetBufferPointer() : "Pixel Shader Compiler Error", "DX Shader Error", NULL );	
 		GetDevice()->CreatePixelShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &pDefault3DPShader );
 		pshaderbuff->Release();

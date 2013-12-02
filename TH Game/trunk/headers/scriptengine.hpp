@@ -23,7 +23,6 @@ private:
 	size_t currentRunningMachine;
 
 	void callSub( size_t machineIndex, script_container::sub AtSub );
-	void raiseError( std::string const errorMsg );
 public:
 	script_engine();
 	script_engine( script_engine const & source );
@@ -32,5 +31,4 @@ public:
 	void cleanEngine(); //remove all cache
 	void start();
 	bool advance(); //true if finished (i.e. no script executers left to run)
-	void parseScriptFromFile( std::string const & scriptPath );
 };

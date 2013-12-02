@@ -102,6 +102,7 @@
     <ClCompile Include="trunk\sources\parser.cpp" />
     <ClCompile Include="trunk\sources\scriptengine.cpp" />
     <ClCompile Include="trunk\sources\scriptmachine.cpp" />
+    <ClCompile Include="trunk\sources\Shaders.cpp" />
     <ClCompile Include="trunk\sources\WinMain.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
