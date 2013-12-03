@@ -332,7 +332,7 @@ void natives::_DeleteSound( script_engine * eng, size_t * argv )
 }
 void natives::_Obj_Create( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->fetchScriptData( (size_t)eng->getRealScriptData( argv[ 0 ] ) );
+	size_t tmp = eng->fetchScriptData( (size_t)eng->getRealScriptData( argv[ 0 ] ), eng->currentRunningMachine );
 	eng->scriptDataAssign( argv[ 0 ], tmp );
 	eng->releaseScriptData( tmp );
 }

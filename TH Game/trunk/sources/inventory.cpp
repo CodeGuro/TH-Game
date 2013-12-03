@@ -175,14 +175,24 @@ size_t inventory::fetchScriptData( std::string const & string )
 		getScriptData( index ).vec.push_back( fetchScriptData( string[i] ) );
 	return index;
 }
-size_t inventory::fetchScriptData( size_t objParam )
+size_t inventory::fetchScriptData( size_t objParam, size_t machineIdx )
 {
 	//let objParam be the object type, 4 = bullet, 5 = effect
 	size_t index;
 	script_data & data = getScriptData( index = fetchScriptData() );
-	data.objIndex = CreateObject( (unsigned short)objParam );
+	auto const objIdx = CreateObject( (unsigned short)objParam );
+	data.objIndex = objIdx;
 	data.type = getObjectType();
 
+	if( CheckValidIdx( machineIdx ) )
+	{
+		auto const objvector = getScriptMachine( machineIdx ).getObjectVectorIndex();
+		if( CheckValidIdx( objvector ) )
+		{
+			AddRefObjHandle( objIdx );
+			vvecObjects[ objvector ].push_back( objIdx );
+		}
+	}
 	return index;
 }
 size_t inventory::fetchScriptData( D3DPRIMITIVETYPE primType )
@@ -205,12 +215,12 @@ script_data & inventory::getScriptData( size_t index )
 {
 	return vecScriptData[ index ];
 }
-void inventory::addRefScriptData( size_t index ) //interface function
+void inventory::addRefScriptData( size_t index )
 {
 	if( CheckValidIdx( index ) )
 		++getScriptData( index ).refCount;
 }
-void inventory::releaseScriptData( size_t & index ) //interface function
+void inventory::releaseScriptData( size_t & index )
 {
 	if( CheckValidIdx( index ) )
 	{
@@ -218,7 +228,7 @@ void inventory::releaseScriptData( size_t & index ) //interface function
 		if( !(--dat.refCount) )
 		{
 			for( unsigned i = 0; i < dat.vec.size(); ++i )
-				releaseScriptData( dat.vec[i] );
+				releaseScriptData( dat.vec[ i ] );
 			dat.vec.resize( 0 );
 			vecScriptDataGarbage.push_back( index );
 			if( dat.type.get_kind() == getObjectType().get_kind() )
@@ -472,4 +482,34 @@ void inventory::releaseScriptMachine( size_t & index )
 void inventory::setQueueScriptMachine( script_queue const queue )
 {
 	vecQueuedScripts.push_back( queue );
+}
+size_t inventory::fetchObjectVector()
+{
+	size_t res;
+	if( vvecObjectsGarbage.size() )
+	{
+		res = vvecObjectsGarbage.back();
+		vvecObjectsGarbage.pop_back();
+	}
+	else
+	{
+		res = vvecObjects.size();
+		vvecObjects.resize( 1 + res );
+	}
+	return res;
+}
+void inventory::releaseObjectVector( size_t & index )
+{
+	if( !CheckValidIdx( index ) )
+		return;
+	auto & objvec = vvecObjects[ index ];
+	unsigned s = objvec.size();
+	for( unsigned u = 0; u < s; ++u )
+	{
+		ReleaseObject( objvec[ u ] );
+		ReleaseObjHandle( objvec[ u ] );
+	}
+	objvec.resize( 0 );
+	vvecObjectsGarbage.push_back( index );
+	index = -1;
 }

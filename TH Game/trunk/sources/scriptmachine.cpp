@@ -7,6 +7,7 @@ void script_machine::initialize( script_engine & eng, size_t script_index )
 {
 	assert( !threads.size() );
 	current_script_index = script_index;
+	object_vector_index = eng.fetchObjectVector();
 }
 bool script_machine::advance( script_engine & eng )
 {
@@ -211,14 +212,19 @@ bool script_machine::advance( script_engine & eng )
 }
 void script_machine::clean( script_engine & eng )
 {
+	if( !threads.size() )
+		return;
+	
+	current_thread_index = threads.size() - 1;
 	do
 		eng.getScriptEnvironment( threads[ current_thread_index ] ).codeIndex = -1;
 	while( !advance( eng ) );
 	eng.releaseScriptEnvironment( threads[ current_thread_index ] );
 	threads.pop_back();
-
+	eng.releaseObjectVector( object_vector_index );
 	current_script_index = -1;
 	current_thread_index = -1;
+	object_vector_index = -1;
 	assert( !threads.size() );
 }
 bool script_machine::isOperable()
@@ -228,4 +234,8 @@ bool script_machine::isOperable()
 size_t script_machine::getScriptIndex() const
 {
 	return current_script_index;
+}
+size_t script_machine::getObjectVectorIndex() const
+{
+	return object_vector_index;
 }

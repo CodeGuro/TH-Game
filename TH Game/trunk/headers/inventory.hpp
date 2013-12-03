@@ -32,6 +32,8 @@ private:
 	vector< size_t > vecScriptDataGarbage;
 	vector< size_t > vecRoutinesGabage;
 	vector< size_t > vecMachinesGarbage;
+	vector< vector< size_t > > vvecObjects;
+	vector< size_t > vvecObjectsGarbage;
 	vector< script_container > vecScripts;
 	vector< std::string > vecScriptDirectories;
 	std::map< std::string, size_t > mappedScripts;
@@ -47,7 +49,7 @@ protected:
 	size_t fetchScriptData( char character );
 	size_t fetchScriptData( bool boolean );
 	size_t fetchScriptData( std::string const & string );
-	size_t fetchScriptData( size_t objParam );
+	size_t fetchScriptData( size_t objParam, size_t MachineIdx );
 	size_t fetchScriptData( D3DPRIMITIVETYPE primType );
 	size_t fetchScriptData( BlendType blend );
 	script_data & getScriptData( size_t index );
@@ -71,6 +73,8 @@ protected:
 	script_machine & getScriptMachine( size_t index );
 	void setQueueScriptMachine( script_queue const queue );
 	void releaseScriptMachine( size_t & index );
+	size_t fetchObjectVector();
+	void releaseObjectVector( size_t & index );
 	size_t getBlockFromScript( std::string const & filePath, std::string const & scriptName );
 	void registerScript( std::string const scriptName );
 	void registerMainScript( std::string const scriptPath, std::string const scriptName );

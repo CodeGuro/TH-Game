@@ -19,7 +19,7 @@ script_main main_script //main routine
 		LoadSound( sound );
 		STGFrame();
 		Task();
-		Font();
+		CreateEnemyFromScript( "youkai" );
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{
@@ -105,17 +105,6 @@ script_main main_script //main routine
 		}
 		Obj_Delete( obj );
 	}
-	task Font()
-	{
-		let obj = Obj_Create( 7 );
-		ObjFont_SetString( obj, "ObjFont Success!" );
-		ObjFont_SetColor( obj, 255, 255, 255, 255 );
-		ObjFont_SetRect( obj, 200, 200, 400, 400 );
-		while( !Obj_BeDeleted( obj ) )
-		{
-			yield;
-		}
-	}
 	task STGFrame()
 	{
 		let obj = Obj_Create( 1 );
@@ -164,12 +153,35 @@ function wait( let v )
 }
 script_enemy youkai
 {
+	let obj;
 	@Initialize
 	{
-		print( "youkai got called!" );
+		FontTask();
 	}
 	@MainLoop
 	{
-		print( "youkai advances!" );
+		yield;
+	}
+	@Finalize
+	{
+		yield;
+		Obj_Delete( obj );
+	}
+	task FontTask()
+	{
+		Font( 200, 200 );
+		loop( 200 ){ yield; }
+		QueueScriptTermination();
+	}
+	task Font( let x, let y )
+	{
+		obj = Obj_Create( 7 );
+		ObjFont_SetString( obj, "ObjFont Success!" );
+		ObjFont_SetColor( obj, 255, 255, 255, 255 );
+		ObjFont_SetRect( obj, x, y, x + 200, y + 200 );
+		while( true )
+		{
+			yield;
+		}
 	}
 }
