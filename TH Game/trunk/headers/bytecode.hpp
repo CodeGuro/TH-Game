@@ -166,7 +166,7 @@ private:
 	static void _atan2( script_engine * eng, size_t * argv );
 	static void _CreateEnemyFromScript( script_engine * eng, size_t * argv );
 	static void _CreateEnemyFromFile( script_engine * eng, size_t * argv );
-	static void _QueueScriptTermination( script_engine * eng, size_t * argv );
+	static void _TerminateScript( script_engine * eng, size_t * argv );
 	static void _GetCurrentScriptDirectory( script_engine * eng, size_t * argv );
 	static void _LoadSound( script_engine * eng, size_t * argv );
 	static void _PlaySound( script_engine * eng, size_t * argv );

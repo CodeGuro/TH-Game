@@ -31,7 +31,6 @@ private:
 	vector< script_machine > vecMachines;
 	vector< size_t > vecScriptDataGarbage;
 	vector< size_t > vecRoutinesGabage;
-	vector< size_t > vecMachinesGarbage;
 	vector< vector< size_t > > vvecObjects;
 	vector< size_t > vvecObjectsGarbage;
 	vector< script_container > vecScripts;
@@ -39,7 +38,6 @@ private:
 	std::map< std::string, size_t > mappedScripts;
 	std::map< std::string, size_t > mappedMainScripts;
 	std::map< std::string, size_t > mappedShotScripts;
-	vector< script_queue > vecQueuedScripts;
 
 protected:
 	size_t fetchBlock();
@@ -71,7 +69,6 @@ protected:
 	void releaseScriptEnvironment( size_t & index );
 	size_t fetchScriptMachine();
 	script_machine & getScriptMachine( size_t index );
-	void setQueueScriptMachine( script_queue const queue );
 	void releaseScriptMachine( size_t & index );
 	size_t fetchObjectVector();
 	void releaseObjectVector( size_t & index );

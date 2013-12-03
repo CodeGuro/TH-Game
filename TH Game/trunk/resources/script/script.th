@@ -171,7 +171,7 @@ script_enemy youkai
 	{
 		Font( 200, 200 );
 		loop( 200 ){ yield; }
-		QueueScriptTermination();
+		TerminateScript();
 	}
 	task Font( let x, let y )
 	{

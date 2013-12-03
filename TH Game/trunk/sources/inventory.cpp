@@ -457,16 +457,8 @@ void inventory::releaseScriptEnvironment( size_t & index )
 size_t inventory::fetchScriptMachine()
 {
 	size_t index;
-	if( vecMachinesGarbage.size() )
-	{
-		index = vecMachinesGarbage.back();
-		vecMachinesGarbage.pop_back();
-	}
-	else
-	{
-		index = vecMachines.size();
-		vecMachines.resize( 1 + index );
-	}
+	index = vecMachines.size();
+	vecMachines.resize( 1 + index );
 	return index;
 }
 script_machine & inventory::getScriptMachine( size_t index )
@@ -475,13 +467,8 @@ script_machine & inventory::getScriptMachine( size_t index )
 }
 void inventory::releaseScriptMachine( size_t & index )
 {
-	if( CheckValidIdx( index ) )
-		vecMachinesGarbage.push_back( index );
+	vecMachines.erase( vecMachines.begin() + index );
 	index = -1;
-}
-void inventory::setQueueScriptMachine( script_queue const queue )
-{
-	vecQueuedScripts.push_back( queue );
 }
 size_t inventory::fetchObjectVector()
 {

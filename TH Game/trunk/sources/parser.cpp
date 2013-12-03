@@ -1406,7 +1406,7 @@ parser::parser()
 		{ "atan2", &natives::_atan2, 2 },
 		{ "CreateEnemyFromScript", &natives::_CreateEnemyFromScript, 1 },
 		{ "CreateEnemyFromFile", &natives::_CreateEnemyFromFile, 1 },
-		{ "QueueScriptTermination", &natives::_QueueScriptTermination, 0 },
+		{ "TerminateScript", &natives::_TerminateScript, 0 },
 		{ "GetCurrentScriptDirectory", &natives::_GetCurrentScriptDirectory, 0 },
 		{ "LoadSound", &natives::_LoadSound, 1 },
 		{ "PlaySound", &natives::_PlaySound, 1 },

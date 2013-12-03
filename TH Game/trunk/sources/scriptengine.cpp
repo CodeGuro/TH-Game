@@ -5,6 +5,14 @@
 #include <assert.h>
 #include <Windows.h>
 
+//exception
+eng_exception::eng_exception() : throw_reason( eng_error )
+{
+}
+eng_exception::eng_exception( Reason const r ) : throw_reason( r )
+{
+}
+
 //script engine - public functions, called from the outside
 script_engine::script_engine() : error( false ), currentRunningMachine( -1 )
 {
@@ -48,26 +56,26 @@ void script_engine::start()
 }
 bool script_engine::advance()
 {
-	while( inventory::vecQueuedScripts.size() )
+	unsigned u = 0;
+	while( !error && u < inventory::vecMachines.size() )
 	{
-		switch( inventory::vecQueuedScripts.front().queueType )
+		try
 		{
-		case script_queue::Initialization: //script index
-			getScriptMachine( fetchScriptMachine() ).initialize( *this, inventory::vecQueuedScripts.front().index ); 
-			break;
-		case script_queue::Termination: //machine index
-			callSub( inventory::vecQueuedScripts.front().index, script_container::AtFinalize );
-			getScriptMachine( inventory::vecQueuedScripts.front().index ).clean( *this );
-			releaseScriptMachine( inventory::vecQueuedScripts.front().index );
-			break;
+			for(; u < inventory::vecMachines.size(); ++u )
+			{
+				if( error ) return false;
+				callSub( u, script_container::AtMainLoop );
+			}
 		}
-		inventory::vecQueuedScripts.erase( inventory::vecQueuedScripts.begin() );
-	}
-	for( unsigned u = 0; u < inventory::vecMachines.size(); ++u )
-	{
-		if( error ) return false;
-		if( inventory::vecMachines[ u ].isOperable() )
-			callSub( u, script_container::AtMainLoop );
+		catch( eng_exception const & e )
+		{
+			switch( e.throw_reason )
+			{
+			case eng_exception::eng_error:
+				error = true;
+				break;
+			}
+		}
 	}
 	return true;
 }
@@ -87,7 +95,7 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 		getScriptEnvironment( m.threads[ 0 ] ).parentIndex = -1;
 		getScriptEnvironment( m.threads[ 0 ] ).hasResult = false;
 		m.current_thread_index = 0;
-		while( !m.advance( *this ) );
+		while( !getScriptMachine( machineIndex ).advance( *this ) );
 		callSub( machineIndex, script_container::AtInitialize );
 		currentRunningMachine = prevMachine;
 		return;
@@ -115,10 +123,14 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 		e.parentIndex = m.threads[ m.current_thread_index ];
 		e.hasResult = 0;
 		m.threads[ m.current_thread_index ] = calledEnv;
-		while( !m.advance( *this ) );
+		while( !getScriptMachine( machineIndex ).advance( *this ) );
 	}
 
 	currentRunningMachine = prevMachine;
+}
+void script_engine::raise_exception( eng_exception const & eng_except )
+{
+	throw eng_except;
 }
 script_engine::~script_engine()
 {

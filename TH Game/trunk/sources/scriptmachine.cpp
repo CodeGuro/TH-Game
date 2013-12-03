@@ -85,6 +85,8 @@ bool script_machine::advance( script_engine & eng )
 				env.stack.push_back( -1 );
 				unsigned popCount = current_code.argc + (current_code.command != vc_callFunctionPush ? 1 : 0 );
 				b.nativeCallBack( &eng, &env.stack[ env.stack.size() - ( 1 + current_code.argc ) ] );
+				script_machine & current_machine = eng.getScriptMachine( eng.currentRunningMachine );
+				script_environment & env = eng.getScriptEnvironment( current_machine.threads[ current_machine.current_thread_index ] ); //in case of re-allocation
 				for( unsigned u = 0; u < popCount; ++ u )
 				{
 					eng.releaseScriptData( env.stack.back() );
@@ -226,10 +228,6 @@ void script_machine::clean( script_engine & eng )
 	current_thread_index = -1;
 	object_vector_index = -1;
 	assert( !threads.size() );
-}
-bool script_machine::isOperable()
-{
-	return CheckValidIdx( current_script_index );
 }
 size_t script_machine::getScriptIndex() const
 {

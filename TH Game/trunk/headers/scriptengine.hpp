@@ -7,7 +7,16 @@
 #include "parser.hpp"
 #include "Direct3DEngine.hpp"
 
-/*manages all script-related things*/
+struct eng_exception
+{
+	enum Reason
+	{
+		eng_error, finalizing_machine
+	};
+	Reason throw_reason;
+	eng_exception();
+	eng_exception( Reason const r );
+};
 
 class script_engine : protected virtual inventory, private parser
 {
@@ -31,4 +40,5 @@ public:
 	void cleanEngine(); //remove all cache
 	void start();
 	bool advance(); //true if finished (i.e. no script executers left to run)
+	void raise_exception( eng_exception const & eng_except );
 };

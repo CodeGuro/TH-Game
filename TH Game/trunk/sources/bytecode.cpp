@@ -292,8 +292,9 @@ void natives::_CreateEnemyFromScript( script_engine * eng, size_t * argv )
 	size_t scriptIndex = eng->findScript( eng->getStringScriptData( argv[ 0 ] ) );
 	if( CheckValidIdx( scriptIndex ) )
 	{
-		script_queue sq = { script_queue::Initialization, scriptIndex };
-		eng->setQueueScriptMachine( sq );
+		size_t new_machine = eng->fetchScriptMachine();
+		eng->getScriptMachine( new_machine ).initialize( *eng, scriptIndex );
+		eng->callSub( new_machine, script_container::AtInitialize );
 	}
 }
 void natives::_CreateEnemyFromFile( script_engine * eng, size_t * argv )
@@ -303,14 +304,17 @@ void natives::_CreateEnemyFromFile( script_engine * eng, size_t * argv )
 	size_t scriptIndex;
 	if( CheckValidIdx( (scriptIndex = eng->findScriptFromFile( scriptPath )) ) )
 	{
-		script_queue sq = { script_queue::Initialization, scriptIndex };
-		eng->setQueueScriptMachine( sq );
+		size_t new_machine = eng->fetchScriptMachine();
+		eng->getScriptMachine( new_machine ).initialize( *eng, scriptIndex );
+		eng->callSub( new_machine, script_container::AtInitialize );
 	}
 }
-void natives::_QueueScriptTermination( script_engine * eng, size_t * argv )
+void natives::_TerminateScript( script_engine * eng, size_t * argv )
 {
-	script_queue const queue = { script_queue::Termination, eng->currentRunningMachine };
-	eng->setQueueScriptMachine( queue );
+	eng->callSub( eng->currentRunningMachine, script_container::AtFinalize );
+	eng->getScriptMachine( eng->currentRunningMachine ).clean( *eng );
+	eng->releaseScriptMachine( eng->currentRunningMachine );
+	eng->raise_exception( eng_exception::finalizing_machine );
 }
 void natives::_GetCurrentScriptDirectory( script_engine * eng, size_t * argv )
 {

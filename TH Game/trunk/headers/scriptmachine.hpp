@@ -17,7 +17,6 @@ public:
 	bool advance( script_engine & engine ); //returns 1 when finished
 	void initialize( script_engine & engine, size_t script_index );
 	void clean( script_engine & engine );
-	bool isOperable();
 	size_t getScriptIndex() const;
 	size_t getObjectVectorIndex() const;
 };
