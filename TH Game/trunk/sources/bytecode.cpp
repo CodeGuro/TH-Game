@@ -33,6 +33,9 @@ script_data::script_data( bool boolean, size_t elementIndex ) : real( boolean? 1
 script_data::script_data( size_t objIndex, size_t elementIndex ) : objIndex(objIndex), type(type_data::tk_object, elementIndex)
 {
 }
+script_data::script_data( ObjType typeobj, size_t elementIndex ) : objtype(typeobj), type( type_data::tk_misc, elementIndex )
+{
+}
 
 code::code() : command( vc_invalid )
 {
@@ -239,6 +242,27 @@ void natives::_PI( script_engine * eng, size_t * argv )
 	eng->scriptDataAssign( argv[0], tmp );
 	eng->releaseScriptData( tmp );
 }
+void natives::_OBJ_SHOT( script_engine * eng, size_t * argv )
+{
+	assert( !CheckValidIdx( argv[ 0 ] ) );
+	size_t tmp = eng->fetchScriptData( ObjShot );
+	eng->scriptDataAssign( argv[0], tmp );
+	eng->releaseScriptData( tmp );
+}
+void natives::_OBJ_EFFECT( script_engine * eng, size_t * argv )
+{
+	assert( !CheckValidIdx( argv[ 0 ] ) );
+	size_t tmp = eng->fetchScriptData( ObjEffect );
+	eng->scriptDataAssign( argv[0], tmp );
+	eng->releaseScriptData( tmp );
+}
+void natives::_OBJ_FONT( script_engine * eng, size_t * argv )
+{
+	assert( !CheckValidIdx( argv[ 0 ] ) );
+	size_t tmp = eng->fetchScriptData( ObjFont );
+	eng->scriptDataAssign( argv[0], tmp );
+	eng->releaseScriptData( tmp );
+}
 void natives::_increment( script_engine * eng, size_t * argv )
 {
 	size_t tmp = eng->fetchScriptData( 1.f + eng->getRealScriptData( argv[0] ) );
@@ -336,7 +360,7 @@ void natives::_DeleteSound( script_engine * eng, size_t * argv )
 }
 void natives::_Obj_Create( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->fetchScriptData( (size_t)eng->getRealScriptData( argv[ 0 ] ), eng->currentRunningMachine );
+	size_t tmp = eng->fetchScriptData( eng->getObjTypeScriptData( argv[ 0 ] ), eng->currentRunningMachine );
 	eng->scriptDataAssign( argv[ 0 ], tmp );
 	eng->releaseScriptData( tmp );
 }

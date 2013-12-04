@@ -219,14 +219,25 @@ unsigned Battery::CreateObjHandle()
 		vObjHandles.resize( 1 + Result );
 	}
 	memset( &vObjHandles[ Result ], -1, sizeof( vObjHandles[ Result ] ) );
+	vObjHandles[ Result ].RefCount = 1;
 	return Result;
 }
-unsigned Battery::CreateObject( unsigned short Layer ) //0 - 3D, 1 - Background, 2 - Boss, 3 - Player, 4 - Bullet, 5 - Effect, 6 - Foreground, 7 - Text
+unsigned Battery::CreateObject( ObjType type ) //0 - 3D, 1 - Background, 2 - Boss, 3 - Player, 4 - Bullet, 5 - Effect, 6 - Foreground, 7 - Text
 {
 	unsigned Result;
+	unsigned Layer;
 	ObjMgr * objMgr;
 
-	if( Layer == 4 )
+	switch( type )
+	{
+	case ObjShot: Layer = 4; break;
+	case ObjEffect: Layer = 5; break;
+	case ObjFont: Layer = 7; break;
+	default:
+		Layer = 4;
+	}
+
+	if( type == ObjShot )
 		Result = CreateShot( 0 );
 	else
 	{
@@ -254,7 +265,7 @@ unsigned Battery::CreateObject( unsigned short Layer ) //0 - 3D, 1 - Background,
 		handle.MgrIdx = GetLayers()[ Layer ].vObjMgr.size();
 		handle.ObjVectorIdx = vvObjects[ handle.ObjVector ].size();
 		handle.ObjFontIdx = ( (Layer == 7 )? CreateFontObject() : -1 );
-		handle.Type = Layer == 4 ? ObjShot : Layer == 7 ? ObjFont : ObjEffect;
+		handle.Type = type;
 
 		if( Layer != 4 )
 		{

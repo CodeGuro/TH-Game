@@ -10,11 +10,6 @@
 #include <D3DSmartPtr.hpp>
 #include <defstypedefs.hpp>
 
-enum ObjType
-{
-	ObjShot, ObjEffect, ObjFont
-};
-
 struct ObjHandle
 {
 	unsigned MgrIdx;
@@ -125,7 +120,7 @@ protected:
 
 	//objects
 	unsigned CreateObjHandle();
-	unsigned CreateObject( unsigned short Layer );
+	unsigned CreateObject( ObjType type );
 	void AddRefObjHandle( unsigned HandleIdx );
 	void ReleaseObjHandle( unsigned HandleIdx );
 	void ReleaseObject( unsigned HandleIdx );

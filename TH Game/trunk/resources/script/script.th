@@ -64,7 +64,7 @@ script_main main_script //main routine
 	}
 	function Delay( let x, let y)
 	{
-		let obj = Obj_Create( 5 );
+		let obj = Obj_Create( OBJ_EFFECT );
 		LoadTexture( bulletTexture );
 		ObjEffect_SetTexture( obj, bulletTexture );
 
@@ -107,7 +107,7 @@ script_main main_script //main routine
 	}
 	task STGFrame()
 	{
-		let obj = Obj_Create( 1 );
+		let obj = Obj_Create( OBJ_EFFECT );
 		LoadTexture( stgframeTexture );
 		ObjEffect_SetTexture( obj, stgframeTexture );
 
@@ -135,7 +135,7 @@ script_main main_script //main routine
 		ObjEffect_SetVertexColor( obj, 3, 255, 255, 255, 255 );
 		ObjEffect_SetVertexColor( obj, 4, 255, 255, 255, 255 );
 		ObjEffect_SetVertexColor( obj, 5, 255, 255, 255, 255 );
-
+		ObjEffect_SetLayer( obj, 6 );
 		Obj_SetPosition( obj, 0, 0 );
 		Obj_SetSpeed( obj, 0 );
 		while( !Obj_BeDeleted( obj ) )
@@ -176,7 +176,7 @@ script youkai
 	}
 	task Font( let x, let y )
 	{
-		obj = Obj_Create( 7 );
+		obj = Obj_Create( OBJ_FONT() );
 		ObjFont_SetString( obj, "ObjFont Success!" );
 		ObjFont_SetColor( obj, 255, 255, 255, 255 );
 		ObjFont_SetRect( obj, x, y, x + 200, y + 200 );
@@ -197,7 +197,7 @@ script youkai
 	}
 	task FireShot( let x, let y, let ang )
 	{
-		let obj = Obj_Create( 4 );
+		let obj = Obj_Create( OBJ_SHOT );
 		Obj_SetPosition( obj, x, y );
 		Obj_SetSpeed( obj, 1 );
 		Obj_SetAngle( obj, ang );

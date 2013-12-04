@@ -10,3 +10,8 @@ inline bool CheckValidIdx( T const val )
 {
 	return val != (T)-1;
 }
+
+enum ObjType
+{
+	ObjShot, ObjEffect, ObjFont
+};

@@ -47,9 +47,10 @@ protected:
 	size_t fetchScriptData( char character );
 	size_t fetchScriptData( bool boolean );
 	size_t fetchScriptData( std::string const & string );
-	size_t fetchScriptData( size_t objParam, size_t MachineIdx );
+	size_t fetchScriptData( ObjType typeobj, size_t MachineIdx );
 	size_t fetchScriptData( D3DPRIMITIVETYPE primType );
 	size_t fetchScriptData( BlendType blend );
+	size_t fetchScriptData( ObjType typeobj );
 	script_data & getScriptData( size_t index );
 	void addRefScriptData( size_t index );
 	void scriptDataAssign( size_t & dst, size_t src );
@@ -61,6 +62,7 @@ protected:
 	unsigned getObjHandleScriptData( size_t index ) const;
 	D3DPRIMITIVETYPE getPrimitiveTypeScriptData( size_t index ) const;
 	BlendType getBlendModeScriptData( size_t index ) const;
+	ObjType getObjTypeScriptData( size_t index ) const;
 	std::string getStringScriptData( size_t index );
 	void releaseScriptData( size_t & index );
 	size_t fetchScriptEnvironment( size_t blockIndex );

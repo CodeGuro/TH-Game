@@ -175,12 +175,12 @@ size_t inventory::fetchScriptData( std::string const & string )
 		getScriptData( index ).vec.push_back( fetchScriptData( string[i] ) );
 	return index;
 }
-size_t inventory::fetchScriptData( size_t objParam, size_t machineIdx )
+size_t inventory::fetchScriptData( ObjType typeobj, size_t machineIdx )
 {
 	//let objParam be the object type, 4 = bullet, 5 = effect
 	size_t index;
 	script_data & data = getScriptData( index = fetchScriptData() );
-	auto const objIdx = CreateObject( (unsigned short)objParam );
+	auto const objIdx = CreateObject( typeobj );
 	data.objIndex = objIdx;
 	data.type = getObjectType();
 
@@ -208,6 +208,14 @@ size_t inventory::fetchScriptData( BlendType blend )
 	size_t index;
 	script_data & data = getScriptData( index = fetchScriptData() );
 	data.blendMode = blend;
+	data.type = getMiscType();
+	return index;
+}
+size_t inventory::fetchScriptData( ObjType typeobj )
+{
+	size_t index;
+	script_data & data = getScriptData( index = fetchScriptData() );
+	data.objtype = typeobj;
 	data.type = getMiscType();
 	return index;
 }
@@ -404,7 +412,12 @@ BlendType inventory::getBlendModeScriptData( size_t index ) const
 		return vecScriptData[ index ].blendMode;
 	return (BlendType)-1;
 }
-
+ObjType inventory::getObjTypeScriptData( size_t index ) const
+{
+	if( CheckValidIdx( index ) )
+		return vecScriptData[ index ].objtype;
+	return (ObjType)-1;
+}
 //script engine - script environment - related functions
 size_t inventory::fetchScriptEnvironment( size_t blockIndex )
 {

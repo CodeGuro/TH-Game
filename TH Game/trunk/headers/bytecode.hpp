@@ -39,6 +39,7 @@ struct script_data
 		unsigned objIndex;
 		D3DPRIMITIVETYPE primitiveType;
 		BlendType blendMode;
+		ObjType objtype;
 	};
 	vector< size_t > vec;
 	script_data();
@@ -46,6 +47,7 @@ struct script_data
 	script_data( char character, size_t elementIndex );
 	script_data( bool boolean, size_t elementIndex );
 	script_data( size_t objIndex, size_t elementIndex );
+	script_data( ObjType typeobj, size_t elementIndex );
 };
 
 struct code
@@ -156,6 +158,9 @@ private:
 	static void _true( script_engine * eng, size_t * argv );
 	static void _false( script_engine * eng, size_t * argv );
 	static void _PI( script_engine * eng, size_t * argv );
+	static void _OBJ_SHOT( script_engine * eng, size_t * argv );
+	static void _OBJ_EFFECT( script_engine * eng, size_t * argv );
+	static void _OBJ_FONT( script_engine * eng, size_t * argv );
 	static void _increment( script_engine * eng, size_t * argv );
 	static void _decrement( script_engine * eng, size_t * argv );
 	static void _ToString( script_engine * eng, size_t * argv );
