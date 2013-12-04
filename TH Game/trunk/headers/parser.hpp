@@ -17,7 +17,7 @@ private:
 		tk_add_assign, tk_subtract_assign, tk_divide_assign, tk_multiply_assign, tk_power_assign, tk_remainder_assign,
 		tk_at, tk_comma, tk_semicolon, tk_sharp, tk_dot,
 		tk_real, tk_character, tk_string, tk_word, tk_invalid,
-		tk_IF, tk_ELSE, tk_WHILE, tk_LOOP, tk_YIELD, tk_BREAK, tk_LET, tk_FUNCTION, tk_TASK, tk_RETURN, tk_SCRIPT_MAIN, tk_SCRIPT_ENEMY,
+		tk_IF, tk_ELSE, tk_WHILE, tk_LOOP, tk_YIELD, tk_BREAK, tk_LET, tk_FUNCTION, tk_TASK, tk_RETURN, tk_SCRIPT_MAIN, tk_SCRIPT,
 		tk_TOUHOUDANMAKU, tk_INCLUDE
 	};
 	class lexer

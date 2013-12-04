@@ -328,8 +328,8 @@ parser::token parser::lexer::advance()
 					next = tk_YIELD;
 				else if( word == "script_main" )
 					next = tk_SCRIPT_MAIN;
-				else if( word == "script_enemy" )
-					next = tk_SCRIPT_ENEMY;
+				else if( word == "script" )
+					next = tk_SCRIPT;
 			}
 			else
 				next = tk_invalid;
@@ -765,7 +765,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 					currentScope[ word ] = variable;
 				}
 			}
-			else if( tok == tk_at || tok == tk_FUNCTION || tok == tk_TASK || tok == tk_SCRIPT_MAIN || tok == tk_SCRIPT_ENEMY )
+			else if( tok == tk_at || tok == tk_FUNCTION || tok == tk_TASK || tok == tk_SCRIPT_MAIN || tok == tk_SCRIPT )
 			{
 				if( lexicon.getToken() == tk_word )
 				{
@@ -782,7 +782,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 					blockRoutine.name = subroutine;
 					blockRoutine.nativeCallBack = 0;
 					blockRoutine.argc = 0;
-					if( tok == tk_SCRIPT_MAIN || tok == tk_SCRIPT_ENEMY )
+					if( tok == tk_SCRIPT_MAIN || tok == tk_SCRIPT )
 					{
 						tok == tk_SCRIPT_MAIN ? inventory::registerMainScript( scriptMgr.currentScriptPath, subroutine ) : inventory::registerScript( subroutine );
 						script_container * sc = inventory::getScript( subroutine );
@@ -871,7 +871,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 
 		else if( lexicon.getToken() == tk_FUNCTION || lexicon.getToken() == tk_at 
 			|| lexicon.getToken() == tk_TASK || lexicon.getToken() == tk_SCRIPT_MAIN 
-			|| lexicon.getToken() == tk_SCRIPT_ENEMY )
+			|| lexicon.getToken() == tk_SCRIPT )
 		{
 			token routineDeclToken = lexicon.getToken();
 			if ( lexicon.advance() != tk_word )
@@ -897,8 +897,8 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 					raiseError( "\")\" expected", error::er_syntax );
 				lexicon.advance();
 			}
-			if( ( routineDeclToken == tk_SCRIPT_MAIN || routineDeclToken == tk_SCRIPT_ENEMY) && args.size() )
-				raiseError( "script_main and script_enemy routine types have zero parameters", error::er_syntax );
+			if( ( routineDeclToken == tk_SCRIPT_MAIN || routineDeclToken == tk_SCRIPT ) && args.size() )
+				raiseError( "script_main and script routine types have zero parameters", error::er_syntax );
 			if( routineDeclToken == tk_at )
 			{
 				if( inventory::getBlock( subsym->blockIndex ).kind == block::bk_function )

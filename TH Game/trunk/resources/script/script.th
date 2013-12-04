@@ -151,7 +151,7 @@ function wait( let v )
 		yield;
 	}
 }
-script_enemy youkai
+script youkai
 {
 	let obj;
 	@Initialize
