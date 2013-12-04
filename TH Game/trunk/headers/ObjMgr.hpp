@@ -45,6 +45,7 @@ struct Object
 	void SetRotationEx( D3DXVECTOR3 Axis, float Theta );
 	void SetRotationVelocity( float Theta );
 	void SetRotationVelocityEx( D3DXVECTOR3 Axis, float Theta );
+	void ShotInit();
 	void SetShotDataParams( ShotData const & Shot_Data, ULONG Buffer_Offset );
 
 	float GetSpeed() const;

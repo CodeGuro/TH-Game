@@ -157,6 +157,7 @@ script_enemy youkai
 	@Initialize
 	{
 		FontTask();
+		ObjShotTask();
 	}
 	@MainLoop
 	{
@@ -181,6 +182,30 @@ script_enemy youkai
 		ObjFont_SetRect( obj, x, y, x + 200, y + 200 );
 		while( true )
 		{
+			yield;
+		}
+	}
+	task ObjShotTask()
+	{
+		let num = 30;
+		let a = 0;
+		loop( num )
+		{
+			FireShot( 200, 200, a );
+			a = a + 2 * PI / num;
+		}
+	}
+	task FireShot( let x, let y, let ang )
+	{
+		let obj = Obj_Create( 4 );
+		Obj_SetPosition( obj, x, y );
+		Obj_SetSpeed( obj, 1 );
+		Obj_SetAngle( obj, ang );
+		let speed = 1;
+		while( !Obj_BeDeleted( obj ) )
+		{
+			Obj_SetSpeed( obj, speed );
+			speed = speed + 0.05;
 			yield;
 		}
 	}

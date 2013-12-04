@@ -124,6 +124,7 @@ protected:
 	LPDIRECTSOUND8 GetDSound() const;
 
 	//objects
+	unsigned CreateObjHandle();
 	unsigned CreateObject( unsigned short Layer );
 	void AddRefObjHandle( unsigned HandleIdx );
 	void ReleaseObjHandle( unsigned HandleIdx );
@@ -148,7 +149,7 @@ protected:
 	FontObject * GetFontObject( unsigned HandleIdx );
 
 	//shot
-	unsigned CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed, FLOAT const direction, FLOAT const graphic );
+	unsigned CreateShot( ULONG GraphicID );
 	void PushQuadShotBuffer( RECT const Quad, D3DCOLOR const Color );
 	void LoadShotImage( std::string const & pathname );
 	void CreateShotData( unsigned ID, BlendType blend, RECT const & rect, D3DCOLOR color, DWORD flags, vector< vector< float > > const & AnimationData );

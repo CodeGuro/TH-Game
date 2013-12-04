@@ -498,8 +498,11 @@ void natives::_CreateShot01( script_engine * eng, size_t * argv )
 {
 	size_t tmp = eng->fetchScriptData();
 	eng->getScriptData( tmp ).type = eng->getObjectType();
-	eng->getScriptData( tmp ).objIndex = eng->CreateShot01( D3DXVECTOR2( eng->getRealScriptData( argv[ 0 ] ), eng->getRealScriptData( argv[ 1 ] ) ), eng->getRealScriptData( argv[ 2 ] ),
-		eng->getRealScriptData( argv[ 3 ] ), eng->getRealScriptData( argv[ 4 ] )  );
+	eng->getScriptData( tmp ).objIndex = eng->CreateShot( (ULONG)eng->getRealScriptData( argv[ 4 ] )  );
+	Object * obj = eng->GetObject( eng->getObjHandleScriptData( tmp ) );
+	obj->position = D3DXVECTOR3( eng->getRealScriptData( argv[ 0 ] ), eng->getRealScriptData( argv[ 1 ] ), 0.f );
+	obj->SetSpeed( eng->getRealScriptData( argv[ 2 ] ) );
+	obj->SetAngle( eng->getRealScriptData( argv[ 3 ] ) );
 	eng->scriptDataAssign( argv[ 0 ], tmp );
 	eng->releaseScriptData( tmp );
 }

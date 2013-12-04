@@ -205,54 +205,57 @@ void Battery::LoadShotImage( std::string const & pathname )
 	for( unsigned u = 0; u < 4; ++u )
 		GetLayers()[ 4 ].vObjMgr[ u ].pTexture = GetTexture( pathname ) ;
 }
+unsigned Battery::CreateObjHandle()
+{
+	unsigned Result;
+	if( vObjHandlesGC.size() )
+	{
+		Result = vObjHandlesGC.back();
+		vObjHandlesGC.pop_back();
+	}
+	else
+	{
+		Result = vObjHandles.size();
+		vObjHandles.resize( 1 + Result );
+	}
+	memset( &vObjHandles[ Result ], -1, sizeof( vObjHandles[ Result ] ) );
+	return Result;
+}
 unsigned Battery::CreateObject( unsigned short Layer ) //0 - 3D, 1 - Background, 2 - Boss, 3 - Player, 4 - Bullet, 5 - Effect, 6 - Foreground, 7 - Text
 {
 	unsigned Result;
-	unsigned VtxBuffIdx;
-	unsigned ObjVector;
-	unsigned ObjFontIdx;
 	ObjMgr * objMgr;
 
-	if( Layer <= GetLayers().size() )
+	if( Layer == 4 )
+		Result = CreateShot( 0 );
+	else
 	{
-		if( vObjHandlesGC.size() )
-		{
-			Result = vObjHandlesGC.back();
-			vObjHandlesGC.pop_back();
-		}
-		else
-		{
-			Result = vObjHandles.size();
-			vObjHandles.resize( 1 + Result );
-		}
+		Result = CreateObjHandle();
+		ObjHandle & handle = vObjHandles[ Result ];
 		if( vvObjectsGC.size() )
 		{
-			ObjVector = vvObjectsGC.back();
+			handle.ObjVector = vvObjectsGC.back();
 			vvObjectsGC.pop_back();
 		}
 		else
 		{
-			ObjVector = vvObjects.size();
-			vvObjects.resize( 1 + ObjVector );
+			handle.ObjVector = vvObjects.size();
+			vvObjects.resize( 1 + handle.ObjVector );
 		}
 		if( Layer != 4 && Layer != 7 )
 		{
-			VtxBuffIdx = FetchVertexBuffer();
+			handle.VertexBuffer = FetchVertexBuffer();
 		}
 		else
-			VtxBuffIdx = -1;
-		ObjFontIdx = ( (Layer == 7 )? CreateFontObject() : -1 );
+			handle.VertexBuffer = -1;
 
-		ObjHandle & handle = vObjHandles[ Result ];
-		memset( &handle, -1, sizeof( handle ) );
 		handle.Layer = Layer;
 		handle.RefCount = 1;
 		handle.MgrIdx = GetLayers()[ Layer ].vObjMgr.size();
-		handle.VertexBuffer = VtxBuffIdx;
-		handle.ObjVector = ObjVector;
-		handle.ObjVectorIdx = vvObjects[ ObjVector ].size();
+		handle.ObjVectorIdx = vvObjects[ handle.ObjVector ].size();
+		handle.ObjFontIdx = ( (Layer == 7 )? CreateFontObject() : -1 );
 		handle.Type = Layer == 4 ? ObjShot : Layer == 7 ? ObjFont : ObjEffect;
-		handle.ObjFontIdx = ObjFontIdx;
+
 		if( Layer != 4 )
 		{
 			ObjMgr * objMgr = &(*GetLayers()[ Layer ].vObjMgr.insert( GetLayers()[ Layer ].vObjMgr.end(), ObjMgr() ) );
@@ -260,20 +263,20 @@ unsigned Battery::CreateObject( unsigned short Layer ) //0 - 3D, 1 - Background,
 			objMgr->VShader = pDefault3DVShader;
 			objMgr->PShader = pDefault3DPShader;
 			objMgr->Constable = pDefaultConstable;
-			objMgr->VertexBufferIdx = VtxBuffIdx;
+			objMgr->VertexBufferIdx = handle.VertexBuffer;
 			objMgr->ObjBufferIdx = handle.ObjVector;
 			objMgr->BlendState = BlendAlpha;
-			objMgr->ObjFontIdx = ObjFontIdx;
+			objMgr->ObjFontIdx = handle.ObjFontIdx;
 		}
 
-		vvObjects[ ObjVector ].resize( 1 + handle.ObjVectorIdx );
+		vvObjects[ handle.ObjVector ].resize( 1 + handle.ObjVectorIdx );
 		Object & obj = *GetObject( Result );
 		obj.FlagCollidable( Layer == 4 ? 1 : 0 );
 		obj.FlagPixelPerfect( 0 );
-		obj.FlagScreenDeletable( Layer == 4 ? 1 : 0 );
-		obj.FlagBullet( Layer == 4? 1 : 0 );
+		obj.FlagScreenDeletable( 1 );
+		obj.FlagBullet( 0 );
 		obj.FlagGraze( 0 );
-		obj.SetVelocity( D3DXVECTOR3( 1, 0, 0 ) );
+		obj.SetVelocity( D3DXVECTOR3( 1, 1, 1 ) );
 		obj.SetSpeed( 0 );
 		obj.SetAngle( 0 );
 		obj.SetRotationVelocity( 0 );
@@ -281,8 +284,7 @@ unsigned Battery::CreateObject( unsigned short Layer ) //0 - 3D, 1 - Background,
 		obj.SetScale( D3DXVECTOR3( 1, 1, 1 ) );
 		obj.VertexOffset = 0;
 	}
-	else
-		Result = -1;
+
 	return Result;
 }
 void Battery::AddRefObjHandle( unsigned HandleIdx )
@@ -310,7 +312,6 @@ void Battery::ReleaseObject( unsigned HandleIdx )
 				if( it->ObjVector == handle.ObjVector && it->ObjVectorIdx > handle.ObjVectorIdx )
 					--(it->ObjVectorIdx);
 		}
-
 		if( handle.Type != ObjShot )
 		{
 			if( CheckValidIdx( handle.Layer ) )
@@ -486,45 +487,25 @@ FontObject * Battery::GetFontObject( unsigned HandleIdx )
 	}
 	return 0;
 }
-unsigned Battery::CreateShot01( D3DXVECTOR2 const & position, FLOAT const speed, FLOAT const direction, FLOAT const graphic )
+unsigned Battery::CreateShot( ULONG GraphicID )
 {
 	unsigned Result;
-	if( 5 <= GetLayers().size() )
-	{
-		if( vObjHandlesGC.size() )
-		{
-			Result = vObjHandlesGC.back();
-			vObjHandlesGC.pop_back();
-		}
-		else
-			Result = vObjHandles.size();
-		if( vObjHandles.size() <= Result )
-			vObjHandles.resize( 1 + Result );
-		ObjHandle & handle = vObjHandles[ Result ];
-		memset( &handle, -1, sizeof( handle ) );
-		handle.Layer = 4;
-		handle.RefCount = 1;
-		/*Get ObjMgr from graphic*/
-		unsigned const TemplateOffset = Bullet_TemplateOffsets[ (unsigned)graphic ];
-		ShotData const & shot_data= Bullet_Templates[ TemplateOffset ];
-		handle.ObjVector = (ULONG)shot_data.Render;
-		handle.ObjVectorIdx = vvObjects[ handle.ObjVector ].size();
-		vvObjects[ handle.ObjVector ].resize( 1 + handle.ObjVectorIdx );
-		Object & obj = *GetObject( Result );
-		obj.velocity = D3DXVECTOR3( 1, 1, 1 );
-		obj.position = D3DXVECTOR3( position.x, position.y, 0.f );
-		obj.SetSpeed( speed );
-		obj.orientvel = D3DXQUATERNION( 0, 0, 0, 1 );
-		obj.accel = D3DXVECTOR3( 0, 0, 0 );
-		obj.FlagBullet( 1 );
-		obj.SetAngle( direction );
-		obj.SetScale( D3DXVECTOR3( 1, 1, 1 ) );
-		obj.FlagCollidable( 1 );
-		obj.FlagScreenDeletable( 1 );
-		obj.SetShotDataParams( shot_data, TemplateOffset );
-		return Result;
-	}
-	return -1;
+	Result = CreateObjHandle();
+	ObjHandle & handle = vObjHandles[ Result ];
+	handle.Layer = 4;
+	handle.RefCount = 1;
+	/*Get ObjMgr from graphic*/
+	unsigned const TemplateOffset = Bullet_TemplateOffsets[ GraphicID ];
+	ShotData const & shot_data= Bullet_Templates[ TemplateOffset ];
+	handle.MgrIdx = (ULONG)shot_data.Render;
+	handle.ObjVector = (ULONG)shot_data.Render;
+	handle.ObjVectorIdx = vvObjects[ handle.ObjVector ].size();
+	handle.Type = ObjShot;
+	auto & objvector = vvObjects[ handle.ObjVector ];
+	objvector.resize( 1 + handle.ObjVectorIdx );
+	objvector[ handle.ObjVectorIdx ].ShotInit();
+	objvector[ handle.ObjVectorIdx ].SetShotDataParams( shot_data, TemplateOffset );
+	return Result;
 }
 void Battery::CreateShotData( unsigned ID, BlendType blend, RECT const & rect, D3DCOLOR color, DWORD flags, vector< vector< float > > const & AnimationData )
 {
@@ -663,7 +644,7 @@ void Battery::ObjShot_SetGraphic( unsigned HandleIdx, ULONG ID )
 		ShotData const & shot_data = Bullet_Templates[ BufferOffset ];
 		pObj->SetShotDataParams( shot_data, BufferOffset );
 		Object ObjCopy = *pObj;
-		unsigned ResHandle = CreateShot01( D3DXVECTOR2(), 1.f, 0.f, (FLOAT)ID );
+		unsigned ResHandle = CreateShot( ID );
 		*GetObject( ResHandle ) = *pObj;
 		ReleaseObject( HandleIdx );
 		vObjHandles[ HandleIdx ] = vObjHandles[ ResHandle ];
@@ -733,7 +714,8 @@ void Battery::DrawObjects()
 						unsigned u;
 						for( u = 0; u < vObjHandles.size(); ++u )
 						{
-							if( vObjHandles[ u ].Layer == L - vLayers.begin() && vObjHandles[ u ].MgrIdx == Objmgr - L->vObjMgr.begin()  && vObjHandles[ u ].ObjVector == Objmgr->ObjBufferIdx && vObjHandles[ u ].ObjVectorIdx == objidx )
+							ObjHandle & handle = vObjHandles[ u ];
+							if( handle.Layer == L - vLayers.begin() && handle.MgrIdx == Objmgr - L->vObjMgr.begin()  && handle.ObjVector == Objmgr->ObjBufferIdx && handle.ObjVectorIdx == objidx )
 							{
 								ReleaseObject( u );
 								break;
@@ -741,6 +723,7 @@ void Battery::DrawObjects()
 						}
 						if( u == vObjHandles.size() )
 							vObjects.erase( pObj );
+
 						Objmgr = L->vObjMgr.begin() + ObjMgrIdx;
 						pObj = vObjects.begin() + objidx;
 						continue;
