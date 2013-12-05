@@ -209,12 +209,13 @@ private:
 	static void _CreateShot01( script_engine * eng, size_t * argv );
 };
 
-struct script_queue
+struct eng_exception
 {
-	enum scriptQueueType
+	enum Reason
 	{
-		Initialization, Termination
+		eng_error, finalizing_machine
 	};
-	scriptQueueType queueType;
-	size_t index;
+	Reason throw_reason;
+	eng_exception();
+	eng_exception( Reason const r );
 };

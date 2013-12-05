@@ -7,18 +7,7 @@
 #include "parser.hpp"
 #include "Direct3DEngine.hpp"
 
-struct eng_exception
-{
-	enum Reason
-	{
-		eng_error, finalizing_machine
-	};
-	Reason throw_reason;
-	eng_exception();
-	eng_exception( Reason const r );
-};
-
-class script_engine : protected virtual inventory, private parser
+class script_engine : protected virtual Battery, protected virtual inventory, private parser
 {
 private:
 	friend class script_machine;
@@ -28,7 +17,6 @@ private:
 	
 	bool error;
 	std::string errorMessage;
-	script_type_manager typeManager;
 	size_t currentRunningMachine;
 
 	void callSub( size_t machineIndex, script_container::sub AtSub );

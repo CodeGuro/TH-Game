@@ -418,6 +418,7 @@ ObjType inventory::getObjTypeScriptData( size_t index ) const
 		return vecScriptData[ index ].objtype;
 	return (ObjType)-1;
 }
+
 //script engine - script environment - related functions
 size_t inventory::fetchScriptEnvironment( size_t blockIndex )
 {
@@ -512,4 +513,13 @@ void inventory::releaseObjectVector( size_t & index )
 	objvec.resize( 0 );
 	vvecObjectsGarbage.push_back( index );
 	index = -1;
+}
+
+//script engine - other
+void inventory::cleanInventory( class script_engine & eng )
+{
+	for( unsigned u = 0; u < vecMachines.size(); ++u )
+		vecMachines[ u ].clean( eng );
+	inventory_mem * this_inv = this;
+	*this_inv = inventory_mem();
 }

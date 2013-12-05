@@ -20,44 +20,54 @@ script_engine::script_engine() : error( false ), currentRunningMachine( -1 )
 void script_engine::cleanEngine()
 {
 	currentRunningMachine = -1;
-	typeManager = script_type_manager();
+	error = false;
+	errorMessage.clear();
+	cleanInventory( *this );
 }
 void script_engine::start()
 {
-	//map the scripts to individual units to be parsed
-	char buff[ 1024 ] = { 0 };
-	GetCurrentDirectory( sizeof( buff ), buff );
-	std::string const path = std::string( buff ) + "\\script";
-
-	std::string scriptPath;
-	OPENFILENAMEA ofn ={ 0 };
-	char buff2[1024] ={ 0 };
-	ofn.lStructSize = sizeof( OPENFILENAMEA );
-	ofn.lpstrFilter = "All Files\0*.*\0\0";
-	ofn.lpstrFile = buff2;
-	ofn.nMaxFile = sizeof( buff2 );
-	ofn.lpstrTitle = "Open script...";
-	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_FORCESHOWHIDDEN | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST ;
-	GetOpenFileNameA( &ofn );
-	SetCurrentDirectory( buff );
-	scriptPath= ofn.lpstrFile;
-	if( !scriptPath.size() )
+	try
 	{
-		MessageBox( NULL, "File not selected", "script_engine::start", NULL );
-		return;
+		//map the scripts to individual units to be parsed
+		char buff[ 1024 ] = { 0 };
+		GetCurrentDirectory( sizeof( buff ), buff );
+		std::string const path = std::string( buff ) + "\\script";
+
+		std::string scriptPath;
+		OPENFILENAMEA ofn ={ 0 };
+		char buff2[1024] ={ 0 };
+		ofn.lStructSize = sizeof( OPENFILENAMEA );
+		ofn.lpstrFilter = "All Files\0*.*\0\0";
+		ofn.lpstrFile = buff2;
+		ofn.nMaxFile = sizeof( buff2 );
+		ofn.lpstrTitle = "Open script...";
+		ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_FORCESHOWHIDDEN | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST ;
+		GetOpenFileNameA( &ofn );
+		SetCurrentDirectory( buff );
+		scriptPath= ofn.lpstrFile;
+		if( !scriptPath.size() )
+		{
+			MessageBox( NULL, "File not selected", "script_engine::start", NULL );
+			return;
+		}
+		parseScript( scriptPath );
+		size_t scriptIdx = findScriptFromFile( getCurrentScriptPath() );
+		if( !CheckValidIdx( scriptIdx ) ) return;
+		currentRunningMachine = fetchScriptMachine();
+		script_machine & machine = getScriptMachine( currentRunningMachine );
+		machine.initialize( *this, scriptIdx );
 	}
-	parseScript( scriptPath );
-	if( error ) return;
-	size_t scriptIdx = findScriptFromFile( getCurrentScriptPath() );
-	if( !CheckValidIdx( scriptIdx ) ) return;
-	currentRunningMachine = fetchScriptMachine();
-	script_machine & machine = getScriptMachine( currentRunningMachine );
-	machine.initialize( *this, scriptIdx );
+	catch( eng_exception const & error )
+	{
+		assert( error.throw_reason == eng_exception::eng_error );
+		cleanEngine();
+		start();
+	}
 }
 bool script_engine::advance()
 {
 	unsigned u = 0;
-	while( !error && u < inventory::vecMachines.size() )
+	while( u < inventory::vecMachines.size() )
 	{
 		try
 		{
@@ -72,7 +82,10 @@ bool script_engine::advance()
 			switch( e.throw_reason )
 			{
 			case eng_exception::eng_error:
-				error = true;
+				{
+					cleanEngine();
+					start();
+				}
 				break;
 			}
 		}

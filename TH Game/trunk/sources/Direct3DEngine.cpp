@@ -674,7 +674,7 @@ void Battery::DrawObjects()
 	pDefaultConstable->SetMatrix( GetDevice(), "WorldViewProjMat", &(world*view*proj) );
 	for( auto L = GetLayers().begin(); L < GetLayers().end(); ++L )
 	{
-		GetDevice()->SetRenderState( D3DRS_SCISSORTESTENABLE, (L > GetLayers().begin() + 1 && L < GetLayers().end() - 2 )? TRUE : FALSE );
+		GetDevice()->SetRenderState( D3DRS_SCISSORTESTENABLE, (L < GetLayers().end() - 2 )? TRUE : FALSE );
 		for( auto Objmgr = L->vObjMgr.begin(); Objmgr != L->vObjMgr.end(); )
 		{
 			D3DXMATRIX mat;

@@ -20,11 +20,9 @@ public:
 	type_data getArrayType( size_t element ); //an array of some type
 };
 
-class inventory : protected script_type_manager, protected virtual Battery
+class inventory_mem
 {
-	friend class script_engine;
-	friend class parser;
-private:
+protected:
 	vector< script_data > vecScriptData;
 	vector< script_environment > vecScriptEnvironment;
 	vector< block > vecBlocks;
@@ -38,6 +36,12 @@ private:
 	std::map< std::string, size_t > mappedScripts;
 	std::map< std::string, size_t > mappedMainScripts;
 	std::map< std::string, size_t > mappedShotScripts;
+};
+
+class inventory : private inventory_mem, protected script_type_manager, protected virtual Battery
+{
+	friend class script_engine;
+	friend class parser;
 
 protected:
 	size_t fetchBlock();
@@ -84,4 +88,5 @@ protected:
 	size_t findScriptFromFile( std::string const & scriptPath );
 	size_t findScriptDirectory( std::string const & scriptPath );
 	std::string const & getCurrentScriptDirectory( size_t machineIdx ) const;
+	void cleanInventory( class script_engine & eng );
 };

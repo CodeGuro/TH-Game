@@ -2,6 +2,7 @@
 #include "defstypedefs.hpp"
 
 class script_engine;
+class inventory;
 
 /*executes the bytecode*/
 class script_machine

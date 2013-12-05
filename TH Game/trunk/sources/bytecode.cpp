@@ -348,7 +348,7 @@ void natives::_GetCurrentScriptDirectory( script_engine * eng, size_t * argv )
 }
 void natives::_LoadSound( script_engine * eng, size_t * argv )
 {
-	eng->LoadSound( eng->getStringScriptData( argv[ 0 ] ) );
+ 	eng->LoadSound( eng->getStringScriptData( argv[ 0 ] ) );
 }
 void natives::_PlaySound( script_engine * eng, size_t * argv )
 {

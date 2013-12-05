@@ -105,8 +105,9 @@ private:
 	void importSymbolsFromFile( std::string const & filePath );
 	void importNativeSymbols(); //in the topmost scope
 	void parseDocument( std::string const & scriptPath, std::string const & scriptString );
+	void registerNatives();
+	virtual void raise_exception( eng_exception const & eng_except ) = 0;
 public:
-	parser(); //automatic parsing, feed data to the engine's battery
 	void parseScript( std::string const & scriptPath );
 	void parseShotScript( std::string const & scriptPath );
 	std::string getCurrentScriptPath() const;

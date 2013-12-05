@@ -660,6 +660,7 @@ void parser::parseScript( std::string const & scriptPath )
 		return;
 	try
 	{
+		registerNatives();
 		vecScope.resize( 1 );
 		vecScope.back().clear();
 		vecScope.back().blockIndex = -1;
@@ -680,6 +681,7 @@ void parser::parseScript( std::string const & scriptPath )
 		if( scriptMgr.pragmaFiles.size() )
 			inventory::registerInvalidMainScript( scriptMgr.pragmaFiles[ 0 ] );
 		scriptMgr.pragmaFiles.resize( 0 );
+		raise_exception( eng_exception::eng_error );
 	}
 }
 void parser::parseBlock( symbol const symSub, vector< std::string > const & args )
@@ -1357,8 +1359,10 @@ void parser::parseShotScript( std::string const & scriptPath )
 	}
 	catch( error const & err )
 	{
+		raise_exception( eng_exception::eng_error );
 	}
 }
+
 struct native_function
 {
 	char const * name;
@@ -1366,7 +1370,7 @@ struct native_function
 	unsigned argc;
 };
 
-parser::parser() 
+void parser::registerNatives()
 {
 	native_function funcs[] =
 	{
@@ -1463,7 +1467,6 @@ parser::parser()
 		scriptMgr.includeSymbols[ "[natives]" ][funcs[i].name] = sym;
 	}
 }
-
 void parser::writeOperation( std::string const & nativeFunc )
 {
 	symbol * func;
