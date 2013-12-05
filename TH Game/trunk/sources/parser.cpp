@@ -1385,6 +1385,8 @@ parser::parser()
 		{ "compareEqualEqual", &natives::_compareGreaterEqual, 2 },
 		{ "compareLess", &natives::_compareLess, 2 },
 		{ "compareLessEqual", &natives::_compareLessEqual, 2 },
+		{ "logicOr", &natives::_logicOr, 2 },
+		{ "logicAnd", &natives::_logicAnd, 2 },
 		{ "roof", &natives::_roof, 1 },
 		{ "floor", &natives::_floor, 1 },
 		{ "index", &natives::_index, 2 },
