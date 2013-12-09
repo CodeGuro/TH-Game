@@ -98,6 +98,7 @@ private:
 	vector< unsigned > Bullet_TemplateOffsets;
 	//vector< DelayData > Bullet_Delays;
 	vector< FontObject > vFontObjects;
+	vector< unsigned > vFontObjectsGC;
 	vector< vector< Object > > vvObjects;
 	vector< unsigned > vvObjectsGC;
 	vector< ObjHandle > vObjHandles;

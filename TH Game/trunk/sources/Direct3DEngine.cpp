@@ -340,7 +340,7 @@ void Battery::ReleaseObject( unsigned HandleIdx )
 					if( CheckValidIdx( handle.VertexBuffer ) )
 						DisposeVertexBuffer( handle.VertexBuffer );
 					if( CheckValidIdx( handle.ObjFontIdx ) )
-						vFontObjects.erase( vFontObjects.begin() + handle.ObjFontIdx );
+						vFontObjectsGC.push_back( handle.ObjFontIdx );
 					for( auto it = vObjHandles.begin(); it != vObjHandles.end(); ++it )
 						if( it->Layer == handle.Layer && it->MgrIdx > handle.MgrIdx )
 							--(it->MgrIdx);
@@ -478,10 +478,20 @@ void Battery::DeleteSound( std::string const & pathname )
 unsigned Battery::CreateFontObject()
 {
 	unsigned res;
+	if( vFontObjectsGC.size() )
+	{
+		res = vFontObjectsGC.back();
+		vFontObjectsGC.pop_back();
+	}
+	else
+	{
+		res = vFontObjects.size();
+		vFontObjects.resize( 1 + res );
+	}
 	RECT r = { 0, 0, 640, 480 };
-	res = vFontObjects.size();
-	vFontObjects.resize( 1 + res );
-	D3DXCreateFont( GetDevice(), 16, 0, FW_NORMAL, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Calibri", &vFontObjects[ res ].pFont );
+	LPD3DXFONT pFont;
+	D3DXCreateFont( GetDevice(), 16, 0, FW_NORMAL, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Calibri", &pFont );
+	vFontObjects[ res ].pFont = pFont;
 	vFontObjects.back().Color = D3DCOLOR_RGBA( 255, 255, 255, 255 );
 	vFontObjects.back().Format = DT_TOP | DT_LEFT;
 	vFontObjects.back().Rect = r;
@@ -970,28 +980,15 @@ void Direct3DEngine::DrawFPS()
 }
 void Direct3DEngine::ProcUserInput( MSG const Msg )
 {
-	if( Msg.message == WM_KEYDOWN )
-	{
-		D3DXMATRIX DisplaceMat;
-		switch( Msg.wParam )
-		{
-		case VK_UP:
-			D3DXMatrixTranslation( &DisplaceMat, 0.0f, 0.0f, -0.1f );
-			break;
-		case VK_DOWN:
-			D3DXMatrixTranslation( &DisplaceMat, 0.0f, 0.0f, 0.1f );
-			break;
-		case VK_LEFT:
-			D3DXMatrixRotationY( &DisplaceMat, D3DX_PI / 180.f );
-			break;
-		case VK_RIGHT:
-			D3DXMatrixRotationY( &DisplaceMat, D3DX_PI / -180.f );
-			break;
-		case VK_F11:
-			ToggleWindowed();
-		default:
-			D3DXMatrixIdentity( &DisplaceMat );
-		}
-		ViewMatrix *= DisplaceMat;
-	}
+	D3DXMATRIX DisplaceMat;
+	D3DXMatrixIdentity( &DisplaceMat );
+	if( GetKeyState( VK_UP ) & 0x8000 )
+		D3DXMatrixTranslation( &DisplaceMat, 0.0f, 0.0f, -0.1f );
+	if( GetKeyState( VK_DOWN ) & 0x8000 )
+		D3DXMatrixTranslation( &DisplaceMat, 0.0f, 0.0f, 0.1f );
+	if( GetKeyState( VK_LEFT ) & 0x8000 )
+		D3DXMatrixRotationY( &DisplaceMat, D3DX_PI / 180.f );
+	if( GetKeyState( VK_RIGHT ) & 0x8000 )
+		D3DXMatrixRotationY( &DisplaceMat, D3DX_PI / -180.f );
+	ViewMatrix *= DisplaceMat;
 }
