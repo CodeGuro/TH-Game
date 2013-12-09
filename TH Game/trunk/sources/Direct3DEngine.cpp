@@ -663,6 +663,38 @@ void Battery::ObjShot_SetGraphic( unsigned HandleIdx, ULONG ID )
 	}
 }
 
+//ObjFont functions
+void Battery::ObjFont_SetSize( unsigned HandleIdx, ULONG Size )
+{
+	FontObject * fobj = GetFontObject( HandleIdx );
+	if( !fobj )
+		return;
+	D3DXFONT_DESC desc;
+	fobj->pFont->GetDesc( &desc );
+	if( desc.Height != Size )
+	{
+		desc.Height = Size;
+		desc.Width = 0;
+		fobj->pFont->Release();
+		D3DXCreateFontIndirect( GetDevice(), &desc, &(fobj->pFont) );
+	}
+}
+void Battery::ObjFont_SetFaceName( unsigned HandleIdx, std::string const & FaceName )
+{
+	FontObject * fobj = GetFontObject( HandleIdx );
+	if( !fobj )
+		return;
+	D3DXFONT_DESC desc;
+	fobj->pFont->GetDesc( &desc );
+	if( FaceName != desc.FaceName && FaceName.size() <= sizeof( desc.FaceName ) )
+	{
+		memset( &desc.FaceName, 0, sizeof( desc.FaceName ) );
+		memcpy( &desc.FaceName, FaceName.c_str(), FaceName.size() );
+		fobj->pFont->Release();
+		D3DXCreateFontIndirect( GetDevice(), &desc, &(fobj->pFont) );
+	}
+}
+
 //misc
 void Battery::DrawObjects()
 {

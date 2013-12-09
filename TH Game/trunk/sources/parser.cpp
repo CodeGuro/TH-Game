@@ -656,7 +656,7 @@ size_t parser::getBlockIndex()
 }
 void parser::parseScript( std::string const & scriptPath )
 {
-	if( mappedMainScripts.find( scriptPath ) != mappedMainScripts.end() )
+	if( CheckValidIdx( findScriptFromFile( scriptPath ) )  )
 		return;
 	try
 	{
@@ -1413,6 +1413,8 @@ void parser::registerNatives()
 		{ "tan", &natives::_tan, 1 },
 		{ "atan", &natives::_atan, 1 },
 		{ "atan2", &natives::_atan2, 2 },
+		{ "KeyDown", &natives::_KeyDown, 1 },
+		{ "KeyToggled", &natives::_KeyToggled, 1 },
 		{ "CreateEnemyFromScript", &natives::_CreateEnemyFromScript, 1 },
 		{ "CreateEnemyFromFile", &natives::_CreateEnemyFromFile, 1 },
 		{ "TerminateScript", &natives::_TerminateScript, 0 },
@@ -1443,6 +1445,8 @@ void parser::registerNatives()
 		{ "ObjFont_SetRect", &natives::_ObjFont_SetRect, 5 },
 		{ "ObjFont_SetString", &natives::_ObjFont_SetString, 2 },
 		{ "ObjFont_SetColor", &natives::_ObjFont_SetColor, 5 },
+		{ "ObjFont_SetSize", &natives::_ObjFont_SetSize, 2 },
+		{ "ObjFont_SetFaceName", &natives::_ObjFont_SetFaceName, 2 },
 		{ "ALPHA_BLEND", &natives::_ALPHA_BLEND, 0 },
 		{ "ADDITIVE_BLEND", &natives::_ADDITIVE_BLEND, 0 },
 		{ "PRIMITIVE_TRIANGLELIST", &natives::_PRIMITIVE_TRIANGLELIST, 0 },

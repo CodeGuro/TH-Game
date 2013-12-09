@@ -311,6 +311,18 @@ void natives::_atan2( script_engine * eng, size_t * argv )
 	eng->scriptDataAssign( argv[ 0 ], tmp );
 	eng->releaseScriptData( tmp );
 }
+void natives::_KeyDown( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( (GetKeyState( (int)eng->getRealScriptData( argv[ 0 ] )) & 0x8000 ) != 0 );
+	eng->scriptDataAssign( argv[ 0 ], tmp );
+	eng->releaseScriptData( tmp );
+}
+void natives::_KeyToggled( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( (GetKeyState( (int)eng->getRealScriptData( argv[ 0 ] )) & 0x1 ) != 0 );
+	eng->scriptDataAssign( argv[ 0 ], tmp );
+	eng->releaseScriptData( tmp );
+}
 void natives::_CreateEnemyFromScript( script_engine * eng, size_t * argv )
 {
 	size_t scriptIndex = eng->findScript( eng->getStringScriptData( argv[ 0 ] ) );
@@ -483,6 +495,14 @@ void natives::_ObjFont_SetColor( script_engine * eng, size_t * argv )
 	if( obj )
 		obj->Color = D3DCOLOR_RGBA( (UINT)eng->getRealScriptData( argv[ 1 ] ), (UINT)eng->getRealScriptData( argv[ 2 ] ),
 			(UINT)eng->getRealScriptData( argv[ 3 ] ), (UINT)eng->getRealScriptData( argv[ 4 ] ) );
+}
+void natives::_ObjFont_SetSize( script_engine * eng, size_t * argv )
+{
+	eng->ObjFont_SetSize( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ) );
+}
+void natives::_ObjFont_SetFaceName( script_engine * eng, size_t * argv )
+{
+	eng->ObjFont_SetFaceName( eng->getObjHandleScriptData( argv[ 0 ] ), eng->getStringScriptData( argv[ 1 ] ) );
 }
 void natives::_ALPHA_BLEND( script_engine * eng, size_t * argv )
 {

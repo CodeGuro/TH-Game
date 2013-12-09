@@ -161,6 +161,10 @@ protected:
 	//ObjShot Functions
 	void ObjShot_SetGraphic( unsigned HandleIdx, ULONG ID );
 
+	//ObjEffect Functions
+	void ObjFont_SetSize( unsigned HandleIdx, ULONG Size );
+	void ObjFont_SetFaceName( unsigned HandleIdx, std::string const & FaceName );
+
 	//misc
 	void DrawObjects();
 

@@ -41,7 +41,6 @@ protected:
 class inventory : private inventory_mem, protected script_type_manager, protected virtual Battery
 {
 	friend class script_engine;
-	friend class parser;
 
 protected:
 	size_t fetchBlock();
