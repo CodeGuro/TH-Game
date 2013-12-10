@@ -37,6 +37,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	MSG msg;
 	GameEngine engine( hWnd );
 	engine.start();
+
 	do
 	{
 		PeekMessage( &msg, NULL, NULL, NULL, PM_REMOVE );

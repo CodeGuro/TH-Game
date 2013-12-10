@@ -7,42 +7,7 @@
 
 extern const std::string DefaultShader;
 
-unsigned VBufferMgr::FetchVertexBuffer()
-{
-	unsigned res;
-	if( GC.size() )
-	{
-		res = GC.back();
-		GC.pop_back();
-	}
-	else
-	{
-		res = VertexBuffers.size();
-		VertexBuffers.resize( res + 1 );
-	}
-	VertexBuffers[ res ].RefCount = 1;
-	return res;
-}
-vector< Vertex > & VBufferMgr::GetVertexBuffer( unsigned Idx )
-{
-	return VertexBuffers[ Idx ].VertexBuffer;
-}
-void VBufferMgr::AddRefVertexBuffer( unsigned Idx )
-{
-	++VertexBuffers[ Idx ].RefCount;
-}
-void VBufferMgr::DisposeVertexBuffer( unsigned Idx )
-{
-	if( VertexBuffers[ Idx ].RefCount == 0 )
-		assert( 0 );
-	if( !--VertexBuffers[ Idx ].RefCount )
-	{
-		VertexBuffers[ Idx ].VertexBuffer.resize( 0 );
-		GC.push_back( Idx );
-	}
-}
-
-Battery::Battery( HWND const hWnd ) : d3d( Direct3DCreate9( D3D_SDK_VERSION ) ) 
+Battery::Battery( HWND const hWnd )
 {
 	////////////////////////
 	/////Initialization/////
@@ -54,6 +19,11 @@ Battery::Battery( HWND const hWnd ) : d3d( Direct3DCreate9( D3D_SDK_VERSION ) )
 
 	D3DDISPLAYMODE d3ddm;
 	D3DPRESENT_PARAMETERS d3dpp;
+	{
+		LPDIRECT3D9 d3d_ptr = Direct3DCreate9( D3D_SDK_VERSION );
+		d3d = d3d_ptr;
+		d3d_ptr->Release();
+	}
 	d3d->EnumAdapterModes( D3DADAPTER_DEFAULT, D3DFMT_X8R8G8B8, d3d->GetAdapterModeCount( D3DADAPTER_DEFAULT, D3DFMT_X8R8G8B8 ) - 1, &d3ddm );
 		
 	d3dpp.BackBufferWidth = rec.right - rec.left;
@@ -489,7 +459,7 @@ unsigned Battery::CreateFontObject()
 		vFontObjects.resize( 1 + res );
 	}
 	RECT r = { 0, 0, 640, 480 };
-	LPD3DXFONT pFont;
+	D3DSmartPtr< LPD3DXFONT > pFont;
 	D3DXCreateFont( GetDevice(), 16, 0, FW_NORMAL, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Calibri", &pFont );
 	vFontObjects[ res ].pFont = pFont;
 	vFontObjects.back().Color = D3DCOLOR_RGBA( 255, 255, 255, 255 );
@@ -706,6 +676,40 @@ void Battery::ObjFont_SetFaceName( unsigned HandleIdx, std::string const & FaceN
 }
 
 //misc
+unsigned Battery::FetchVertexBuffer()
+{
+	unsigned res;
+	if( VertexBuffersGC.size() )
+	{
+		res = VertexBuffersGC.back();
+		VertexBuffersGC.pop_back();
+	}
+	else
+	{
+		res = VertexBuffers.size();
+		VertexBuffers.resize( res + 1 );
+	}
+	VertexBuffers[ res ].RefCount = 1;
+	return res;
+}
+vector< Vertex > & Battery::GetVertexBuffer( unsigned Idx )
+{
+	return VertexBuffers[ Idx ].VertexBuffer;
+}
+void Battery::AddRefVertexBuffer( unsigned Idx )
+{
+	++VertexBuffers[ Idx ].RefCount;
+}
+void Battery::DisposeVertexBuffer( unsigned Idx )
+{
+	if( VertexBuffers[ Idx ].RefCount == 0 )
+		assert( 0 );
+	if( !--VertexBuffers[ Idx ].RefCount )
+	{
+		VertexBuffers[ Idx ].VertexBuffer.resize( 0 );
+		VertexBuffersGC.push_back( Idx );
+	}
+}
 void Battery::DrawObjects()
 {
 	D3DXMATRIX world, view, proj;
@@ -848,7 +852,7 @@ Direct3DEngine::Direct3DEngine()
 void Direct3DEngine::ToggleWindowed()
 {
 	D3DPRESENT_PARAMETERS d3dpp;
-	LPDIRECT3DSWAPCHAIN9 psc;
+	D3DSmartPtr< LPDIRECT3DSWAPCHAIN9 > psc;
 	D3DDISPLAYMODE d3ddm;
 
 	GetD3D()->EnumAdapterModes( D3DADAPTER_DEFAULT, D3DFMT_X8R8G8B8, GetD3D()->GetAdapterModeCount( D3DADAPTER_DEFAULT, D3DFMT_X8R8G8B8 ) - 1, &d3ddm );
@@ -916,45 +920,6 @@ void Direct3DEngine::DrawGridTerrain( unsigned Rows, unsigned Columns, float Spa
 	GetDevice()->DrawPrimitive( D3DPT_LINELIST, 0, Rows + Columns );
 	pvb->Release();
 }
-void Direct3DEngine::DrawTexture()
-{
-	LPDIRECT3DVERTEXBUFFER9 pvb;
-	const char * csTexture = "tester.png";
-	LoadTexture( csTexture );
-	
-	Vertex verts[] =
-	{
-		{ D3DXVECTOR3( -128.f, -128.f, 0.f ), D3DXVECTOR2( 0.f, 0.f ), D3DCOLOR_ARGB( 200, 0, 0, 255 ) },
-		{ D3DXVECTOR3(128.f, -128.f, 0.f ), D3DXVECTOR2( 1.f, 0.f ), D3DCOLOR_ARGB( 200, 255, 0 , 0 ) },
-		{ D3DXVECTOR3(-128.f, 128.f, 0.f ), D3DXVECTOR2( 0.f, 1.f ), D3DCOLOR_ARGB( 200, 255, 255, 255 ) },
-		{ D3DXVECTOR3(128.f, 128.f, 0.f ), D3DXVECTOR2( 1.f, 1.f ), D3DCOLOR_ARGB( 200, 0, 255, 0 ) },
-	};
-	GetDevice()->CreateVertexBuffer( sizeof( verts ), D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &pvb, 0 );
-	
-	void * ptr;
-	pvb->Lock( 0, NULL, &ptr, D3DLOCK_DISCARD );
-	memcpy( ptr, verts, sizeof( verts ) );
-	pvb->Unlock();
-
-	D3DXMATRIX world, view, proj;
-	D3DXMatrixIdentity( &world );
-	D3DXMatrixOrthoLH( &proj, 640.f, -480.f, 0.f, 100.f );
-	D3DXMatrixLookAtLH(&view, &D3DXVECTOR3(0,0,-1.f), &D3DXVECTOR3(0,0,0 ), &D3DXVECTOR3(0,1,0) );
-	D3DXMatrixTranslation( &world, -640.f/4 - 0.5f, 0.f - 0.5f, 0.f );
-	GetDefaultConstable()->SetMatrix( GetDevice(), "WorldViewProjMat", &(world*view*proj) );
-	//GetDevice()->SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
-	GetDevice()->SetTexture( 0, GetTexture( std::string( csTexture ) ) );
-	GetDevice()->SetStreamSource( 0, pvb, 0, sizeof( Vertex ) );
-	GetDevice()->SetVertexDeclaration( GetDefaultVDeclaration() );
-	GetDevice()->SetVertexShader( GetDefaultVShader() );
-	GetDevice()->SetPixelShader( GetDefaultPShader() );
-	GetDevice()->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
-	GetDevice()->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
-	GetDevice()->SetSamplerState( 0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR );
-	GetDevice()->DrawPrimitive( D3DPT_TRIANGLESTRIP, 0, 2 );
-	pvb->Release();
-
-}
 void Direct3DEngine::DrawFPS()
 {
 
@@ -980,15 +945,17 @@ void Direct3DEngine::DrawFPS()
 }
 void Direct3DEngine::ProcUserInput( MSG const Msg )
 {
-	D3DXMATRIX DisplaceMat;
-	D3DXMatrixIdentity( &DisplaceMat );
+	D3DXMATRIX UpDown;
+	D3DXMATRIX LeftRight;
+	D3DXMatrixIdentity( &UpDown );
+	D3DXMatrixIdentity( &LeftRight );
 	if( GetKeyState( VK_UP ) & 0x8000 )
-		D3DXMatrixTranslation( &DisplaceMat, 0.0f, 0.0f, -0.1f );
+		D3DXMatrixTranslation( &UpDown, 0.0f, 0.0f, -0.1f );
 	if( GetKeyState( VK_DOWN ) & 0x8000 )
-		D3DXMatrixTranslation( &DisplaceMat, 0.0f, 0.0f, 0.1f );
+		D3DXMatrixTranslation( &UpDown, 0.0f, 0.0f, 0.1f );
 	if( GetKeyState( VK_LEFT ) & 0x8000 )
-		D3DXMatrixRotationY( &DisplaceMat, D3DX_PI / 180.f );
+		D3DXMatrixRotationY( &LeftRight, D3DX_PI / 180.f );
 	if( GetKeyState( VK_RIGHT ) & 0x8000 )
-		D3DXMatrixRotationY( &DisplaceMat, D3DX_PI / -180.f );
-	ViewMatrix *= DisplaceMat;
+		D3DXMatrixRotationY( &LeftRight, D3DX_PI / -180.f );
+	ViewMatrix *= UpDown * LeftRight;
 }

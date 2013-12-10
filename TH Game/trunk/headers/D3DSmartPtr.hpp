@@ -39,6 +39,7 @@ public:
 	T & operator = ( T const & Source )
 	{
 		if( GetIUnknown( Source ) ) GetIUnknown( Source )->AddRef();
+		if( GetIUnknown() ) GetIUnknown()->Release();
 		member = Source;
 		return member;
 	}

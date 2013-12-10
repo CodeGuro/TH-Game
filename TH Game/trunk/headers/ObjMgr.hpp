@@ -81,6 +81,7 @@ struct ObjMgr
 	D3DPRIMITIVETYPE PrimitiveType;
 	BlendType BlendState;
 	ULONG Flags;
+
 	D3DSmartPtr< LPDIRECT3DTEXTURE9 > pTexture;
 	D3DSmartPtr< LPDIRECT3DVERTEXDECLARATION9 > VDeclaration;
 	D3DSmartPtr< LPDIRECT3DVERTEXSHADER9 > VShader;

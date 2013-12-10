@@ -33,24 +33,6 @@ struct D3DVBuffer
 	ULONG BufferSize;
 };
 
-class VBufferMgr
-{
-private:
-	struct VBuffer
-	{
-		vector< Vertex > VertexBuffer;
-		ULONG RefCount;
-	};
-	vector< VBuffer > VertexBuffers;
-	vector< ULONG > GC;
-
-protected:
-	unsigned FetchVertexBuffer();
-	vector< Vertex > & GetVertexBuffer( unsigned Idx );
-	void AddRefVertexBuffer( unsigned Idx );
-	void DisposeVertexBuffer( unsigned Idx );
-};
-
 struct FontObject
 {
 	D3DSmartPtr< LPD3DXFONT > pFont;
@@ -77,9 +59,14 @@ struct WaveHeaderType
 		unsigned long dataSize;
 };
 
-class Battery : private VBufferMgr
+class Battery
 {
 private:
+	struct VBuffer
+	{
+		vector< Vertex > VertexBuffer;
+		ULONG RefCount;
+	};
 	D3DSmartPtr< LPDIRECT3D9 > d3d;
 	D3DSmartPtr< LPDIRECT3DDEVICE9 > d3ddev;
 	D3DSmartPtr< LPDIRECT3DVERTEXDECLARATION9 > pDefaultVDeclaration;
@@ -96,7 +83,8 @@ private:
 	vLayer_t vLayers;
 	vector< ShotData > Bullet_Templates;
 	vector< unsigned > Bullet_TemplateOffsets;
-	//vector< DelayData > Bullet_Delays;
+	vector< VBuffer > VertexBuffers;
+	vector< ULONG > VertexBuffersGC;
 	vector< FontObject > vFontObjects;
 	vector< unsigned > vFontObjectsGC;
 	vector< vector< Object > > vvObjects;
@@ -167,6 +155,10 @@ protected:
 	void ObjFont_SetFaceName( unsigned HandleIdx, std::string const & FaceName );
 
 	//misc
+	unsigned FetchVertexBuffer();
+	vector< Vertex > & GetVertexBuffer( unsigned Idx );
+	void AddRefVertexBuffer( unsigned Idx );
+	void DisposeVertexBuffer( unsigned Idx );
 	void DrawObjects();
 
 	//constructor
@@ -177,17 +169,13 @@ protected:
 class Direct3DEngine : protected virtual Battery
 {
 public:
-	//friend class ObjMgr;
 	Direct3DEngine();
-	/* We will probably not need move semantics
-	Direct3DEngine & operator = ( Direct3DEngine && source );
-	Direct3DEngine( Direct3DEngine && source ); */
 	void ToggleWindowed();
 	void DrawGridTerrain( unsigned Rows, unsigned Columns, float Spacing );
-	void DrawTexture();
 	void DrawFPS();
 	void RenderFrame( MSG const Msg );
 	void ProcUserInput( MSG const Msg );
+	auto GetD3D() -> LPDIRECT3D9 { return Battery::GetD3D(); }
 
 	void SetFog( D3DCOLOR Color, float Near, float Far );
 };

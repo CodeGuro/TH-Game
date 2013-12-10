@@ -145,6 +145,3 @@ void script_engine::raise_exception( eng_exception const & eng_except )
 {
 	throw eng_except;
 }
-script_engine::~script_engine()
-{
-}

@@ -22,9 +22,6 @@ private:
 	void callSub( size_t machineIndex, script_container::sub AtSub );
 public:
 	script_engine();
-	script_engine( script_engine const & source );
-	script_engine & operator = ( script_engine const & source );
-	~script_engine();
 	void cleanEngine(); //remove all cache
 	void start();
 	bool advance(); //true if finished (i.e. no script executers left to run)

@@ -8,6 +8,5 @@ function addfunc( let a, let b)
 
 function bar( let val )
 {
-	print( "bar!" );
 	foo( val );
 }
