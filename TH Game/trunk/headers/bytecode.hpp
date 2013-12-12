@@ -134,6 +134,7 @@ private:
 	static void _subtract( script_engine * eng, size_t * argv );
 	static void _multiply( script_engine * eng, size_t * argv );
 	static void _divide( script_engine * eng, size_t * argv );
+	static void _modulus( script_engine * eng, size_t * argv );
 	static void _negative( script_engine * eng, size_t * argv );
 	static void _power( script_engine * eng, size_t * argv );
 	static void _concatenate( script_engine * eng, size_t * argv );
@@ -171,6 +172,7 @@ private:
 	static void _atan2( script_engine * eng, size_t * argv );
 	static void _KeyDown( script_engine * eng, size_t * argv );
 	static void _KeyToggled( script_engine * eng, size_t * argv );
+	static void _KeyPressed( script_engine * eng, size_t * argv );
 	static void _CreateEnemyFromScript( script_engine * eng, size_t * argv );
 	static void _CreateEnemyFromFile( script_engine * eng, size_t * argv );
 	static void _TerminateScript( script_engine * eng, size_t * argv );
@@ -211,6 +213,7 @@ private:
 	static void _LoadTexture( script_engine * eng, size_t * argv );
 	static void _LoadUserShotData( script_engine * eng, size_t * argv );
 	static void _CreateShot01( script_engine * eng, size_t * argv );
+	static void _TerminateProgram( script_engine * eng, size_t * argv );
 };
 
 struct eng_exception
@@ -220,6 +223,8 @@ struct eng_exception
 		eng_error, finalizing_machine
 	};
 	Reason throw_reason;
+	std::string const Str;
 	eng_exception();
 	eng_exception( Reason const r );
+	eng_exception( Reason const r, std::string const & String );
 };

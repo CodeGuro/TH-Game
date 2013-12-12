@@ -94,6 +94,12 @@ void natives::_divide( script_engine * eng, size_t * argv )
 	eng->scriptDataAssign( argv[0], tmp );
 	eng->releaseScriptData( tmp );
 }
+void natives::_modulus( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( fmod( eng->getScriptData( argv[0] ).real, eng->getScriptData( argv[1] ).real ) );
+	eng->scriptDataAssign( argv[0], tmp );
+	eng->releaseScriptData( tmp );
+}
 void natives::_negative( script_engine * eng, size_t * argv )
 {
 	size_t tmp = eng->fetchScriptData( -(eng->getScriptData( argv[0] ).real) );
@@ -323,6 +329,12 @@ void natives::_KeyToggled( script_engine * eng, size_t * argv )
 	eng->scriptDataAssign( argv[ 0 ], tmp );
 	eng->releaseScriptData( tmp );
 }
+void natives::_KeyPressed( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( GetAsyncKeyState( (int)eng->getRealScriptData( argv[ 0 ] )) == -32767 );
+	eng->scriptDataAssign( argv[ 0 ], tmp );
+	eng->releaseScriptData( tmp );
+}
 void natives::_CreateEnemyFromScript( script_engine * eng, size_t * argv )
 {
 	size_t scriptIndex = eng->findScript( eng->getStringScriptData( argv[ 0 ] ) );
@@ -549,4 +561,10 @@ void natives::_CreateShot01( script_engine * eng, size_t * argv )
 	obj->SetAngle( eng->getRealScriptData( argv[ 3 ] ) );
 	eng->scriptDataAssign( argv[ 0 ], tmp );
 	eng->releaseScriptData( tmp );
+}
+void natives::_TerminateProgram( script_engine * eng, size_t * argv )
+{
+	eng->finished = true;
+	eng->cleanEngine();
+	eng->raise_exception( eng_exception::finalizing_machine );
 }

@@ -97,7 +97,7 @@ private:
 	void parseInlineBlock( block::block_kind const bk_kind ); //auto-call (if/loops)
 	void parseBlock( symbol const symSub, vector< std::string > const & args );
 	void scanCurrentScope( block::block_kind kind, vector< std::string > const & args );
-	block & getBlock(); //get the current working block
+	block & getCurrentBlock(); //get the current working block
 	void pushCode( code const & val ); //on the current working block
 	void mapScriptPaths( std::string const & pathStart );
 	void registerScript( std::string const & fullPath );

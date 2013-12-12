@@ -11,19 +11,19 @@ class script_engine : protected virtual Battery, protected virtual inventory, pr
 {
 private:
 	friend class script_machine;
-	friend class parser;
 	friend struct natives;
-	using inventory::getBlock;
 	
 	bool error;
+	bool finished;
 	std::string errorMessage;
 	size_t currentRunningMachine;
 
+	void raise_exception( eng_exception const & eng_except );
 	void callSub( size_t machineIndex, script_container::sub AtSub );
 public:
 	script_engine();
 	void cleanEngine(); //remove all cache
 	void start();
 	bool advance(); //true if finished (i.e. no script executers left to run)
-	void raise_exception( eng_exception const & eng_except );
+	bool IsFinished();
 };

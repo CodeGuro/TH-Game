@@ -175,7 +175,6 @@ public:
 	void DrawFPS();
 	void RenderFrame( MSG const Msg );
 	void ProcUserInput( MSG const Msg );
-	auto GetD3D() -> LPDIRECT3D9 { return Battery::GetD3D(); }
 
 	void SetFog( D3DCOLOR Color, float Near, float Far );
 };

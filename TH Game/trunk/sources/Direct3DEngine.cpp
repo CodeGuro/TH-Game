@@ -34,7 +34,7 @@ Battery::Battery( HWND const hWnd )
 	d3dpp.MultiSampleQuality = D3DMULTISAMPLE_NONE;
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	d3dpp.hDeviceWindow = hWnd;
-	d3dpp.Windowed = (MessageBox(NULL, "Fullscreen Mode?", "FULLSCREEN/WINDOW", MB_YESNO | MB_ICONQUESTION ) == IDNO)? TRUE : FALSE;
+	d3dpp.Windowed = (MessageBox( NULL, "Fullscreen Mode?", "FULLSCREEN/WINDOW", MB_YESNO | MB_ICONQUESTION | MB_TASKMODAL | MB_TOPMOST ) == IDNO)? TRUE : FALSE;
 	d3dpp.EnableAutoDepthStencil= TRUE;
 	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
 	d3dpp.FullScreen_RefreshRateInHz = d3dpp.Windowed == TRUE? 0 : d3ddm.RefreshRate;
@@ -460,12 +460,13 @@ unsigned Battery::CreateFontObject()
 	}
 	RECT r = { 0, 0, 640, 480 };
 	D3DSmartPtr< LPD3DXFONT > pFont;
-	D3DXCreateFont( GetDevice(), 16, 0, FW_NORMAL, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Calibri", &pFont );
-	vFontObjects[ res ].pFont = pFont;
-	vFontObjects.back().Color = D3DCOLOR_RGBA( 255, 255, 255, 255 );
-	vFontObjects.back().Format = DT_TOP | DT_LEFT;
-	vFontObjects.back().Rect = r;
-	vFontObjects.back().String = "Hello World!";
+	D3DXCreateFont( GetDevice(), 16, 0, FW_NORMAL, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Tahoma", &pFont );
+	auto & Result= vFontObjects[ res ];
+	Result.pFont = pFont;
+	Result.Color = D3DCOLOR_RGBA( 255, 255, 255, 255 );
+	Result.Format = DT_TOP | DT_LEFT;
+	Result.Rect = r;
+	Result.String = "Hello World!";
 	return res;
 }
 FontObject * Battery::GetFontObject( unsigned HandleIdx )
@@ -934,7 +935,7 @@ void Direct3DEngine::DrawFPS()
 		Frame = -1;
 	}
 	LPD3DXFONT pFont;
-	D3DXCreateFont( GetDevice(), 30, 0, FW_NORMAL, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Lucida", &pFont );
+	D3DXCreateFont( GetDevice(), 30, 0, FW_NORMAL, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Tahoma", &pFont );
 	RECT rec = { 0, 0, 640, 480 };
 	std::stringstream ss;
 	ss << FrameShow;

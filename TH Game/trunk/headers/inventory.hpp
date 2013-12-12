@@ -40,8 +40,6 @@ protected:
 
 class inventory : private inventory_mem, protected script_type_manager, protected virtual Battery
 {
-	friend class script_engine;
-
 protected:
 	size_t fetchBlock();
 	block & getBlock( size_t index );
@@ -87,5 +85,6 @@ protected:
 	size_t findScriptFromFile( std::string const & scriptPath );
 	size_t findScriptDirectory( std::string const & scriptPath );
 	std::string const & getCurrentScriptDirectory( size_t machineIdx ) const;
+	unsigned getMachineCount() const;
 	void cleanInventory( class script_engine & eng );
 };

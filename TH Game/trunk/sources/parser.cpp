@@ -438,12 +438,17 @@ void parser::parseSum()
 void parser::parseProduct()
 {
 	parsePrefix();
-	while( lexicon.getToken() == tk_asterisk || lexicon.getToken() == tk_slash )
+	while( lexicon.getToken() == tk_asterisk || lexicon.getToken() == tk_slash || lexicon.getToken() == tk_percent )
 	{
-		token tok = lexicon.getToken();
+		std::string operation;
+		switch( lexicon.getToken() )
+		{
+		case tk_asterisk: operation = "multiply"; break;
+		case tk_slash: operation = "divide"; break;
+		case tk_percent: operation = "modulus"; break;
+		}
 		lexicon.advance();
 		parsePrefix();
-		std::string operation = ( tok == tk_asterisk ? "multiply" : "divide" );
 		writeOperation( operation );
 	}
 }
@@ -577,13 +582,13 @@ unsigned parser::parseArguments()
 	}
 	return argc;
 }
-block & parser::getBlock()
+block & parser::getCurrentBlock()
 {
 	return inventory::getBlock( getBlockIndex() );
 }
 void parser::pushCode( code const & val )
 {
-	getBlock().vecCodes.push_back( val );
+	getCurrentBlock().vecCodes.push_back( val );
 }
 void parser::raiseError( std::string errmsg, error::errReason reason)
 {
@@ -905,7 +910,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			{
 				if( inventory::getBlock( subsym->blockIndex ).kind == block::bk_function )
 					raiseError( std::string() + "\"" + subname + "\" must be prefixed with \"@\"", error::er_syntax );
-				script_container * s_cont = getScript( getBlock().name );
+				script_container * s_cont = getScript( getCurrentBlock().name );
 				if( !s_cont ) raiseError( std::string() +"@\"" + subname + "\" must be defined 1 level above the scope of script's block", error::er_parser );
 				if( subname == "Initialize" ) s_cont->InitializeBlock = subsym->blockIndex;
 				else if( subname == "MainLoop" ) s_cont->MainLoopBlock = subsym->blockIndex;
@@ -1001,12 +1006,12 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			{
 				parseParentheses();
 				writeOperation( "uniqueize" ); 
-				loopBackIndex = getBlock().vecCodes.size(); 
+				loopBackIndex = getCurrentBlock().vecCodes.size(); 
 				pushCode( code::code( vc_loopIfDecr ) );
 			}
 			else
 			{
-				loopBackIndex = getBlock().vecCodes.size();
+				loopBackIndex = getCurrentBlock().vecCodes.size();
 			}
 			parseInlineBlock( block::bk_loop );
 			pushCode( code::loop( vc_loopBack, loopBackIndex ) );
@@ -1018,7 +1023,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 			if( lexicon.advance() == tk_lparen )
 			{
 			
-				unsigned loopBackIndex = getBlock().vecCodes.size();
+				unsigned loopBackIndex = getCurrentBlock().vecCodes.size();
 				parseParentheses();
 				pushCode( code::code( vc_loopIf ) );
 				parseInlineBlock( block::bk_loop );
@@ -1378,6 +1383,7 @@ void parser::registerNatives()
 		{ "subtract", &natives::_subtract, 2 },
 		{ "multiply", &natives::_multiply, 2 },
 		{ "divide", &natives::_divide, 2 },
+		{ "modulus", &natives::_modulus, 2 },
 		{ "negative", &natives::_negative, 1 },
 		{ "power", &natives::_power, 2 },
 		{ "concatenate", &natives::_concatenate, 2 }, 
@@ -1415,6 +1421,7 @@ void parser::registerNatives()
 		{ "atan2", &natives::_atan2, 2 },
 		{ "KeyDown", &natives::_KeyDown, 1 },
 		{ "KeyToggled", &natives::_KeyToggled, 1 },
+		{ "KeyPressed", &natives::_KeyPressed, 1 },
 		{ "CreateEnemyFromScript", &natives::_CreateEnemyFromScript, 1 },
 		{ "CreateEnemyFromFile", &natives::_CreateEnemyFromFile, 1 },
 		{ "TerminateScript", &natives::_TerminateScript, 0 },
@@ -1454,7 +1461,8 @@ void parser::registerNatives()
 		{ "PRIMITIVE_TRIANGLEFAN", &natives::_PRIMITIVE_TRIANGLEFAN, 0 },
 		{ "LoadTexture", &natives::_LoadTexture, 1 },
 		{ "LoadUserShotData", &natives::_LoadUserShotData, 1 },
-		{ "CreateShot01", &natives::_CreateShot01, 5 }
+		{ "CreateShot01", &natives::_CreateShot01, 5 },
+		{ "TerminateProgram", &natives::_TerminateProgram, 0 }
 	};
 	for( unsigned i = 0; i <  sizeof( funcs ) / sizeof( native_function ); ++i )
 	{

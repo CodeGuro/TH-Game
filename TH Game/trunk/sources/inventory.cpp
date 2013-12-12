@@ -523,3 +523,7 @@ void inventory::cleanInventory( class script_engine & eng )
 	inventory_mem * this_inv = this;
 	*this_inv = inventory_mem();
 }
+unsigned inventory::getMachineCount() const
+{
+	return vecMachines.size();
+}

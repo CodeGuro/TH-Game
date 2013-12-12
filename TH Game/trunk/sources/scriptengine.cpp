@@ -12,9 +12,12 @@ eng_exception::eng_exception() : throw_reason( eng_error )
 eng_exception::eng_exception( Reason const r ) : throw_reason( r )
 {
 }
+eng_exception::eng_exception( Reason const r, std::string const & String ) : throw_reason( r ), Str( String )
+{
+}
 
 //script engine - public functions, called from the outside
-script_engine::script_engine() : error( false ), currentRunningMachine( -1 )
+script_engine::script_engine() : error( false ), finished( false ), currentRunningMachine( -1 )
 {
 }
 void script_engine::cleanEngine()
@@ -45,33 +48,32 @@ void script_engine::start()
 		GetOpenFileNameA( &ofn );
 		SetCurrentDirectory( buff );
 		scriptPath= ofn.lpstrFile;
-		if( !scriptPath.size() )
-		{
-			MessageBox( NULL, "File not selected", "script_engine::start", NULL );
-			return;
-		}
+		if( !scriptPath.size() ) raise_exception( eng_exception( eng_exception::eng_error, std::string( "No Script Chosen" ) ) );
 		parseScript( scriptPath );
 		size_t scriptIdx = findScriptFromFile( getCurrentScriptPath() );
-		if( !CheckValidIdx( scriptIdx ) ) return;
+		if( !CheckValidIdx( scriptIdx ) ) raise_exception( eng_exception( eng_exception::eng_error ) );
 		currentRunningMachine = fetchScriptMachine();
 		script_machine & machine = getScriptMachine( currentRunningMachine );
 		machine.initialize( *this, scriptIdx );
 	}
 	catch( eng_exception const & error )
 	{
-		assert( error.throw_reason == eng_exception::eng_error );
-		cleanEngine();
-		start();
+		if( error.throw_reason == eng_exception::eng_error )
+		{
+			MessageBox( NULL, error.Str.c_str(), "Engine Error", MB_TASKMODAL );
+			cleanEngine();
+			start();
+		}
 	}
 }
 bool script_engine::advance()
 {
 	unsigned u = 0;
-	while( u < inventory::vecMachines.size() )
+	while( u < getMachineCount() )
 	{
 		try
 		{
-			for(; u < inventory::vecMachines.size(); ++u )
+			for(; u < getMachineCount(); ++u )
 			{
 				if( error ) return false;
 				callSub( u, script_container::AtMainLoop );
@@ -100,7 +102,7 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 	script_machine & m = getScriptMachine( machineIndex );
 	assert( CheckValidIdx( m.current_thread_index ) && CheckValidIdx( m.current_script_index ) );
 	size_t blockIndex = -1;
-	script_container & sc = vecScripts[ m.current_script_index ];
+	script_container & sc = getScript( m.current_script_index );
 	//initializing
 	if( !m.threads.size() )
 	{
@@ -144,4 +146,8 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 void script_engine::raise_exception( eng_exception const & eng_except )
 {
 	throw eng_except;
+}
+bool script_engine::IsFinished()
+{
+	return finished;
 }

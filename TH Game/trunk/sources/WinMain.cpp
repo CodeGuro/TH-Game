@@ -45,7 +45,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 		DispatchMessage( &msg );
 		engine.advance();
 		engine.RenderFrame( msg );
-	}while( msg.message != WM_QUIT );
+	}while( msg.message != WM_QUIT && !engine.IsFinished() );
 
 	return EXIT_SUCCESS;
 }
