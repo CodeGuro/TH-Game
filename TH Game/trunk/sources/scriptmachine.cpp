@@ -75,6 +75,12 @@ bool script_machine::advance( script_engine & eng )
 			eng.scriptDataAssign( env.stack.back(), e->values[ current_code.variableIndex ] );
 		}
 		break;
+	case vc_duplicate:
+		{
+			eng.addRefScriptData( env.stack.back() );
+			env.stack.push_back( env.stack.back() );
+		}
+		break;
 	case vc_callFunction:
 	case vc_callFunctionPush:
 	case vc_callTask:
@@ -85,12 +91,14 @@ bool script_machine::advance( script_engine & eng )
 				env.stack.push_back( -1 );
 				unsigned popCount = current_code.argc + (current_code.command != vc_callFunctionPush ? 1 : 0 );
 				b.nativeCallBack( &eng, &env.stack[ env.stack.size() - ( 1 + current_code.argc ) ] );
-				script_machine & current_machine = eng.getScriptMachine( eng.currentRunningMachine );
-				script_environment & env = eng.getScriptEnvironment( current_machine.threads[ current_machine.current_thread_index ] ); //in case of re-allocation
-				for( unsigned u = 0; u < popCount; ++ u )
 				{
-					eng.releaseScriptData( env.stack.back() );
-					env.stack.pop_back();
+					script_machine & current_machine = eng.getScriptMachine( eng.currentRunningMachine );
+					script_environment & env = eng.getScriptEnvironment( current_machine.threads[ current_machine.current_thread_index ] ); //in case of re-allocation
+					for( unsigned u = 0; u < popCount; ++ u )
+					{
+						eng.releaseScriptData( env.stack.back() );
+						env.stack.pop_back();
+					}
 				}
 			}
 			else
@@ -144,31 +152,15 @@ bool script_machine::advance( script_engine & eng )
 					do
 						++(e->codeIndex);
 					while( eng.getBlock( e->blockIndex ).vecCodes[ e->codeIndex - 1 ].command != vc_loopBack );
+					assert( env.stack.size() == 0 );
+					assert( e->stack.size() == 0 );
 				}
 			}while( !BaseRoutine );
 		}
 		break;
-	case vc_loopIfDecr:
-		{
-			float real = eng.getRealScriptData( env.stack.back() );
-			if( real <= 0 )
-			{
-				eng.releaseScriptData( env.stack.back() );
-				env.stack.pop_back();
-				do
-					++env.codeIndex;
-				while( eng.getBlock( env.blockIndex ).vecCodes[ env.codeIndex - 1 ].command != vc_loopBack );
-			}
-			else
-			{
-				eng.releaseScriptData( env.stack.back() );
-				env.stack.back() = eng.fetchScriptData( real - 1 );
-			}
-		}
-		break;
 	case vc_loopIf:
 		{
-			if( eng.getRealScriptData( env.stack.back() ) <= 0 )
+			if( eng.getRealScriptData( env.stack.back() ) != 0.f )
 			{
 				do
 					++env.codeIndex;
@@ -176,6 +168,7 @@ bool script_machine::advance( script_engine & eng )
 			}
 			eng.releaseScriptData( env.stack.back() );
 			env.stack.pop_back();
+			assert( env.stack.size() == 0 );
 		}
 		break;
 	case vc_loopBack:
@@ -189,11 +182,31 @@ bool script_machine::advance( script_engine & eng )
 			float real = eng.getRealScriptData( env.stack.back() );
 			eng.releaseScriptData( env.stack.back() );
 			env.stack.pop_back();
-			if( real <= 0 )
+			if( real != 0.f )
 			{
 				do
 					++env.codeIndex;
 				while( eng.getBlock( env.blockIndex ).vecCodes[ env.codeIndex - 1 ].command != vc_caseNext );
+				assert( env.stack.size() == 0 );
+			}
+		}
+		break;
+	case vc_loopAscent:
+	case vc_loopDescent:
+		{
+			float real = eng.getRealScriptData( env.stack.back() );
+			eng.releaseScriptData( env.stack.back() );
+			env.stack.pop_back();
+			bool proceed = ((current_code.command == vc_loopAscent) ? real > eng.getRealScriptData( env.stack.back() )
+				: real < eng.getRealScriptData( env.stack.back() ) );
+			if( !proceed )
+			{
+				eng.releaseScriptData( env.stack.back() );
+				env.stack.pop_back();
+				do
+					++env.codeIndex;
+				while( eng.getBlock( env.blockIndex ).vecCodes[ env.codeIndex - 1 ].command != vc_loopBack );
+				assert( env.stack.size() == 0 );
 			}
 		}
 		break;

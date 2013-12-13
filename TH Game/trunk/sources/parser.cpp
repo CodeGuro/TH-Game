@@ -314,6 +314,10 @@ parser::token parser::lexer::advance()
 					next = tk_WHILE;
 				else if( word == "loop" )
 					next = tk_LOOP;
+				else if( word == "ascent" )
+					next = tk_ASCENT;
+				else if( word == "descent" )
+					next = tk_DESCENT;
 				else if( word == "break" )
 					next = tk_BREAK;
 				else if( word == "let" )
@@ -1002,34 +1006,75 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 		else if( lexicon.getToken() == tk_LOOP )
 		{
 			unsigned loopBackIndex;
+			bool decrementing;
 			if( lexicon.advance() == tk_lparen )
 			{
+				decrementing = true;
 				parseParentheses();
 				writeOperation( "uniqueize" ); 
-				loopBackIndex = getCurrentBlock().vecCodes.size(); 
-				pushCode( code::code( vc_loopIfDecr ) );
+				loopBackIndex = getCurrentBlock().vecCodes.size();
+				pushCode( code::dat( vc_pushVal, fetchScriptData( 0.f ) ) );
+				pushCode( code::code( vc_loopDescent ) );
 			}
 			else
 			{
+				decrementing = false;
 				loopBackIndex = getCurrentBlock().vecCodes.size();
 			}
+			parseInlineBlock( block::bk_loop );
+			if( decrementing ) writeOperation( std::string( "decrement" ) );
+			pushCode( code::loop( vc_loopBack, loopBackIndex ) );
+			needSemicolon = false;
+		}
+
+		else if( lexicon.getToken() == tk_WHILE ) 
+		{
+			if( lexicon.advance() != tk_lparen ) raiseError( "\"(\" expected", error::er_syntax );
+			unsigned loopBackIndex = getCurrentBlock().vecCodes.size();
+			parseParentheses();
+			pushCode( code::code( vc_loopIf ) );
 			parseInlineBlock( block::bk_loop );
 			pushCode( code::loop( vc_loopBack, loopBackIndex ) );
 			needSemicolon = false;
 		}
 
-		else if( lexicon.getToken() == tk_WHILE )
+		else if( lexicon.getToken() == tk_ASCENT || lexicon.getToken() == tk_DESCENT )
 		{
-			if( lexicon.advance() == tk_lparen )
+			unsigned loopBackIndex;
+			token loopType = lexicon.getToken();
+			vector< std::string > arg;
+			symbol loop_symbol;
+			loop_symbol.blockIndex = fetchBlock();
+			loop_symbol.id = -1;
+			loop_symbol.level = -1;
+			block & b = getBlock( loop_symbol.blockIndex );
+			b.argc = 0;
+			b.kind = block::bk_loop;
+			b.nativeCallBack = 0;
+			if( lexicon.advance() != tk_lparen ) raiseError( "\"(\" expected", error::er_syntax );
+			if( lexicon.advance() == tk_LET ) lexicon.advance();
+			if( lexicon.getToken() != tk_word ) raiseError( "argument expected", error::er_syntax );
+			arg.push_back( lexicon.getWord() );
+			if( !(lexicon.advance() == tk_word && lexicon.getWord() == "in" ) ) raiseError( "\"in\" expected", error::er_syntax );
+			lexicon.advance();
+			parseExpression();
+			for( unsigned i = 0; i < 2; ++i )
 			{
-			
-				unsigned loopBackIndex = getCurrentBlock().vecCodes.size();
-				parseParentheses();
-				pushCode( code::code( vc_loopIf ) );
-				parseInlineBlock( block::bk_loop );
-				pushCode( code::loop( vc_loopBack, loopBackIndex ) );
-				needSemicolon = false;
+				if( lexicon.getToken() != tk_dot )
+					raiseError( "loop range has improper format", error::er_syntax );
+				lexicon.advance();
 			}
+			loopBackIndex = getCurrentBlock().vecCodes.size();
+			parseExpression();
+			if( lexicon.getToken() != tk_rparen ) raiseError( "\")\" expected", error::er_syntax );
+			lexicon.advance();
+			pushCode( code::code( loopType == tk_ASCENT ? vc_loopAscent : vc_loopDescent ) ); 
+			pushCode( code::code( vc_duplicate ) ); //arg gets consumed in call
+			pushCode( code::subArg( vc_callFunction, loop_symbol.blockIndex, 1 ) ); 
+			writeOperation( std::string( loopType == tk_ASCENT ? "increment" : "decrement" ) );
+			pushCode( code::loop( vc_loopBack, loopBackIndex ) );
+			parseBlock( loop_symbol, arg );
+			needSemicolon = false;
 		}
 
 		else if( lexicon.getToken() == tk_IF )
