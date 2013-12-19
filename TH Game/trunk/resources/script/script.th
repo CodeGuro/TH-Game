@@ -86,10 +86,12 @@ script_main main_script //main routine
 		ObjEffect_SetVertexXY( obj, 4, 16, 16 );
 		ObjEffect_SetVertexXY( obj, 5, -16, 16 );
 
-		ascent( i in 0 .. 6 )
-		{
-			ObjEffect_SetVertexColor( obj, i, 255, 255, 255, 255 );
-		}
+		ObjEffect_SetVertexColor( obj, 0, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 1, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 2, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 3, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 4, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 5, 255, 255, 255, 255 );
 
 		Obj_SetPosition( obj, x, y );
 		Obj_SetSpeed( obj, 0 );
@@ -127,10 +129,12 @@ script_main main_script //main routine
 		ObjEffect_SetVertexXY( obj, 4, 640, 480 );
 		ObjEffect_SetVertexXY( obj, 5, 0, 480 );
 
-		ascent( i in 0 .. 6 )
-		{
-			ObjEffect_SetVertexColor( obj, i, 255, 255, 255, 255 );
-		}
+		ObjEffect_SetVertexColor( obj, 0, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 1, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 2, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 3, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 4, 255, 255, 255, 255 );
+		ObjEffect_SetVertexColor( obj, 5, 255, 255, 255, 255 );
 		ObjEffect_SetLayer( obj, 6 );
 		Obj_SetPosition( obj, 0, 0 );
 		Obj_SetSpeed( obj, 0 );

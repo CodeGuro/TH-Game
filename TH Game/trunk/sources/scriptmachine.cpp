@@ -160,7 +160,7 @@ bool script_machine::advance( script_engine & eng )
 		break;
 	case vc_loopIf:
 		{
-			if( eng.getRealScriptData( env.stack.back() ) != 0.f )
+			if( eng.getRealScriptData( env.stack.back() ) == 0.f )
 			{
 				do
 					++env.codeIndex;
@@ -182,7 +182,7 @@ bool script_machine::advance( script_engine & eng )
 			float real = eng.getRealScriptData( env.stack.back() );
 			eng.releaseScriptData( env.stack.back() );
 			env.stack.pop_back();
-			if( real != 0.f )
+			if( real == 0.f )
 			{
 				do
 					++env.codeIndex;
