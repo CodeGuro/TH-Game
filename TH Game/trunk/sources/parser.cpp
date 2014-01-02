@@ -823,7 +823,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 
 	lexicon = anchorpoint;
 }
-/*incomplete*/ void parser::parseStatements()
+void parser::parseStatements()
 {
 	bool finished = false;
 	do
@@ -1464,6 +1464,7 @@ void parser::registerNatives()
 		{ "tan", &natives::_tan, 1 },
 		{ "atan", &natives::_atan, 1 },
 		{ "atan2", &natives::_atan2, 2 },
+		{ "length", &natives::_length, 1 },
 		{ "KeyDown", &natives::_KeyDown, 1 },
 		{ "KeyToggled", &natives::_KeyToggled, 1 },
 		{ "KeyPressed", &natives::_KeyPressed, 1 },

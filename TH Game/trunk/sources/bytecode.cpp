@@ -317,6 +317,12 @@ void natives::_atan2( script_engine * eng, size_t * argv )
 	eng->scriptDataAssign( argv[ 0 ], tmp );
 	eng->releaseScriptData( tmp );
 }
+void natives::_length( script_engine * eng, size_t * argv )
+{
+	size_t tmp = eng->fetchScriptData( (float)eng->getScriptData( argv[ 0 ] ).vec.size() );
+	eng->scriptDataAssign( argv[ 0 ], tmp );
+	eng->releaseScriptData( tmp );
+}
 void natives::_KeyDown( script_engine * eng, size_t * argv )
 {
 	size_t tmp = eng->fetchScriptData( (GetKeyState( (int)eng->getRealScriptData( argv[ 0 ] )) & 0x8000 ) != 0 );
