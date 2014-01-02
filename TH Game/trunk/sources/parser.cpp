@@ -543,6 +543,8 @@ void parser::parseClause()
 			do
 			{
 				lexicon.advance();
+				if( lexicon.getToken() == tk_closebra )
+					break;
 				parseExpression();
 				writeOperation( "appendArray" );
 			}while( lexicon.getToken() == tk_comma );

@@ -15,6 +15,7 @@ script_main main_script //main routine
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
 	{
+		functest();
 		LoadUserShotData( GetCurrentScriptDirectory() ~ "ShotData.th" );
 		LoadSound( sound );
 		STGFrame();
@@ -31,6 +32,13 @@ script_main main_script //main routine
 	//@DrawLoop omitted, SetEnemyGraphic() functions will be used to call that
 	@BackGround //routine called when the script is a stage
 	{
+	}
+	function functest()
+	{
+		let arr = [];
+		let arr2 = [ 0, 1, 2, 3 ];
+		let a = length( arr );
+		let b = length( arr2 );
 	}
 	task Task()
 	{
