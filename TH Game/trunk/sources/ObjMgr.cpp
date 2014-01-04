@@ -173,3 +173,33 @@ bool Object::FlagBullet( int flag )
 		return true;
 	}
 }
+bool Object::FlagCollision( int flag )
+{
+	switch( flag )
+	{
+	case -1:
+		return (flags & 0x40) != 0;
+	case 0:
+		flags = flags & ~0x40;
+		return false;
+	case 1:
+	default:
+		flags = flags | 0x40;
+		return true;
+	}
+}
+bool Object::FlagOutOfScreen( int flag )
+{
+	switch( flag )
+	{
+	case -1:
+		return (flags & 0x80) != 0;
+	case 0:
+		flags = flags & ~0x80;
+		return false;
+	case 1:
+	default:
+		flags = flags | 0x80;
+		return true;
+	}
+}

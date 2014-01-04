@@ -191,6 +191,7 @@ private:
 	static void _Obj_SetAngle( script_engine * eng, size_t * argv );
 	static void _Obj_SetVelocity( script_engine * eng, size_t * argv );
 	static void _Obj_SetAutoDelete( script_engine * eng, size_t * argv );
+	static void _Obj_ScriptLatch( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetTexture( script_engine * eng, size_t * argv );
 	static void _ObjEffect_CreateVertex( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetPrimitiveType( script_engine * eng, size_t * argv );

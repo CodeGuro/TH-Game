@@ -9,12 +9,15 @@ function foo( let val )
 
 script_main main_script //main routine
 {
+	let ObjEnemy;
 	let sound = GetCurrentScriptDirectory() ~ "se_tan02.wav";
 	let bulletTexture = GetCurrentScriptDirectory() ~ "etama.png";
 	let stgframeTexture = GetCurrentScriptDirectory() ~ "STG Frame.png";
 	//@[routine name][no args] <- events are routines called during notable events
 	@Initialize //routine called when the script machine initializes a new script
 	{
+		ObjEnemy = Obj_Create( OBJ_EFFECT );
+		Obj_ScriptLatch( ObjEnemy );
 		functest();
 		LoadUserShotData( GetCurrentScriptDirectory() ~ "ShotData.th" );
 		LoadSound( sound );

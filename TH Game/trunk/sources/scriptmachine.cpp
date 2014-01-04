@@ -8,6 +8,7 @@ void script_machine::initialize( script_engine & eng, size_t script_index )
 	assert( !threads.size() );
 	current_script_index = script_index;
 	object_vector_index = eng.fetchObjectVector();
+	script_object = -1;
 }
 bool script_machine::advance( script_engine & eng )
 {
@@ -240,7 +241,12 @@ void script_machine::clean( script_engine & eng )
 	current_script_index = -1;
 	current_thread_index = -1;
 	object_vector_index = -1;
+	script_object = -1;
 	assert( !threads.size() );
+}
+void script_machine::latchObject( size_t index )
+{
+	script_object = index;
 }
 size_t script_machine::getScriptIndex() const
 {

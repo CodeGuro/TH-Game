@@ -75,6 +75,7 @@ protected:
 	void releaseScriptMachine( size_t & index );
 	size_t fetchObjectVector();
 	void releaseObjectVector( size_t & index );
+	void latchScriptObjectToMachine( size_t index, size_t machineIdx );
 	size_t getBlockFromScript( std::string const & filePath, std::string const & scriptName );
 	void registerScript( std::string const scriptName );
 	void registerMainScript( std::string const scriptPath, std::string const scriptName );

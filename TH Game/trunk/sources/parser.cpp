@@ -1487,6 +1487,7 @@ void parser::registerNatives()
 		{ "Obj_SetAngle", &natives::_Obj_SetAngle, 2 },
 		{ "Obj_SetVelocity", &natives::_Obj_SetVelocity, 4 },
 		{ "Obj_SetAutoDelete", &natives::_Obj_SetAutoDelete, 2 },
+		{ "Obj_ScriptLatch", &natives::_Obj_ScriptLatch, 1 },
 		{ "ObjEffect_SetTexture", &natives::_ObjEffect_SetTexture, 2 },
 		{ "ObjEffect_CreateVertex", &natives::_ObjEffect_CreateVertex, 2 },
 		{ "ObjEffect_SetPrimitiveType", &natives::_ObjEffect_SetPrimitiveType, 2 },

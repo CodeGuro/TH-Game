@@ -59,6 +59,8 @@ struct Object
 	bool FlagGraze( int flag );
 	bool FlagPixelPerfect( int flag );
 	bool FlagBullet( int flag );
+	bool FlagCollision( int flag );
+	bool FlagOutOfScreen( int flag );
 	void Advance();
 };
 

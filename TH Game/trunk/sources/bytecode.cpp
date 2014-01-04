@@ -447,6 +447,10 @@ void natives::_Obj_SetAutoDelete( script_engine * eng, size_t * argv )
 	if( obj )
 		obj->FlagScreenDeletable( (int)eng->getBooleanScriptData( argv[ 1 ] ) );
 }
+void natives::_Obj_ScriptLatch( script_engine * eng, size_t * argv )
+{
+	eng->latchScriptObjectToMachine( argv[ 0 ], eng->currentRunningMachine );
+}
 void natives::_ObjEffect_SetTexture( script_engine * eng, size_t * argv )
 {
 	ObjMgr * objmgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );

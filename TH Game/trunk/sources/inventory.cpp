@@ -177,22 +177,17 @@ size_t inventory::fetchScriptData( std::string const & string )
 }
 size_t inventory::fetchScriptData( ObjType typeobj, size_t machineIdx )
 {
+	if( !CheckValidIdx( machineIdx ) || !CheckValidIdx( getScriptMachine( machineIdx ).getObjectVectorIndex() ) )
+		return -1;
 	//let objParam be the object type, 4 = bullet, 5 = effect
 	size_t index;
 	script_data & data = getScriptData( index = fetchScriptData() );
 	auto const objIdx = CreateObject( typeobj );
 	data.objIndex = objIdx;
 	data.type = getObjectType();
-
-	if( CheckValidIdx( machineIdx ) )
-	{
-		auto const objvector = getScriptMachine( machineIdx ).getObjectVectorIndex();
-		if( CheckValidIdx( objvector ) )
-		{
-			AddRefObjHandle( objIdx );
-			vvecObjects[ objvector ].push_back( objIdx );
-		}
-	}
+	auto const objvector = getScriptMachine( machineIdx ).getObjectVectorIndex();
+	AddRefObjHandle( objIdx );
+	vvecObjects[ objvector ].push_back( objIdx );
 	return index;
 }
 size_t inventory::fetchScriptData( D3DPRIMITIVETYPE primType )
@@ -513,6 +508,23 @@ void inventory::releaseObjectVector( size_t & index )
 	objvec.resize( 0 );
 	vvecObjectsGarbage.push_back( index );
 	index = -1;
+}
+void inventory::latchScriptObjectToMachine( size_t index, size_t machineIdx )
+{
+	size_t objHandle = getObjHandleScriptData( index );
+	if( !CheckValidIdx( objHandle )  || !CheckValidIdx( machineIdx ) )
+		return;
+	script_machine & machine = getScriptMachine( machineIdx );
+	size_t objvec = machine.getObjectVectorIndex();
+	if( !CheckValidIdx( objvec ) )
+		return;
+	auto & vec = vvecObjects[ objvec ];
+	for( unsigned u = 0; u < vec.size(); ++u )
+		if( vec[ u ] == objHandle )
+		{
+			machine.latchObject( u );
+			break;
+		}
 }
 
 //script engine - other
