@@ -86,6 +86,7 @@ protected:
 	size_t findScriptFromFile( std::string const & scriptPath );
 	size_t findScriptDirectory( std::string const & scriptPath );
 	std::string const & getCurrentScriptDirectory( size_t machineIdx ) const;
+	Object * getObjFromScriptVector( size_t objvector, size_t Idx );
 	unsigned getMachineCount() const;
 	void cleanInventory( class script_engine & eng );
 };

@@ -188,6 +188,7 @@ size_t inventory::fetchScriptData( ObjType typeobj, size_t machineIdx )
 	auto const objvector = getScriptMachine( machineIdx ).getObjectVectorIndex();
 	AddRefObjHandle( objIdx );
 	vvecObjects[ objvector ].push_back( objIdx );
+	Object * obj = GetObject( objIdx );
 	return index;
 }
 size_t inventory::fetchScriptData( D3DPRIMITIVETYPE primType )
@@ -534,6 +535,12 @@ void inventory::cleanInventory( class script_engine & eng )
 		vecMachines[ u ].clean( eng );
 	inventory_mem * this_inv = this;
 	*this_inv = inventory_mem();
+}
+Object * inventory::getObjFromScriptVector( size_t objvector, size_t Idx )
+{
+	if( CheckValidIdx( objvector ) && CheckValidIdx( Idx ) )
+		return Battery::GetObject( vvecObjects[ objvector ][ Idx ] );
+	return NULL;
 }
 unsigned inventory::getMachineCount() const
 {

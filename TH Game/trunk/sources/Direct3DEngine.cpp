@@ -223,7 +223,7 @@ unsigned Battery::CreateObject( ObjType type ) //0 - 3D, 1 - Background, 2 - Bos
 			handle.ObjVector = vvObjects.size();
 			vvObjects.resize( 1 + handle.ObjVector );
 		}
-		if( Layer != 4 && Layer != 7 )
+		if( type != ObjShot && type != ObjFont )
 		{
 			handle.VertexBuffer = FetchVertexBuffer();
 		}
@@ -237,7 +237,7 @@ unsigned Battery::CreateObject( ObjType type ) //0 - 3D, 1 - Background, 2 - Bos
 		handle.ObjFontIdx = ( (Layer == 7 )? CreateFontObject() : -1 );
 		handle.Type = type;
 
-		if( Layer != 4 )
+		if( type != ObjShot )
 		{
 			ObjMgr * objMgr = &(*GetLayers()[ Layer ].vObjMgr.insert( GetLayers()[ Layer ].vObjMgr.end(), ObjMgr() ) );
 			objMgr->VDeclaration = pDefaultVDeclaration;
@@ -252,7 +252,8 @@ unsigned Battery::CreateObject( ObjType type ) //0 - 3D, 1 - Background, 2 - Bos
 
 		vvObjects[ handle.ObjVector ].resize( 1 + handle.ObjVectorIdx );
 		Object & obj = *GetObject( Result );
-		obj.FlagCollidable( Layer == 4 ? 1 : 0 );
+		obj.FlagCollidable( 0 );
+		obj.FlagCollision( 0 );
 		obj.FlagPixelPerfect( 0 );
 		obj.FlagScreenDeletable( 1 );
 		obj.FlagBullet( 0 );
@@ -264,6 +265,7 @@ unsigned Battery::CreateObject( ObjType type ) //0 - 3D, 1 - Background, 2 - Bos
 		obj.SetAccel( D3DXVECTOR3( 0, 0, 0 ) );
 		obj.SetScale( D3DXVECTOR3( 1, 1, 1 ) );
 		obj.VertexOffset = 0;
+		obj.Radius = 8.f;
 	}
 
 	return Result;
@@ -752,7 +754,8 @@ void Battery::DrawObjects()
 							pObj->SetShotDataParams( Bullet_Templates[ NextShot ], NextShot );
 						}
 					}
-					Vertex * src = &GetVertexBuffer( Objmgr->VertexBufferIdx )[ pObj->VertexOffset ];
+					vector< Vertex > & vb = GetVertexBuffer( Objmgr->VertexBufferIdx );
+					Vertex * src = (vb.size() ? &vb[ pObj->VertexOffset ] : NULL );
 					D3DXMatrixTransformation( &mat, NULL, NULL, &pObj->scale, NULL, &pObj->orient, pObj->FlagPixelPerfect( -1 ) ? &D3DXVECTOR3( floor( pObj->position.x + 0.5f), floor( pObj->position.y + 0.5f), floor( pObj->position.z + 0.5f ) ) : &pObj->position );
 
 					if( !pObj->FlagScreenDeletable( -1 ) || !( pObj->position.x < 0.f || pObj->position.y < 0.f ) && ( pObj->position.x < 448.f && pObj->position.y < 480.f ) )

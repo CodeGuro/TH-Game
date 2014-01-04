@@ -4,6 +4,7 @@
 #include <sstream>
 #include <assert.h>
 #include <Windows.h>
+#include <ObjMgr.hpp>
 
 //exception
 eng_exception::eng_exception() : throw_reason( eng_error )
@@ -76,6 +77,13 @@ bool script_engine::advance()
 			for(; u < getMachineCount(); ++u )
 			{
 				if( error ) return false;
+				script_machine const & machine = getScriptMachine( u );
+				Object * current = getObjFromScriptVector( machine.object_vector_index, machine.script_object );
+				if( current )
+				{
+					if( current->FlagCollision( -1 ) )
+						callSub( u, script_container::AtHit );
+				}
 				callSub( u, script_container::AtMainLoop );
 			}
 		}
@@ -129,6 +137,8 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 	case script_container::AtBackGround:
 		blockIndex = sc.BackGroundBlock;
 		break;
+	case script_container::AtHit:
+		blockIndex = sc.HitBlock;
 	}
 	if( CheckValidIdx( blockIndex ) )
 	{

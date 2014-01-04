@@ -922,6 +922,7 @@ void parser::parseStatements()
 				else if( subname == "MainLoop" ) s_cont->MainLoopBlock = subsym->blockIndex;
 				else if( subname == "Finalize" ) s_cont->FinalizeBlock = subsym->blockIndex;
 				else if( subname == "BackGround" ) s_cont->BackGroundBlock = subsym->blockIndex;
+				else if( subname == "Hit" ) s_cont->HitBlock = subsym->blockIndex;
 				else raiseError( "Parser::ParseStatements unexpected error at parsing @routines", error::er_parser );
 			}
 			parseBlock( *subsym, args );

@@ -70,6 +70,7 @@ void Object::ShotInit()
 	orientvel = D3DXQUATERNION( 0, 0, 0, 1 );
 	FlagMotion( 1 );
 	FlagCollidable( 1 );
+	FlagCollision( 0 );
 	FlagScreenDeletable( 1 );
 	FlagGraze( 1 );
 	FlagBullet( 1 );
@@ -81,7 +82,6 @@ void Object::SetShotDataParams( ShotData const & Shot_Data, ULONG Buffer_Offset 
 	Time = Shot_Data.AnimationTime;
 	Radius = Shot_Data.Radius;
 	FlagPixelPerfect( Shot_Data.Flags & 0x10 ? 1 : 0 );
-
 }
 bool Object::FlagMotion( int flag )
 {
@@ -185,21 +185,6 @@ bool Object::FlagCollision( int flag )
 	case 1:
 	default:
 		flags = flags | 0x40;
-		return true;
-	}
-}
-bool Object::FlagOutOfScreen( int flag )
-{
-	switch( flag )
-	{
-	case -1:
-		return (flags & 0x80) != 0;
-	case 0:
-		flags = flags & ~0x80;
-		return false;
-	case 1:
-	default:
-		flags = flags | 0x80;
 		return true;
 	}
 }

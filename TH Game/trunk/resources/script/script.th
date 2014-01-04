@@ -18,6 +18,8 @@ script_main main_script //main routine
 	{
 		ObjEnemy = Obj_Create( OBJ_EFFECT );
 		Obj_ScriptLatch( ObjEnemy );
+		Obj_SetPosition( ObjEnemy, 0, 0 );
+		Obj_SetAutoDelete( ObjEnemy, false );
 		functest();
 		LoadUserShotData( GetCurrentScriptDirectory() ~ "ShotData.th" );
 		LoadSound( sound );

@@ -116,13 +116,14 @@ struct script_container
 {
 	enum sub
 	{
-		AtInitialize, AtMainLoop, AtFinalize, AtBackGround
+		AtInitialize, AtMainLoop, AtFinalize, AtBackGround, AtHit
 	};
 	size_t ScriptBlock;
 	size_t InitializeBlock;
 	size_t MainLoopBlock;
 	size_t FinalizeBlock;
 	size_t BackGroundBlock;
+	size_t HitBlock;
 	size_t ScriptDirectory;
 };
 
