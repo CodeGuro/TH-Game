@@ -1,0 +1,106 @@
+#TouhouDanmaku[ Player ]
+
+script_main main_script
+{
+	let ObjPlayer;
+	let hit;
+	let x;
+	let y;
+	@Initialize
+	{
+		x = 240;
+		y = 400;
+		PlayerGraphic();
+		PositionText();
+		hit = false;
+	}
+	@MainLoop
+	{
+		let dx = 2;
+		let dy = 2;
+		if( KeyDown( 38 ) )//up
+		{
+			y = y - dy;
+		}
+		else if( KeyDown( 40 ) ) //down
+		{
+			y = y + dy;
+		}
+		if( KeyDown( 37 ) ) //left
+		{
+			x = x - dx;
+		}
+		else if( KeyDown( 39 ) ) //right
+		{
+			x = x + dx;
+		}
+		Obj_SetPosition( ObjPlayer, x, y );
+		yield;
+	}
+	@Hit
+	{
+		if( !hit )
+		{
+			hit = true;
+			ShowText( x, y );
+		}
+		TerminateScript();
+	}
+	@Finalize
+	{
+	}
+	task ShowText(let xpos, let ypos)
+	{
+		let TextObj = Obj_Create( OBJ_FONT );
+		Obj_SetPosition( TextObj, xpos, ypos );
+		ObjFont_SetColor( TextObj, 255, 255, 255, 255 );
+		ObjFont_SetString( TextObj, "Object Hit!" );
+		ObjFont_SetRect( TextObj, xpos, ypos, xpos + 100, ypos + 100 );
+		while( !Obj_BeDeleted( TextObj ) )
+		{
+			yield;
+		}
+	}
+	task PlayerGraphic()
+	{
+		let Radius = 8;
+		LoadTexture( GetCurrentScriptDirectory ~ "etama.png" );
+		ObjPlayer = Obj_Create( OBJ_EFFECT );
+		Obj_SetPosition( ObjPlayer, x, y );
+		ObjEffect_SetLayer( ObjPlayer, 3 );
+		ObjEffect_SetTexture( ObjPlayer, GetCurrentScriptDirectory ~ "etama.png" );
+		ObjEffect_CreateVertex( ObjPlayer, 4 );
+		ObjEffect_SetPrimitiveType( ObjPlayer, PRIMITIVE_TRIANGLESTRIP );
+		ObjEffect_SetVertexXY( ObjPlayer, 0, -Radius, -Radius );
+		ObjEffect_SetVertexXY( ObjPlayer, 1, Radius, -Radius );
+		ObjEffect_SetVertexXY( ObjPlayer, 2, -Radius, Radius );
+		ObjEffect_SetVertexXY( ObjPlayer, 3, Radius, Radius );
+		ObjEffect_SetVertexUV( ObjPlayer, 0, 32/256, 32/256 );
+		ObjEffect_SetVertexUV( ObjPlayer, 1, (32 + 2 * Radius)/256, 32/256 );
+		ObjEffect_SetVertexUV( ObjPlayer, 2, 32/256, (32 + 2 * Radius)/256 );
+		ObjEffect_SetVertexUV( ObjPlayer, 3, (32 + 2 * Radius)/256, (32 + 2 * Radius)/256 );
+		ascent( i in 0..4 )
+		{
+			ObjEffect_SetVertexColor( ObjPlayer, i, 255, 255, 255, 255 );
+		}
+
+		Obj_ScriptLatch( ObjPlayer );
+		while( !Obj_BeDeleted( ObjPlayer ) )
+		{
+			yield;
+		}
+		TerminateScript();
+	}
+	task PositionText()
+	{
+		let TextObj = Obj_Create( OBJ_FONT );
+		ObjFont_SetColor( TextObj, 255, 255, 255, 255 );
+		while( !Obj_BeDeleted( TextObj ) )
+		{
+
+			ObjFont_SetString( TextObj, ToString( x ) ~ " , " ~ ToString( y ) );
+			ObjFont_SetRect( TextObj, x+10, y-10, x + 100, y + 100 );
+			yield;
+		}
+	}
+}

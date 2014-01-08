@@ -8,14 +8,13 @@
 extern const std::string DefaultShader;
 #define BACKGROUND_LAYER 0
 #define THREED_LAYER 1
-#define ENEMYBOSS_LAYER 2
+#define ENEMY_LAYER 2
 #define PLAYER_LAYER 3
-#define ENEMY_LAYER 4
-#define BULLET_LAYER 5
-#define EFFECT_LAYER 6
-#define FOREGROUND_LAYER 7
-#define TEXT_LAYER 8
-#define LAYER_COUNT 9
+#define BULLET_LAYER 4
+#define EFFECT_LAYER 5
+#define FOREGROUND_LAYER 6
+#define TEXT_LAYER 7
+#define LAYER_COUNT 8
 
 Battery::Battery( HWND const hWnd )
 {
@@ -266,7 +265,7 @@ unsigned Battery::CreateObject( ObjType type )
 		obj.SetAccel( D3DXVECTOR3( 0, 0, 0 ) );
 		obj.SetScale( D3DXVECTOR3( 1, 1, 1 ) );
 		obj.VertexOffset = 0;
-		obj.Radius = 8.f;
+		obj.Radius = 4.f;
 	}
 
 	return Result;
@@ -524,14 +523,14 @@ void Battery::CreateShotData( unsigned ID, BlendType blend, RECT const & rect, D
 		if( AnimationData.size() )
 		{
 			shot_data.AnimationTime = (ULONG)AnimationData[ i ][ 0 ];
-			shot_data.Radius = pow( pow( AnimationData[ i ][ 3 ] - AnimationData[ i ][ 1 ], 2.f ) + pow( AnimationData[ i ][ 4 ] - AnimationData[ i ][ 2 ], 2.f ), 0.5f );
+			shot_data.Radius = (AnimationData[ i ][ 3 ] - AnimationData[ i ][ 1 ]) / 4.f;
 			RECT r2 = { (ULONG)AnimationData[ i ][ 1 ], (ULONG)AnimationData[ i ][ 2 ], (ULONG)AnimationData[ i ][ 3 ], (ULONG)AnimationData[ i ][ 4 ] };
 			r = r2;
 		}
 		else
 		{
 			shot_data.AnimationTime = -1;
-			shot_data.Radius = pow( pow( (float)(rect.right - rect.left), 2.f ) + pow( (float)(rect.bottom - rect.top), 2.f ), 0.5f );
+			shot_data.Radius = (float)(rect.right - rect.left) / 2.f;
 			r = rect;
 		}
 		PushQuadShotBuffer( r, color );
@@ -614,7 +613,7 @@ void Battery::ObjEffect_SetPrimitiveType( unsigned HandleIdx, D3DPRIMITIVETYPE P
 }
 void Battery::ObjEffect_SetLayer( unsigned HandleIdx, ULONG Layer )
 {
-	if( CheckValidIdx( HandleIdx ) )
+	if( CheckValidIdx( HandleIdx ) && Layer < LAYER_COUNT )
 	{
 		ObjHandle & handle = vObjHandles[ HandleIdx ];
 		if( CheckValidIdx( handle.Layer ) && CheckValidIdx( handle.Layer ) && handle.Layer != Layer)
@@ -728,7 +727,7 @@ void Battery::DrawObjects()
 	pDefaultConstable->SetMatrix( GetDevice(), "WorldViewProjMat", &( world * view * proj ) );
 	for( auto L = GetLayers().begin(); L < GetLayers().end(); ++L )
 	{
-		GetDevice()->SetRenderState( D3DRS_SCISSORTESTENABLE, (L - GetLayers().begin() < ENEMYBOSS_LAYER || L - GetLayers().begin() > EFFECT_LAYER )? FALSE : TRUE );
+		GetDevice()->SetRenderState( D3DRS_SCISSORTESTENABLE, (L - GetLayers().begin() < ENEMY_LAYER || L - GetLayers().begin() > EFFECT_LAYER )? FALSE : TRUE );
 		for( auto Objmgr = L->vObjMgr.begin(); Objmgr != L->vObjMgr.end(); )
 		{
 			D3DXMATRIX mat;
@@ -855,15 +854,38 @@ void Battery::DrawObjects()
 	GetDevice()->SetTexture( 0, 0 );
 }
 void Battery::UpdateObjectCollisions()
-{/*
-	auto CollisionCheck = []( Object * obj1, Object * obj2 )
+{
+	auto CollisionCheck = []( vector< Object > & LayerA, vector< Object > & LayerB )
 	{
-		float x = obj2->position.x - obj1->position.x;
-		float y = obj2->position.y - obj1->position.y;
-		if( obj1->FlagCollidable( -1 ) && obj2->FlagCollidable( -1 ) && obj1->Radius + obj2->Radius <= sqrt( x * x + y * y ) )
+		auto BoundCircleCollisionCheck = []( Object * obj1, Object * obj2 )
 		{
-			obj1->FlagCollision( 1 );
-			obj2->FlagCollision( 1 );
+			float x = obj2->position.x - obj1->position.x;
+			float y = obj2->position.y - obj1->position.y;
+			if( obj1->FlagCollidable( -1 ) && obj2->FlagCollidable( -1 ) && obj1->Radius + obj2->Radius <= sqrt( x * x + y * y ) )
+			{
+				obj1->FlagCollision( 1 );
+				obj2->FlagCollision( 1 );
+				//grazing?
+			}
+		};
+		auto BoundBoxCollisionCheck = []( Object * obj1, Object * obj2 )
+		{
+			if( !( obj1->position.y + obj1->Radius < obj2->position.y - obj2->Radius ||
+				obj1->position.y - obj1->Radius > obj2->position.y + obj2->Radius ||
+				obj1->position.x + obj1->Radius < obj2->position.x - obj2->Radius ||
+				obj1->position.x - obj1->Radius > obj2->position.x + obj2->Radius ) )
+			{
+				obj1->FlagCollision( 1 );
+				obj2->FlagCollision( 1 );
+				//grazing?
+			}
+		};
+		for( unsigned u = 0; u < LayerA.size(); ++u )
+		{
+			for( unsigned j = 0; j < LayerB.size(); ++j )
+			{
+				BoundBoxCollisionCheck( &LayerA[ u ], &LayerB[ j ] );
+			}
 		}
 	};
 	for( unsigned u = 0; u < vvObjects.size(); ++u )
@@ -872,31 +894,25 @@ void Battery::UpdateObjectCollisions()
 		for( unsigned v = 0; v < vvec.size(); ++v )
 			vvec[ v ].FlagCollision( 0 );
 	}
-	for( unsigned u = 0; u < vvObjects.size(); ++u )
-	{
-		auto & Objvec = vvObjects[ u ];
-		if( Objvec.size() )
+	
+	auto & EnemyLayer = GetLayers()[ ENEMY_LAYER ];
+	auto & PlayerLayer = GetLayers()[ PLAYER_LAYER ];
+	auto & BulletLayer = GetLayers()[ BULLET_LAYER ];
+	
+	for( unsigned u = 0; u < PlayerLayer.vObjMgr.size(); ++u )
+	{	
+		auto & PlayerObjects = vvObjects[ PlayerLayer.vObjMgr[ u ].ObjBufferIdx ];
+		for( unsigned j = 0; j < EnemyLayer.vObjMgr.size(); ++j )
 		{
-			for( unsigned v = Objvec.size() - 1; v > 0; --v )
-			{
-				Object * obj1 = &Objvec[ v ];
-				for( unsigned w = 0; w < v; ++w )
-				{
-					Object * obj2 = &Objvec[ w ];
-					CollisionCheck( obj1, obj2 ); //current layer
-				}
-				for( unsigned w = u + 1; w < vvObjects.size(); ++w )
-				{
-					auto & ObjVec2 = vvObjects[ w ];
-					for( unsigned x = 0; x < ObjVec2.size(); ++x )
-					{
-						Object * obj2 = &ObjVec2[ x ];
-						CollisionCheck( obj1, obj2 ); //succeeding layers
-					}
-				}
-			}
+			auto & EnemyObjects = vvObjects[ EnemyLayer.vObjMgr[ j ].ObjBufferIdx ];
+			CollisionCheck( PlayerObjects, EnemyObjects );
 		}
-	}*/
+		for( unsigned j = 0; j < BulletLayer.vObjMgr.size(); ++j )
+		{
+			auto & BulletObjects = vvObjects[ BulletLayer.vObjMgr[ j ].ObjBufferIdx ];
+			CollisionCheck( PlayerObjects, BulletObjects );
+		}
+	}
 }
 
 Direct3DEngine::Direct3DEngine()

@@ -26,6 +26,7 @@ script_main main_script //main routine
 		STGFrame();
 		Task();
 		CreateEnemyFromScript( "youkai" );
+		CreateEnemyFromFile( GetCurrentScriptDirectory() ~ "Player.th" );
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{
@@ -151,7 +152,6 @@ script_main main_script //main routine
 		ObjEffect_SetLayer( obj, 6 );
 		Obj_SetPosition( obj, 0, 0 );
 		Obj_SetSpeed( obj, 0 );
-		ObjEffect_SetLayer( obj, 8 );
 		while( !Obj_BeDeleted( obj ) )
 		{
 			yield;
