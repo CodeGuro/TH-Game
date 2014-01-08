@@ -9,5 +9,4 @@ public:
 	GameEngine( HWND hWnd ) : Battery( hWnd )
 	{
 	}
-	LPDIRECT3DDEVICE9 GetDevice(){ return Battery::GetDevice(); }
 };

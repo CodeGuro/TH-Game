@@ -6,6 +6,16 @@
 #include <MMSystem.h>
 
 extern const std::string DefaultShader;
+#define BACKGROUND_LAYER 0
+#define THREED_LAYER 1
+#define ENEMYBOSS_LAYER 2
+#define PLAYER_LAYER 3
+#define ENEMY_LAYER 4
+#define BULLET_LAYER 5
+#define EFFECT_LAYER 6
+#define FOREGROUND_LAYER 7
+#define TEXT_LAYER 8
+#define LAYER_COUNT 9
 
 Battery::Battery( HWND const hWnd )
 {
@@ -100,18 +110,9 @@ Battery::Battery( HWND const hWnd )
 	DirectSoundCreate8( NULL, &dsound, NULL );
 	GetDSound()->SetCooperativeLevel( hWnd, DSSCL_PRIORITY );
 
-	//0 - background
-	//1 - 3D
-	//2 - enemy boss
-	//3 - player
-	//4 - enemies
-	//5 - bullets
-	//6 - effects
-	//7 - sprites/text
-	//8 - foreground
 	unsigned const BulletMgrCount = 4;
-	unsigned const LayerCount = 8;
-	unsigned const BulletLayer = 4;
+	unsigned const LayerCount = LAYER_COUNT;
+	unsigned const BulletLayer = BULLET_LAYER;
 	unsigned VertexBufferIdx = FetchVertexBuffer();
 	for( unsigned u = 1; u < BulletMgrCount ; ++u ) AddRefVertexBuffer( VertexBufferIdx );
 	vvObjects.resize( BulletMgrCount );
@@ -173,7 +174,7 @@ void Battery::LoadShotImage( std::string const & pathname )
 	ShotImagePath = pathname;
 	LoadTexture( pathname );
 	for( unsigned u = 0; u < 4; ++u )
-		GetLayers()[ 4 ].vObjMgr[ u ].pTexture = GetTexture( pathname ) ;
+		GetLayers()[ BULLET_LAYER ].vObjMgr[ u ].pTexture = GetTexture( pathname ) ;
 }
 unsigned Battery::CreateObjHandle()
 {
@@ -192,7 +193,7 @@ unsigned Battery::CreateObjHandle()
 	vObjHandles[ Result ].RefCount = 1;
 	return Result;
 }
-unsigned Battery::CreateObject( ObjType type ) //0 - 3D, 1 - Background, 2 - Boss, 3 - Player, 4 - Bullet, 5 - Effect, 6 - Foreground, 7 - Text
+unsigned Battery::CreateObject( ObjType type )
 {
 	unsigned Result;
 	unsigned Layer;
@@ -200,11 +201,11 @@ unsigned Battery::CreateObject( ObjType type ) //0 - 3D, 1 - Background, 2 - Bos
 
 	switch( type )
 	{
-	case ObjShot: Layer = 4; break;
-	case ObjEffect: Layer = 5; break;
-	case ObjFont: Layer = 7; break;
+	case ObjShot: Layer = BULLET_LAYER; break;
+	case ObjEffect: Layer = EFFECT_LAYER; break;
+	case ObjFont: Layer = TEXT_LAYER; break;
 	default:
-		Layer = 4;
+		abort();
 	}
 
 	if( type == ObjShot )
@@ -234,7 +235,7 @@ unsigned Battery::CreateObject( ObjType type ) //0 - 3D, 1 - Background, 2 - Bos
 		handle.RefCount = 1;
 		handle.MgrIdx = GetLayers()[ Layer ].vObjMgr.size();
 		handle.ObjVectorIdx = vvObjects[ handle.ObjVector ].size();
-		handle.ObjFontIdx = ( (Layer == 7 )? CreateFontObject() : -1 );
+		handle.ObjFontIdx = ( (type == ObjFont )? CreateFontObject() : -1 );
 		handle.Type = type;
 
 		if( type != ObjShot )
@@ -307,6 +308,7 @@ void Battery::ReleaseObject( unsigned HandleIdx )
 					assert( handle.MgrIdx == objmgr_it - Layer.vObjMgr.begin() );
 					assert( handle.VertexBuffer == objmgr_it->VertexBufferIdx );
 					assert( handle.ObjFontIdx == objmgr_it->ObjFontIdx );
+					vvObjects[ handle.ObjVector ].resize( 0 );
 					vvObjectsGC.push_back( handle.ObjVector );
 					Layer.vObjMgr.erase( objmgr_it );
 					if( CheckValidIdx( handle.VertexBuffer ) )
@@ -489,7 +491,7 @@ unsigned Battery::CreateShot( ULONG GraphicID )
 	unsigned Result;
 	Result = CreateObjHandle();
 	ObjHandle & handle = vObjHandles[ Result ];
-	handle.Layer = 4;
+	handle.Layer = BULLET_LAYER;
 	handle.RefCount = 1;
 	/*Get ObjMgr from graphic*/
 	unsigned const TemplateOffset = Bullet_TemplateOffsets[ GraphicID ];
@@ -615,7 +617,7 @@ void Battery::ObjEffect_SetLayer( unsigned HandleIdx, ULONG Layer )
 	if( CheckValidIdx( HandleIdx ) )
 	{
 		ObjHandle & handle = vObjHandles[ HandleIdx ];
-		if( CheckValidIdx( handle.Layer ) && CheckValidIdx( handle.Layer ) )
+		if( CheckValidIdx( handle.Layer ) && CheckValidIdx( handle.Layer ) && handle.Layer != Layer)
 		{
 			auto & objvec = GetLayers()[ handle.Layer ].vObjMgr;
 			ULONG mgrIdx = GetLayers()[ Layer ].vObjMgr.size();
@@ -721,12 +723,12 @@ void Battery::DrawObjects()
 	D3DXMATRIX world, view, proj;
 	D3DXMatrixIdentity( &world );
 	D3DXMatrixOrthoLH( &proj, 640.f, -480.f, 0.f, 100.f );
-	D3DXMatrixLookAtLH(&view, &D3DXVECTOR3(0,0,-1.f), &D3DXVECTOR3(0,0,0 ), &D3DXVECTOR3(0,1,0) );
+	D3DXMatrixLookAtLH( &view, &D3DXVECTOR3( 0, 0, -1.f), &D3DXVECTOR3( 0, 0, 0), &D3DXVECTOR3( 0, 1, 0) );
 	D3DXMatrixTranslation( &world, -320.f - 0.5f, -240.f - 0.5f, 0.f );
-	pDefaultConstable->SetMatrix( GetDevice(), "WorldViewProjMat", &(world*view*proj) );
+	pDefaultConstable->SetMatrix( GetDevice(), "WorldViewProjMat", &( world * view * proj ) );
 	for( auto L = GetLayers().begin(); L < GetLayers().end(); ++L )
 	{
-		GetDevice()->SetRenderState( D3DRS_SCISSORTESTENABLE, (L < GetLayers().end() - 2 )? TRUE : FALSE );
+		GetDevice()->SetRenderState( D3DRS_SCISSORTESTENABLE, (L - GetLayers().begin() < ENEMYBOSS_LAYER || L - GetLayers().begin() > EFFECT_LAYER )? FALSE : TRUE );
 		for( auto Objmgr = L->vObjMgr.begin(); Objmgr != L->vObjMgr.end(); )
 		{
 			D3DXMATRIX mat;
@@ -851,6 +853,50 @@ void Battery::DrawObjects()
 		}
 	}
 	GetDevice()->SetTexture( 0, 0 );
+}
+void Battery::UpdateObjectCollisions()
+{/*
+	auto CollisionCheck = []( Object * obj1, Object * obj2 )
+	{
+		float x = obj2->position.x - obj1->position.x;
+		float y = obj2->position.y - obj1->position.y;
+		if( obj1->FlagCollidable( -1 ) && obj2->FlagCollidable( -1 ) && obj1->Radius + obj2->Radius <= sqrt( x * x + y * y ) )
+		{
+			obj1->FlagCollision( 1 );
+			obj2->FlagCollision( 1 );
+		}
+	};
+	for( unsigned u = 0; u < vvObjects.size(); ++u )
+	{
+		auto & vvec = vvObjects[ u ];
+		for( unsigned v = 0; v < vvec.size(); ++v )
+			vvec[ v ].FlagCollision( 0 );
+	}
+	for( unsigned u = 0; u < vvObjects.size(); ++u )
+	{
+		auto & Objvec = vvObjects[ u ];
+		if( Objvec.size() )
+		{
+			for( unsigned v = Objvec.size() - 1; v > 0; --v )
+			{
+				Object * obj1 = &Objvec[ v ];
+				for( unsigned w = 0; w < v; ++w )
+				{
+					Object * obj2 = &Objvec[ w ];
+					CollisionCheck( obj1, obj2 ); //current layer
+				}
+				for( unsigned w = u + 1; w < vvObjects.size(); ++w )
+				{
+					auto & ObjVec2 = vvObjects[ w ];
+					for( unsigned x = 0; x < ObjVec2.size(); ++x )
+					{
+						Object * obj2 = &ObjVec2[ x ];
+						CollisionCheck( obj1, obj2 ); //succeeding layers
+					}
+				}
+			}
+		}
+	}*/
 }
 
 Direct3DEngine::Direct3DEngine()

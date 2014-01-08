@@ -69,6 +69,7 @@ void script_engine::start()
 }
 bool script_engine::advance()
 {
+	UpdateObjectCollisions();
 	unsigned u = 0;
 	while( u < getMachineCount() )
 	{

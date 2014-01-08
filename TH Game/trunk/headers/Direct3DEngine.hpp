@@ -160,6 +160,7 @@ protected:
 	void AddRefVertexBuffer( unsigned Idx );
 	void DisposeVertexBuffer( unsigned Idx );
 	void DrawObjects();
+	void UpdateObjectCollisions();
 
 	//constructor
 	Battery( HWND const hWnd );
