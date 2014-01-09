@@ -36,7 +36,8 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 		return EXIT_FAILURE;
 	MSG msg;
 	GameEngine engine( hWnd );
-	engine.start();
+	if( !engine.start() )
+		return EXIT_FAILURE;
 
 	do
 	{

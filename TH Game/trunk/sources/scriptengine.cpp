@@ -28,7 +28,7 @@ void script_engine::cleanEngine()
 	errorMessage.clear();
 	cleanInventory( *this );
 }
-void script_engine::start()
+bool script_engine::start()
 {
 	try
 	{
@@ -49,7 +49,11 @@ void script_engine::start()
 		GetOpenFileNameA( &ofn );
 		SetCurrentDirectory( buff );
 		scriptPath= ofn.lpstrFile;
-		if( !scriptPath.size() ) raise_exception( eng_exception( eng_exception::eng_error, std::string( "No Script Chosen" ) ) );
+		if( !scriptPath.size() )
+		{
+			MessageBox( NULL, "Script not chosen, terminating...", "Engine Error", MB_TASKMODAL );
+			return false;
+		}
 		parseScript( scriptPath );
 		size_t scriptIdx = findScriptFromFile( getCurrentScriptPath() );
 		if( !CheckValidIdx( scriptIdx ) ) raise_exception( eng_exception( eng_exception::eng_error ) );
@@ -61,11 +65,13 @@ void script_engine::start()
 	{
 		if( error.throw_reason == eng_exception::eng_error )
 		{
-			MessageBox( NULL, error.Str.c_str(), "Engine Error", MB_TASKMODAL );
+			if( error.Str.size() )
+				MessageBox( NULL, error.Str.c_str(), "Engine Error", MB_TASKMODAL );
 			cleanEngine();
-			start();
+			return start();
 		}
 	}
+	return true;
 }
 bool script_engine::advance()
 {

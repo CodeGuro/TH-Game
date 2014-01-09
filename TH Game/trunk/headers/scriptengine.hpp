@@ -23,7 +23,7 @@ private:
 public:
 	script_engine();
 	void cleanEngine(); //remove all cache
-	void start();
+	bool start();
 	bool advance(); //true if finished (i.e. no script executers left to run)
 	bool IsFinished();
 };
