@@ -530,7 +530,7 @@ void Battery::CreateShotData( unsigned ID, BlendType blend, RECT const & rect, D
 		else
 		{
 			shot_data.AnimationTime = -1;
-			shot_data.Radius = (float)(rect.right - rect.left) / 2.f;
+			shot_data.Radius = (float)(rect.right - rect.left) / 4.f;
 			r = rect;
 		}
 		PushQuadShotBuffer( r, color );
@@ -1014,17 +1014,11 @@ void Direct3DEngine::DrawFPS()
 }
 void Direct3DEngine::ProcUserInput( MSG const Msg )
 {
-	D3DXMATRIX UpDown;
-	D3DXMATRIX LeftRight;
-	D3DXMatrixIdentity( &UpDown );
-	D3DXMatrixIdentity( &LeftRight );
-	if( GetKeyState( VK_UP ) & 0x8000 )
-		D3DXMatrixTranslation( &UpDown, 0.0f, 0.0f, -0.1f );
-	if( GetKeyState( VK_DOWN ) & 0x8000 )
-		D3DXMatrixTranslation( &UpDown, 0.0f, 0.0f, 0.1f );
-	if( GetKeyState( VK_LEFT ) & 0x8000 )
-		D3DXMatrixRotationY( &LeftRight, D3DX_PI / 180.f );
-	if( GetKeyState( VK_RIGHT ) & 0x8000 )
-		D3DXMatrixRotationY( &LeftRight, D3DX_PI / -180.f );
-	ViewMatrix *= UpDown * LeftRight;
+	//automate motion
+	//undo rotation by multiplying it by its inverse rotation matrix
+	ViewMatrix *= *D3DXMatrixRotationQuaternion( &D3DXMATRIX(),
+		D3DXQuaternionInverse( &D3DXQUATERNION(), 
+		D3DXQuaternionRotationMatrix( &D3DXQUATERNION(), &ViewMatrix ) ) );
+	//translate and rotate
+	ViewMatrix *= *D3DXMatrixTranslation( &D3DXMATRIX(), -1/60.f, 0, 1/30.f ) * *D3DXMatrixRotationY( &D3DXMATRIX(), -2 * D3DX_PI / 3 );
 }

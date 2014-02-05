@@ -20,4 +20,5 @@ public:
 	void latchObject( size_t index );
 	size_t getScriptIndex() const;
 	size_t getObjectVectorIndex() const;
+	size_t getLatchedObject() const;
 };

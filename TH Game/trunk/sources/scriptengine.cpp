@@ -75,23 +75,23 @@ bool script_engine::start()
 }
 bool script_engine::advance()
 {
+	currentRunningMachine = 0;
 	UpdateObjectCollisions();
-	unsigned u = 0;
-	while( u < getMachineCount() )
+	while( currentRunningMachine < getMachineCount() )
 	{
 		try
 		{
-			for(; u < getMachineCount(); ++u )
+			for(; currentRunningMachine < getMachineCount(); ++currentRunningMachine )
 			{
 				if( error ) return false;
-				script_machine const & machine = getScriptMachine( u );
+				script_machine const & machine = getScriptMachine( currentRunningMachine );
 				Object * current = getObjFromScriptVector( machine.object_vector_index, machine.script_object );
 				if( current )
 				{
 					if( current->FlagCollision( -1 ) )
-						callSub( u, script_container::AtHit );
+						callSub( currentRunningMachine, script_container::AtHit );
 				}
-				callSub( u, script_container::AtMainLoop );
+				callSub( currentRunningMachine, script_container::AtMainLoop );
 			}
 		}
 		catch( eng_exception const & e )
@@ -139,7 +139,24 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 		blockIndex = sc.FinalizeBlock;
 		break;
 	case script_container::AtMainLoop:
-		blockIndex = sc.MainLoopBlock;
+		{
+			//check to see if latched object (if there is one) is valid
+			if( CheckValidIdx( getScriptMachine( machineIndex ).getLatchedObject() ) && 
+				CheckValidIdx( getScriptMachine( machineIndex ).getObjectVectorIndex() ) )
+			{
+				Object * obj = getObjFromScriptVector( getScriptMachine( machineIndex ).getObjectVectorIndex(), getScriptMachine( machineIndex ).getLatchedObject() ); // GetObject( vvecObjects[ getScriptMachine( machineIndex ).getObjectVectorIndex() ][ getScriptMachine( machineIndex ).getLatchedObject() ] );
+				if( !obj )
+				{
+					//latched object has been deleted, terminate machine
+					callSub( machineIndex, script_container::AtFinalize );
+					getScriptMachine( machineIndex ).clean( *this );
+					releaseScriptMachine( machineIndex );
+					raise_exception( eng_exception( eng_exception::finalizing_machine ) );
+					break;
+				}
+			}
+			blockIndex = sc.MainLoopBlock;
+		}
 		break;
 	case script_container::AtBackGround:
 		blockIndex = sc.BackGroundBlock;

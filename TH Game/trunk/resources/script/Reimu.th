@@ -1,0 +1,242 @@
+#TouhouDanmaku[ Player ]
+
+script_main main_script
+{
+	let ObjPlayer;
+	let vulnerable;
+	let hit;
+	let x;
+	let y;
+	@Initialize
+	{
+		x = 240;
+		y = 400;
+		hit = false;
+		vulnerable = true;
+		PlayerGraphic();
+	}
+	@MainLoop
+	{
+		let dx = 2;
+		let dy = 2;
+		if( !hit )
+		{
+			if( KeyDown( 38 ) )//up
+			{
+				if( y > 16 )
+				{
+					y = y - dy;
+				}
+			}
+			else if( KeyDown( 40 ) ) //down
+			{
+				if( y < 464 )
+				{
+					y = y + dy;
+				}
+			}
+			if( KeyDown( 37 ) ) //left
+			{
+				if( x > 16 )
+				{
+					x = x - dx;
+				}
+			}
+			else if( KeyDown( 39 ) ) //right
+			{
+				if( x < 416 )
+				{
+					x = x + dx;
+				}
+			}
+			Obj_SetPosition( ObjPlayer, x, y );
+		}
+		yield;
+	}
+	@Hit
+	{
+		if( !hit )
+		{
+			if( vulnerable )
+			{
+				hit = true;
+				HitEvent();
+			}
+		}
+	}
+	@Finalize
+	{
+	}
+	task PlayerGraphic()
+	{
+		function SetSpriteRect( let obj, let _x, let _y, let w, let h, let uw, let uh )
+		{
+			ascent( i in 0..2 )
+			{
+				ObjEffect_SetVertexUV( obj, i*2, _x/uw, (_y + h*i)/uh );
+				ObjEffect_SetVertexUV( obj, i*2+1, (_x+w)/uw, (_y + h*i)/uh );
+			}
+			ObjEffect_SetVertexXY( obj, 0, -w/2, -h/2 );
+			ObjEffect_SetVertexXY( obj, 1, w/2, -h/2 );
+			ObjEffect_SetVertexXY( obj, 2, -w/2, h/2 );
+			ObjEffect_SetVertexXY( obj, 3, w/2, h/2 );
+		}
+		function SetSpriteRectMirror( let obj, let _x, let _y, let w, let h, let uw, let uh )
+		{
+			ascent( i in 0..2 )
+			{
+				ObjEffect_SetVertexUV( obj, i*2, (_x+w)/uw, (_y + h*i)/uh );
+				ObjEffect_SetVertexUV( obj, i*2+1, _x/uw, (_y + h*i)/uh );
+			}
+			ObjEffect_SetVertexXY( obj, 0, -w/2, -h/2 );
+			ObjEffect_SetVertexXY( obj, 1, w/2, -h/2 );
+			ObjEffect_SetVertexXY( obj, 2, -w/2, h/2 );
+			ObjEffect_SetVertexXY( obj, 3, w/2, h/2 );
+		}
+		task Idle()
+		{
+			let Timer = 0;
+			loop
+			{
+				SetSpriteRect( ObjPlayer, 1 + floor(Timer / 8 ) * 32, 1, 32, 48, 256, 256 );
+				Timer = (Timer + 1) % 32;
+				yield;
+				if( KeyDown( 39 ) || KeyDown( 37 ) )
+				{
+					break;
+				}
+			}
+		}
+		task SwerveLeft()
+		{
+			let Timer = 0;
+			loop
+			{
+				SetSpriteRect( ObjPlayer, 1 + floor(Timer / 8 ) * 32, 1 + 48, 32, 48, 256, 256 );
+				Timer = Timer + 1;
+				if( Timer >= 56 ){ Timer = 24; }
+				yield;
+				if( !KeyDown( 37 ) )
+				{
+					break;
+				}
+			}
+		}
+		task SwerveRight()
+		{
+			let Timer = 0;
+			loop
+			{
+				SetSpriteRectMirror( ObjPlayer, 1 + floor(Timer / 8 ) * 32, 1 + 48, 32, 48, 256, 256 );
+				Timer = Timer + 1;
+				if( Timer >= 56 ){ Timer = 24; }
+				yield;
+				if( !KeyDown( 39 ) )
+				{
+					break;
+				}
+			}
+		}
+		let Radius = 8;
+		LoadTexture( GetCurrentScriptDirectory ~ "player00.png" );
+		ObjPlayer = Obj_Create( OBJ_EFFECT );
+		Obj_SetPosition( ObjPlayer, x, y );
+		ObjEffect_SetLayer( ObjPlayer, 3 );
+		Obj_ScriptLatch( ObjPlayer );
+		ObjEffect_SetTexture( ObjPlayer, GetCurrentScriptDirectory ~ "player00.png" );
+		ObjEffect_CreateVertex( ObjPlayer, 4 );
+		ObjEffect_SetPrimitiveType( ObjPlayer, PRIMITIVE_TRIANGLESTRIP );
+		ascent( i in 0..4 )
+		{
+			ObjEffect_SetVertexColor( ObjPlayer, i, 255, 255, 255, 255 );
+		}
+		let animation = -1;
+		while( !Obj_BeDeleted( ObjPlayer ) )
+		{
+			if( KeyDown( 37 ) ) //left
+			{
+				if( animation != 2 )
+				{
+					SwerveLeft();
+					animation = 2;
+				}
+			}
+			else if( KeyDown( 39 ) ) //right
+			{
+				if( animation != 1 )
+				{
+					SwerveRight();
+					animation = 1;
+				}
+			}
+			else //default
+			{
+				if( animation != 0 )
+				{
+					Idle();
+					animation = 0;
+				}
+			}
+			yield;
+		}
+	}
+	task HitEvent()
+	{
+		vulnerable = false;
+		let pchuun = GetCurrentScriptDirectory ~ "se_pldead00.wav";
+		let border_of_life = GetCurrentScriptDirectory ~ "etama3.png";
+		let vtxcount = 24;
+		let radius = 150;
+		let radius_init = radius;
+		let width = 32;
+		radius = radius - width/2;
+		LoadSound( pchuun );
+		PlaySound( pchuun );
+		let ObjCircle = Obj_Create( OBJ_EFFECT );
+		Obj_SetPosition( ObjCircle, x, y );
+		LoadTexture( border_of_life );
+		ObjEffect_SetTexture( ObjCircle, border_of_life );
+		ObjEffect_CreateVertex( ObjCircle, vtxcount );
+		ObjEffect_SetPrimitiveType( ObjCircle, PRIMITIVE_TRIANGLESTRIP );
+		ascent( i in 0 .. vtxcount/2 )
+		{
+			ObjEffect_SetVertexUV( ObjCircle, i*2, 80/128, (i/(vtxcount/2-1)) );
+			ObjEffect_SetVertexUV( ObjCircle, i*2+1, 96/128, (i/(vtxcount/2-1)) );
+		}
+		ascent( i in 0 .. vtxcount )
+		{
+			ObjEffect_SetVertexColor( ObjCircle, i, 255, 255, 255, 255/1.5 );
+		}
+		let timer = 30;
+		loop( timer )
+		{
+			ascent( i in 0 .. vtxcount/2 )
+			{
+				let ang = 2*PI *i/(vtxcount/2-1);
+				ObjEffect_SetVertexXY( ObjCircle, i*2, radius * cos( ang ), radius * sin( ang ) );
+				ObjEffect_SetVertexXY( ObjCircle, i*2+1, (radius+width) * cos( ang ), (radius+width) * sin( ang ) );
+			}
+			radius = radius - radius_init/timer;
+			yield;
+		}
+		Obj_Delete( ObjCircle );
+		x = 240;
+		y = 400;
+		hit = false;
+		ascent( j in 0..10 )
+		{
+			
+			ascent( i in 0..4 )
+			{
+				ObjEffect_SetVertexColor( ObjPlayer, i, 255, 0, 0, 255 );
+			}
+			loop( 8 ){ yield; }
+			ascent( i in 0..4 )
+			{
+				ObjEffect_SetVertexColor( ObjPlayer, i, 255, 255, 255, 255 );
+			}
+			loop( 8 ){ yield; }
+		}
+		vulnerable = true;
+	}
+}

@@ -1440,7 +1440,7 @@ void parser::registerNatives()
 		{ "compareEqual", &natives::_compareEqual, 2 },
 		{ "compareNotEqual", &natives::_compareNotEqual, 2 },
 		{ "compareGreater", &natives::_compareGreater, 2 },
-		{ "compareEqualEqual", &natives::_compareGreaterEqual, 2 },
+		{ "compareGreaterEqual", &natives::_compareGreaterEqual, 2 },
 		{ "compareLess", &natives::_compareLess, 2 },
 		{ "compareLessEqual", &natives::_compareLessEqual, 2 },
 		{ "logicOr", &natives::_logicOr, 2 },

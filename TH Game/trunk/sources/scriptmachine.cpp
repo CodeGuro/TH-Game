@@ -256,3 +256,7 @@ size_t script_machine::getObjectVectorIndex() const
 {
 	return object_vector_index;
 }
+size_t script_machine::getLatchedObject() const
+{
+	return script_object;
+}
