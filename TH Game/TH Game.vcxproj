@@ -96,7 +96,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="trunk\sources\bytecode.cpp" />
-    <ClCompile Include="trunk\sources\Direct3DEngine.cpp" />
+    <ClCompile Include="trunk\sources\Direct3DEngine.cpp">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </CompileAs>
+    </ClCompile>
     <ClCompile Include="trunk\sources\inventory.cpp" />
     <ClCompile Include="trunk\sources\ObjMgr.cpp" />
     <ClCompile Include="trunk\sources\parser.cpp" />

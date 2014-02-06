@@ -1512,7 +1512,9 @@ void parser::registerNatives()
 		{ "LoadTexture", &natives::_LoadTexture, 1 },
 		{ "LoadUserShotData", &natives::_LoadUserShotData, 1 },
 		{ "CreateShot01", &natives::_CreateShot01, 5 },
-		{ "TerminateProgram", &natives::_TerminateProgram, 0 }
+		{ "TerminateProgram", &natives::_TerminateProgram, 0 },
+		{ "SetEyeView", &natives::_SetEyeView, 6 },
+		{ "SetFog", &natives::_SetFog, 5 }
 	};
 	for( unsigned i = 0; i <  sizeof( funcs ) / sizeof( native_function ); ++i )
 	{

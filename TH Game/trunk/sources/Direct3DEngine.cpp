@@ -82,6 +82,7 @@ Battery::Battery( HWND const hWnd )
 			{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 			{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
 			{ 0, 20, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0 },
+			{ 0, 12, D3DDECLTYPE_FLOAT1, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_FOG, 0},
 			D3DDECL_END()
 		};
 		GetDevice()->CreateVertexDeclaration( ve, &pDefaultVDeclaration );
@@ -89,7 +90,7 @@ Battery::Battery( HWND const hWnd )
 
 	if( !pDefault3DVShader && !pDefaultConstable )
 	{
-		if( D3D_OK != D3DXCompileShader( DefaultShader.c_str(), DefaultShader.size(), NULL, NULL, "vs_main", "vs_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, &pDefaultConstable ) )
+		if( D3D_OK != D3DXCompileShader( DefaultShader.c_str(), DefaultShader.size(), NULL, NULL, "vs_main", "vs_3_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, &pDefaultConstable ) )
 			MessageBox( NULL, pshadererrbuff? (LPCSTR)pshadererrbuff->GetBufferPointer() : "Vertex Shader Compiler Error", "DX Shader Error", NULL );
 		GetDevice()->CreateVertexShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &pDefault3DVShader );
 		pshaderbuff->Release();
@@ -97,7 +98,7 @@ Battery::Battery( HWND const hWnd )
 	}
 	if( !pDefault3DPShader )
 	{
-		if( D3D_OK != D3DXCompileShader( DefaultShader.c_str(), DefaultShader.size(), NULL, NULL, "ps_main", "ps_2_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, NULL ) )
+		if( D3D_OK != D3DXCompileShader( DefaultShader.c_str(), DefaultShader.size(), NULL, NULL, "ps_main", "ps_3_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, NULL ) )
 			MessageBox( NULL, pshadererrbuff? (LPCSTR)pshadererrbuff->GetBufferPointer() : "Pixel Shader Compiler Error", "DX Shader Error", NULL );	
 		GetDevice()->CreatePixelShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &pDefault3DPShader );
 		pshaderbuff->Release();
@@ -725,6 +726,7 @@ void Battery::DrawObjects()
 	D3DXMatrixLookAtLH( &view, &D3DXVECTOR3( 0, 0, -1.f), &D3DXVECTOR3( 0, 0, 0), &D3DXVECTOR3( 0, 1, 0) );
 	D3DXMatrixTranslation( &world, -320.f - 0.5f, -240.f - 0.5f, 0.f );
 	pDefaultConstable->SetMatrix( GetDevice(), "WorldViewProjMat", &( world * view * proj ) );
+	pDefaultConstable->SetMatrix( GetDevice(), "WorldViewMat", &( world * view ) );
 	for( auto L = GetLayers().begin(); L < GetLayers().end(); ++L )
 	{
 		GetDevice()->SetRenderState( D3DRS_SCISSORTESTENABLE, (L - GetLayers().begin() < ENEMY_LAYER || L - GetLayers().begin() > EFFECT_LAYER )? FALSE : TRUE );
@@ -915,6 +917,23 @@ void Battery::UpdateObjectCollisions()
 	}
 }
 
+//camera
+void Battery::SetLookAtViewMatrix( D3DXVECTOR3 const & eye, D3DXVECTOR3 const & at )
+{
+	D3DXMatrixLookAtLH( &ViewMatrix, &eye, &at, &D3DXVECTOR3( 0.f, 1.f, 0.f ) );
+}
+void Battery::SetFog( float fognear, float fogfar, D3DCOLOR color )
+{
+	/*
+	GetDevice()->SetRenderState( D3DRS_FOGENABLE, TRUE );
+	GetDevice()->SetRenderState( D3DRS_RANGEFOGENABLE, TRUE );
+	GetDevice()->SetRenderState( D3DRS_FOGVERTEXMODE, D3DFOG_LINEAR );
+	GetDevice()->SetRenderState( D3DRS_FOGCOLOR, color );
+	GetDevice()->SetRenderState( D3DRS_FOGSTART, *(DWORD*)&fognear );
+	GetDevice()->SetRenderState( D3DRS_FOGEND, *(DWORD*)&fogfar );
+	*/
+}
+
 Direct3DEngine::Direct3DEngine()
 {
 }
@@ -1014,11 +1033,13 @@ void Direct3DEngine::DrawFPS()
 }
 void Direct3DEngine::ProcUserInput( MSG const Msg )
 {
+	D3DXVECTOR3 vout;
+	D3DXVec3TransformCoord( &vout, &D3DXVECTOR3(0,0,0), &(WorldMatrix * ViewMatrix) );
 	//automate motion
 	//undo rotation by multiplying it by its inverse rotation matrix
 	ViewMatrix *= *D3DXMatrixRotationQuaternion( &D3DXMATRIX(),
-		D3DXQuaternionInverse( &D3DXQUATERNION(), 
-		D3DXQuaternionRotationMatrix( &D3DXQUATERNION(), &ViewMatrix ) ) );
+	D3DXQuaternionInverse( &D3DXQUATERNION(), 
+	D3DXQuaternionRotationMatrix( &D3DXQUATERNION(), &ViewMatrix ) ) );
 	//translate and rotate
-	ViewMatrix *= *D3DXMatrixTranslation( &D3DXMATRIX(), -1/60.f, 0, 1/30.f ) * *D3DXMatrixRotationY( &D3DXMATRIX(), -2 * D3DX_PI / 3 );
+	ViewMatrix *= *D3DXMatrixTranslation( &D3DXMATRIX(), /*-10/60.f*/0, 0, -10/30.f );// * *D3DXMatrixRotationY( &D3DXMATRIX(), -2 * D3DX_PI / 3 );
 }

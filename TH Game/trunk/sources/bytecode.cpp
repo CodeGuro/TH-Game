@@ -578,3 +578,20 @@ void natives::_TerminateProgram( script_engine * eng, size_t * argv )
 	eng->cleanEngine();
 	eng->raise_exception( eng_exception::finalizing_machine );
 }
+void natives::_SetEyeView( script_engine * eng, size_t * argv )
+{
+	eng->SetLookAtViewMatrix
+		(
+			D3DXVECTOR3( eng->getRealScriptData( argv[ 0 ] ), eng->getRealScriptData( argv[ 1 ] ), eng->getRealScriptData( argv[ 2 ] ) ),
+			D3DXVECTOR3( eng->getRealScriptData( argv[ 3 ] ), eng->getRealScriptData( argv[ 4 ] ), eng->getRealScriptData( argv[ 5 ] ) )
+		);
+}
+void natives::_SetFog( script_engine * eng, size_t * argv )
+{
+	eng->SetFog
+		(
+			eng->getRealScriptData( argv[ 0 ] ), eng->getRealScriptData( argv[ 1 ] ),
+			D3DCOLOR_XRGB( (unsigned char)eng->getRealScriptData( argv[ 2 ] ),
+			(unsigned char)eng->getRealScriptData( argv[ 3 ] ),	(unsigned char)eng->getRealScriptData( argv[ 4 ] ) )
+		);
+}

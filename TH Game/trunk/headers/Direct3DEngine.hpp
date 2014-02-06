@@ -162,6 +162,10 @@ protected:
 	void DrawObjects();
 	void UpdateObjectCollisions();
 
+	//camera
+	void SetLookAtViewMatrix( D3DXVECTOR3 const & eye, D3DXVECTOR3 const & at );
+	void SetFog( float fognear, float fogfar, D3DCOLOR color );
+
 	//constructor
 	Battery( HWND const hWnd );
 	Battery();
