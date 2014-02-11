@@ -302,6 +302,7 @@ void inventory::uniqueizeScriptData( size_t & dst )
 				getScriptData( uni ).character = getScriptData( tmpDst ).character;
 				break;
 			case type_data::tk_object:
+				AddRefObjHandle( getScriptData( tmpDst ).objIndex );
 				getScriptData( uni ).objIndex = getScriptData( tmpDst ).objIndex;
 				break;
 			case type_data::tk_array:
