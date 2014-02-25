@@ -6,26 +6,12 @@
 #include "parser.hpp"
 #include "Direct3DEngine.hpp"
 
-class script_type_manager
-{
-private:
-	vector< type_data > types;
-public:
-	script_type_manager();
-	type_data getRealType() const;
-	type_data getBooleanType() const;
-	type_data getCharacterType() const;
-	type_data getStringType() const;
-	type_data getObjectType() const;
-	type_data getMiscType() const;
-	type_data getArrayType() const;
-	type_data getArrayType( size_t element ); //an array of some type
-};
-
-class script_engine : public script_type_manager
+class script_engine
 {
 private:
 	friend struct natives;
+	friend class script_data_manager;
+	friend class parser;
 
 	struct script_context
 	{
@@ -36,11 +22,10 @@ private:
 		size_t script_object;
 	};
 
-	vector< script_data > vecScriptData;
+	script_data_manager scriptdata_mgr;
 	vector< script_environment > vecScriptEnvironment;
 	vector< block > vecBlocks;
 	vector< script_context > vecContexts;
-	vector< size_t > vecScriptDataGarbage;
 	vector< size_t > vecRoutinesGabage;
 	vector< vector< size_t > > vvecObjects;
 	vector< size_t > vvecObjectsGarbage;
@@ -72,29 +57,6 @@ public:
 	void raise_exception( eng_exception const & eng_except );
 	size_t fetchBlock();
 	block & getBlock( size_t index );
-	size_t fetchScriptData();
-	size_t fetchScriptData( float real );
-	size_t fetchScriptData( char character );
-	size_t fetchScriptData( bool boolean );
-	size_t fetchScriptData( std::string const & string );
-	size_t fetchScriptData( ObjType typeobj, size_t MachineIdx );
-	size_t fetchScriptData( D3DPRIMITIVETYPE primType );
-	size_t fetchScriptData( BlendType blend );
-	size_t fetchScriptData( ObjType typeobj );
-	script_data & getScriptData( size_t index );
-	void addRefScriptData( size_t index );
-	void scriptDataAssign( size_t & dst, size_t src );
-	void copyScriptData( size_t & dst, size_t & src );
-	void uniqueizeScriptData( size_t & dst );
-	float getRealScriptData( size_t index ) const;
-	char getCharacterScriptData( size_t index ) const;
-	bool getBooleanScriptData( size_t index ) const;
-	unsigned getObjHandleScriptData( size_t index ) const;
-	D3DPRIMITIVETYPE getPrimitiveTypeScriptData( size_t index ) const;
-	BlendType getBlendModeScriptData( size_t index ) const;
-	ObjType getObjTypeScriptData( size_t index ) const;
-	std::string getStringScriptData( size_t index );
-	void releaseScriptData( size_t & index );
 	size_t fetchScriptEnvironment( size_t blockIndex );
 	script_environment & getScriptEnvironment( size_t index );
 	void addRefScriptEnvironment( size_t index );

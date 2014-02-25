@@ -28,6 +28,22 @@ struct type_data
 	size_t get_element() const;
 };
 
+class script_type_manager
+{
+private:
+	vector< type_data > types;
+public:
+	script_type_manager();
+	type_data getRealType() const;
+	type_data getBooleanType() const;
+	type_data getCharacterType() const;
+	type_data getStringType() const;
+	type_data getObjectType() const;
+	type_data getMiscType() const;
+	type_data getArrayType() const;
+	type_data getArrayType( size_t element ); //an array of some type
+};
+
 struct script_data
 {
 	size_t refCount;
@@ -48,6 +64,43 @@ struct script_data
 	script_data( bool boolean, size_t elementIndex );
 	script_data( size_t objIndex, size_t elementIndex );
 	script_data( ObjType typeobj, size_t elementIndex );
+};
+
+class script_data_manager
+{
+private:
+	friend class parser;
+	friend struct natives;
+	vector< script_data > vecScriptData;
+	vector< size_t > vecScriptDataGarbage;
+	script_type_manager type_mgr;
+	class Direct3DEngine * draw_mgr;
+	class script_engine * eng;
+public:
+	script_data_manager( Direct3DEngine * draw_mgr, script_engine * eng );
+	size_t fetchScriptData();
+	size_t fetchScriptData( float real );
+	size_t fetchScriptData( char character );
+	size_t fetchScriptData( bool boolean );
+	size_t fetchScriptData( std::string const & string );
+	size_t fetchScriptData( ObjType typeobj, size_t MachineIdx );
+	size_t fetchScriptData( D3DPRIMITIVETYPE primType );
+	size_t fetchScriptData( BlendType blend );
+	size_t fetchScriptData( ObjType typeobj );
+	script_data & getScriptData( size_t index );
+	void addRefScriptData( size_t index );
+	void scriptDataAssign( size_t & dst, size_t src );
+	void copyScriptData( size_t & dst, size_t & src );
+	void uniqueizeScriptData( size_t & dst );
+	float getRealScriptData( size_t index ) const;
+	char getCharacterScriptData( size_t index ) const;
+	bool getBooleanScriptData( size_t index ) const;
+	unsigned getObjHandleScriptData( size_t index ) const;
+	D3DPRIMITIVETYPE getPrimitiveTypeScriptData( size_t index ) const;
+	BlendType getBlendModeScriptData( size_t index ) const;
+	ObjType getObjTypeScriptData( size_t index ) const;
+	std::string getStringScriptData( size_t index );
+	void releaseScriptData( size_t & index );
 };
 
 struct code

@@ -500,15 +500,15 @@ void parser::parseClause()
 	switch( lexicon.getToken() )
 	{
 	case tk_real:
-		pushCode( code::dat( vc_pushVal, eng->fetchScriptData( lexicon.getReal() ) ) );
+		pushCode( code::dat( vc_pushVal, eng->scriptdata_mgr.fetchScriptData( lexicon.getReal() ) ) );
 		lexicon.advance();
 		break;
 	case tk_character:
-		pushCode( code::dat( vc_pushVal, eng->fetchScriptData( lexicon.getCharacter() ) ) );
+		pushCode( code::dat( vc_pushVal, eng->scriptdata_mgr.fetchScriptData( lexicon.getCharacter() ) ) );
 		lexicon.advance();
 		break;
 	case tk_string:
-		pushCode( code::dat( vc_pushVal, eng->fetchScriptData( lexicon.getString() ) ) );
+		pushCode( code::dat( vc_pushVal, eng->scriptdata_mgr.fetchScriptData( lexicon.getString() ) ) );
 		writeOperation( "uniqueize" );
 		lexicon.advance();
 		break;
@@ -540,8 +540,8 @@ void parser::parseClause()
 		break;
 	case tk_openbra:
 		{
-			size_t scriptDataIdx = eng->fetchScriptData();
-			eng->getScriptData( scriptDataIdx ).type = eng->getArrayType();
+			size_t scriptDataIdx = eng->scriptdata_mgr.fetchScriptData();
+			eng->scriptdata_mgr.getScriptData( scriptDataIdx ).type = eng->scriptdata_mgr.type_mgr.getArrayType();
 			pushCode( code::dat( vc_pushVal, scriptDataIdx ) );
 			writeOperation( "uniqueize" );
 			do
@@ -1020,7 +1020,7 @@ void parser::parseStatements()
 				parseParentheses();
 				writeOperation( "uniqueize" ); 
 				loopBackIndex = getCurrentBlock().vecCodes.size();
-				pushCode( code::dat( vc_pushVal, eng->fetchScriptData( 0.f ) ) );
+				pushCode( code::dat( vc_pushVal, eng->scriptdata_mgr.fetchScriptData( 0.f ) ) );
 				pushCode( code::code( vc_loopDescent ) );
 			}
 			else

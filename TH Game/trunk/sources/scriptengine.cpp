@@ -142,7 +142,7 @@ std::string const & script_engine::getCurrentScriptDirectory( size_t machineIdx 
 }
 
 //script engine - script data - related functions
-size_t script_engine::fetchScriptData()
+size_t script_data_manager::fetchScriptData()
 {
 	size_t index;
 	if( vecScriptDataGarbage.size() )
@@ -158,88 +158,88 @@ size_t script_engine::fetchScriptData()
 	getScriptData( index ).refCount = 1;
 	return index;
 }
-size_t script_engine::fetchScriptData( float real )
+size_t script_data_manager::fetchScriptData( float real )
 {
 	size_t index;
 	script_data & data = getScriptData( index = fetchScriptData() );
 	data.real = real;
-	data.type = getRealType();
+	data.type = type_mgr.getRealType();
 	return index;
 }
-size_t script_engine::fetchScriptData( char character )
+size_t script_data_manager::fetchScriptData( char character )
 {
 	size_t index;
 	script_data & data = getScriptData( index = fetchScriptData() );
 	data.character = character;
-	data.type = getCharacterType();
+	data.type = type_mgr.getCharacterType();
 	return index;
 }
-size_t script_engine::fetchScriptData( bool boolean )
+size_t script_data_manager::fetchScriptData( bool boolean )
 {
 	size_t index;
 	script_data & data = getScriptData( index = fetchScriptData() );
 	data.real = (float)boolean;
-	data.type = getBooleanType();
+	data.type = type_mgr.getBooleanType();
 	return index;
 }
-size_t script_engine::fetchScriptData( std::string const & string )
+size_t script_data_manager::fetchScriptData( std::string const & string )
 {
 	size_t index = fetchScriptData();
-	getScriptData( index ).type = getStringType();
+	getScriptData( index ).type = type_mgr.getStringType();
 	for( unsigned i = 0; i < string.size(); ++i )
 		getScriptData( index ).vec.push_back( fetchScriptData( string[i] ) );
 	return index;
 }
-size_t script_engine::fetchScriptData( ObjType typeobj, size_t machineIdx )
+size_t script_data_manager::fetchScriptData( ObjType typeobj, size_t machineIdx )
 {
-	if( !CheckValidIdx( machineIdx ) || !CheckValidIdx( getScriptContext( machineIdx )->object_vector_index ) )
+	if( !CheckValidIdx( machineIdx ) || !CheckValidIdx( eng->getScriptContext( machineIdx )->object_vector_index ) )
 		return -1;
 	//let objParam be the object type, 4 = bullet, 5 = effect
 	size_t index;
 	script_data & data = getScriptData( index = fetchScriptData() );
-	auto const objIdx = get_drawmgr()->CreateObject( typeobj );
+	auto const objIdx = draw_mgr->CreateObject( typeobj );
 	data.objIndex = objIdx;
-	data.type = getObjectType();
-	auto const objvector = getScriptContext( machineIdx )->object_vector_index;
-	get_drawmgr()->AddRefObjHandle( objIdx );
-	vvecObjects[ objvector ].push_back( objIdx );
-	Object * obj = get_drawmgr()->GetObject( objIdx );
+	data.type = type_mgr.getObjectType();
+	auto const objvector = eng->getScriptContext( machineIdx )->object_vector_index;
+	draw_mgr->AddRefObjHandle( objIdx );
+	eng->vvecObjects[ objvector ].push_back( objIdx );
+	Object * obj = draw_mgr->GetObject( objIdx );
 	return index;
 }
-size_t script_engine::fetchScriptData( D3DPRIMITIVETYPE primType )
+size_t script_data_manager::fetchScriptData( D3DPRIMITIVETYPE primType )
 {
 	size_t index;
 	script_data & data = getScriptData( index = fetchScriptData() );
 	data.primitiveType = primType;
-	getScriptData( index ).type = getMiscType();
+	getScriptData( index ).type = type_mgr.getMiscType();
 	return index;
 }
-size_t script_engine::fetchScriptData( BlendType blend )
+size_t script_data_manager::fetchScriptData( BlendType blend )
 {
 	size_t index;
 	script_data & data = getScriptData( index = fetchScriptData() );
 	data.blendMode = blend;
-	data.type = getMiscType();
+	data.type = type_mgr.getMiscType();
 	return index;
 }
-size_t script_engine::fetchScriptData( ObjType typeobj )
+size_t script_data_manager::fetchScriptData( ObjType typeobj )
 {
 	size_t index;
 	script_data & data = getScriptData( index = fetchScriptData() );
 	data.objtype = typeobj;
-	data.type = getMiscType();
+	data.type = type_mgr.getMiscType();
 	return index;
 }
-script_data & script_engine::getScriptData( size_t index )
+script_data & script_data_manager::getScriptData( size_t index )
 {
 	return vecScriptData[ index ];
 }
-void script_engine::addRefScriptData( size_t index )
+void script_data_manager::addRefScriptData( size_t index )
 {
 	if( CheckValidIdx( index ) )
 		++getScriptData( index ).refCount;
 }
-void script_engine::releaseScriptData( size_t & index )
+void script_data_manager::releaseScriptData( size_t & index )
 {
 	if( CheckValidIdx( index ) )
 	{
@@ -250,19 +250,19 @@ void script_engine::releaseScriptData( size_t & index )
 				releaseScriptData( dat.vec[ i ] );
 			dat.vec.resize( 0 );
 			vecScriptDataGarbage.push_back( index );
-			if( dat.type.get_kind() == getObjectType().get_kind() )
-				get_drawmgr()->ReleaseObjHandle( dat.objIndex );
+			if( dat.type.get_kind() == type_mgr.getObjectType().get_kind() )
+				draw_mgr->ReleaseObjHandle( dat.objIndex );
 		}
 		index = -1;
 	}
 }
-void script_engine::scriptDataAssign( size_t & dst, size_t src ) //index copy
+void script_data_manager::scriptDataAssign( size_t & dst, size_t src ) //index copy
 {
 	addRefScriptData( src );
 	releaseScriptData( dst );
 	dst = src;
 }
-void script_engine::copyScriptData( size_t & dst, size_t & src ) //contents copy, including vector
+void script_data_manager::copyScriptData( size_t & dst, size_t & src ) //contents copy, including vector
 {
 	if( !CheckValidIdx( dst ) )
 		dst = fetchScriptData();
@@ -285,7 +285,7 @@ void script_engine::copyScriptData( size_t & dst, size_t & src ) //contents copy
 			destDat.character = sourDat.character;
 			break;
 		case type_data::tk_object:
-			get_drawmgr()->AddRefObjHandle( sourDat.objIndex );
+			draw_mgr->AddRefObjHandle( sourDat.objIndex );
 			destDat.objIndex = sourDat.objIndex;
 			break;
 		case type_data::tk_array:
@@ -298,7 +298,7 @@ void script_engine::copyScriptData( size_t & dst, size_t & src ) //contents copy
 		}
 	}
 }
-void script_engine::uniqueizeScriptData( size_t & dst )
+void script_data_manager::uniqueizeScriptData( size_t & dst )
 {
 	if( CheckValidIdx( dst ) )
 	{
@@ -317,7 +317,7 @@ void script_engine::uniqueizeScriptData( size_t & dst )
 				getScriptData( uni ).character = getScriptData( tmpDst ).character;
 				break;
 			case type_data::tk_object:
-				get_drawmgr()->AddRefObjHandle( getScriptData( tmpDst ).objIndex );
+				draw_mgr->AddRefObjHandle( getScriptData( tmpDst ).objIndex );
 				getScriptData( uni ).objIndex = getScriptData( tmpDst ).objIndex;
 				break;
 			case type_data::tk_array:
@@ -339,7 +339,7 @@ void script_engine::uniqueizeScriptData( size_t & dst )
 	else
 		getScriptData( dst = fetchScriptData() ).type.kind = type_data::tk_invalid;
 }
-std::string script_engine::getStringScriptData( size_t index )
+std::string script_data_manager::getStringScriptData( size_t index )
 {
 	std::string result;
 	if( CheckValidIdx( index ) )
@@ -349,16 +349,16 @@ std::string script_engine::getStringScriptData( size_t index )
 		{
 			case type_data::tk_array:
 			{
-				if( dat.type.get_element() != getStringType().get_element() )
+				if( dat.type.get_element() != type_mgr.getStringType().get_element() )
 					result += "[ ";
 				unsigned size = dat.vec.size();
 				for( unsigned i = 0; i < size; ++i )
 				{
 					result += getStringScriptData( dat.vec[ i ] );
-					if( getScriptData( dat.vec[ i ] ).type.kind != getCharacterType().kind && i + 1 < size )
+					if( getScriptData( dat.vec[ i ] ).type.kind != type_mgr.getCharacterType().kind && i + 1 < size )
 						result += " , ";
 				}
-				if( dat.type.get_element() != getStringType().get_element()  )
+				if( dat.type.get_element() != type_mgr.getStringType().get_element()  )
 					result += " ]";
 			}
 			break;
@@ -387,44 +387,44 @@ std::string script_engine::getStringScriptData( size_t index )
 	else result = "(INVALID SCRIPT DATA INDEX)";
 	return result;
 }
-float script_engine::getRealScriptData( size_t index ) const
+float script_data_manager::getRealScriptData( size_t index ) const
 {
 	if( CheckValidIdx( index ) )
 		return vecScriptData[ index ].real;
 	return -1;
 }
-bool script_engine::getBooleanScriptData( size_t index ) const
+bool script_data_manager::getBooleanScriptData( size_t index ) const
 {
 	if( CheckValidIdx( index ) )
 		return vecScriptData[ index ].real != 0;
 	return true;
 
 }
-char script_engine::getCharacterScriptData( size_t index ) const
+char script_data_manager::getCharacterScriptData( size_t index ) const
 {
 	if( CheckValidIdx( index ) )
 		return vecScriptData[ index ].character;
 	return -1;
 }
-unsigned script_engine::getObjHandleScriptData( size_t index ) const
+unsigned script_data_manager::getObjHandleScriptData( size_t index ) const
 {
 	if( CheckValidIdx( index ) )
 		return vecScriptData[ index ].objIndex;
 	return -1;
 }
-D3DPRIMITIVETYPE script_engine::getPrimitiveTypeScriptData( size_t index ) const
+D3DPRIMITIVETYPE script_data_manager::getPrimitiveTypeScriptData( size_t index ) const
 {
 	if( CheckValidIdx( index ) )
 		return vecScriptData[ index ].primitiveType;
 	return (D3DPRIMITIVETYPE)-1;
 }
-BlendType script_engine::getBlendModeScriptData( size_t index ) const
+BlendType script_data_manager::getBlendModeScriptData( size_t index ) const
 {
 	if( CheckValidIdx( index ) )
 		return vecScriptData[ index ].blendMode;
 	return (BlendType)-1;
 }
-ObjType script_engine::getObjTypeScriptData( size_t index ) const
+ObjType script_data_manager::getObjTypeScriptData( size_t index ) const
 {
 	if( CheckValidIdx( index ) )
 		return vecScriptData[ index ].objtype;
@@ -468,9 +468,9 @@ void script_engine::releaseScriptEnvironment( size_t & index )
 		if( !( --env.refCount ) )
 		{
 			for( unsigned i = 0; i < env.stack.size(); ++i )
-				releaseScriptData( env.stack[i] );
+				scriptdata_mgr.releaseScriptData( env.stack[i] );
 			for( unsigned u = 0; u < env.values.size(); ++u )
-				releaseScriptData( env.values[ u ] );
+				scriptdata_mgr.releaseScriptData( env.values[ u ] );
 			env.stack.resize( 0 );
 			env.values.resize( 0 );
 			vecRoutinesGabage.push_back( index );
@@ -528,7 +528,7 @@ void script_engine::releaseObjectVector( size_t & index )
 }
 void script_engine::latchScriptObjectToMachine( size_t index, size_t machineIdx )
 {
-	size_t objHandle = getObjHandleScriptData( index );
+	size_t objHandle = scriptdata_mgr.getObjHandleScriptData( index );
 	if( !CheckValidIdx( objHandle )  || !CheckValidIdx( machineIdx ) )
 		return;
 	script_context & machine = *getScriptContext( machineIdx );
@@ -557,7 +557,7 @@ unsigned script_engine::getContextCount() const
 }
 
 //script engine - public functions, called from the outside
-script_engine::script_engine( Direct3DEngine * draw_mgr ) :draw_mgr( draw_mgr ), error( false ), finished( false ), currentRunningMachine( -1 )
+script_engine::script_engine( Direct3DEngine * draw_mgr ) : scriptdata_mgr( draw_mgr, this ), draw_mgr( draw_mgr ), error( false ), finished( false ), currentRunningMachine( -1 )
 {
 }
 void script_engine::cleanEngine()
@@ -757,7 +757,7 @@ bool script_engine::advance()
 
 		if( disposing_env.hasResult )
 		{
-			addRefScriptData( disposing_env.values[ 0 ] );
+			scriptdata_mgr.addRefScriptData( disposing_env.values[ 0 ] );
 			getScriptEnvironment( disposing_env.parentIndex ).stack.push_back( disposing_env.values[ 0 ] );
 		}
 		else if( getBlock( disposing_env.blockIndex ).kind == block::bk_task )
@@ -783,22 +783,22 @@ bool script_engine::advance()
 			for( e = &env; e->blockIndex != current_code.blockIndex; e = &getScriptEnvironment( e->parentIndex ) );
 			if( e->values.size() <= current_code.variableIndex )
 				e->values.resize( 4 + 2 * e->values.size(), -1 );
-			scriptDataAssign( e->values[ current_code.variableIndex ], env.stack.back() );
-			releaseScriptData( env.stack.back() );
+			scriptdata_mgr.scriptDataAssign( e->values[ current_code.variableIndex ], env.stack.back() );
+			scriptdata_mgr.releaseScriptData( env.stack.back() );
 			env.stack.pop_back();
 		}
 		break;
 	case vc_overWrite:
 		{
-			copyScriptData( env.stack[ env.stack.size() - 2 ], env.stack.back() );
-			releaseScriptData( env.stack.back() );
+			scriptdata_mgr.copyScriptData( env.stack[ env.stack.size() - 2 ], env.stack.back() );
+			scriptdata_mgr.releaseScriptData( env.stack.back() );
 			env.stack.pop_back();
 		}
 		break;
 	case vc_pushVal:
 		{
 			env.stack.push_back( -1 );
-			scriptDataAssign( env.stack.back(), current_code.scriptDataIndex );
+			scriptdata_mgr.scriptDataAssign( env.stack.back(), current_code.scriptDataIndex );
 		}
 		break;
 	case vc_pushVar:
@@ -806,12 +806,12 @@ bool script_engine::advance()
 			script_environment * e;
 			for( e = &env; e->blockIndex != current_code.blockIndex; e = &getScriptEnvironment( e->parentIndex ) );
 			env.stack.push_back( -1 );
-			scriptDataAssign( env.stack.back(), e->values[ current_code.variableIndex ] );
+			scriptdata_mgr.scriptDataAssign( env.stack.back(), e->values[ current_code.variableIndex ] );
 		}
 		break;
 	case vc_duplicate:
 		{
-			addRefScriptData( env.stack.back() );
+			scriptdata_mgr.addRefScriptData( env.stack.back() );
 			env.stack.push_back( env.stack.back() );
 		}
 		break;
@@ -830,7 +830,7 @@ bool script_engine::advance()
 					script_environment & env = getScriptEnvironment( current_machine.threads[ current_machine.current_thread_index ] ); //in case of re-allocation
 					for( unsigned u = 0; u < popCount; ++ u )
 					{
-						releaseScriptData( env.stack.back() );
+						scriptdata_mgr.releaseScriptData( env.stack.back() );
 						env.stack.pop_back();
 					}
 				}
@@ -881,7 +881,7 @@ bool script_engine::advance()
 				{
 					BaseRoutine = true;
 					for( unsigned u = 0; u < e->stack.size(); ++u )
-						releaseScriptData( e->stack[ u ] );
+						scriptdata_mgr.releaseScriptData( e->stack[ u ] );
 					e->stack.resize( 0 );
 					do
 						++(e->codeIndex);
@@ -894,13 +894,13 @@ bool script_engine::advance()
 		break;
 	case vc_loopIf:
 		{
-			if( getRealScriptData( env.stack.back() ) == 0.f )
+			if( scriptdata_mgr.getRealScriptData( env.stack.back() ) == 0.f )
 			{
 				do
 					++env.codeIndex;
 				while( getBlock( env.blockIndex ).vecCodes[ env.codeIndex - 1 ].command != vc_loopBack );
 			}
-			releaseScriptData( env.stack.back() );
+			scriptdata_mgr.releaseScriptData( env.stack.back() );
 			env.stack.pop_back();
 			assert( env.stack.size() == 0 );
 		}
@@ -913,8 +913,8 @@ bool script_engine::advance()
 		break;
 	case vc_checkIf:
 		{
-			float real = getRealScriptData( env.stack.back() );
-			releaseScriptData( env.stack.back() );
+			float real = scriptdata_mgr.getRealScriptData( env.stack.back() );
+			scriptdata_mgr.releaseScriptData( env.stack.back() );
 			env.stack.pop_back();
 			if( real == 0.f )
 			{
@@ -928,14 +928,14 @@ bool script_engine::advance()
 	case vc_loopAscent:
 	case vc_loopDescent:
 		{
-			float real = getRealScriptData( env.stack.back() );
-			releaseScriptData( env.stack.back() );
+			float real = scriptdata_mgr.getRealScriptData( env.stack.back() );
+			scriptdata_mgr.releaseScriptData( env.stack.back() );
 			env.stack.pop_back();
-			bool proceed = ((current_code.command == vc_loopAscent) ? real > getRealScriptData( env.stack.back() )
-				: real < getRealScriptData( env.stack.back() ) );
+			bool proceed = ((current_code.command == vc_loopAscent) ? real > scriptdata_mgr.getRealScriptData( env.stack.back() )
+				: real < scriptdata_mgr.getRealScriptData( env.stack.back() ) );
 			if( !proceed )
 			{
-				releaseScriptData( env.stack.back() );
+				scriptdata_mgr.releaseScriptData( env.stack.back() );
 				env.stack.pop_back();
 				do
 					++env.codeIndex;
