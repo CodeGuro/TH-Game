@@ -3,7 +3,6 @@
 #include <string>
 #include "defstypedefs.hpp"
 #include "bytecode.hpp"
-#include "scriptmachine.hpp"
 #include "parser.hpp"
 #include "Direct3DEngine.hpp"
 
@@ -26,13 +25,21 @@ public:
 class script_engine : public script_type_manager
 {
 private:
-	friend class script_machine;
 	friend struct natives;
+
+	struct script_context
+	{
+		vector< size_t > threads;
+		size_t current_thread_index;
+		size_t current_script_index;
+		size_t object_vector_index;
+		size_t script_object;
+	};
 
 	vector< script_data > vecScriptData;
 	vector< script_environment > vecScriptEnvironment;
 	vector< block > vecBlocks;
-	vector< script_machine > vecMachines;
+	vector< script_context > vecContexts;
 	vector< size_t > vecScriptDataGarbage;
 	vector< size_t > vecRoutinesGabage;
 	vector< vector< size_t > > vvecObjects;
@@ -51,11 +58,16 @@ private:
 	Direct3DEngine * draw_mgr;
 
 	void callSub( size_t machineIndex, script_container::sub AtSub );
+
+	bool advance(); //returns 1 when finished
+	void initialize_script_context( size_t script_index, size_t context_index );
+	void clean_script_context( size_t context_index );
+
 public:
 	script_engine( Direct3DEngine * draw_mgr );
 	void cleanEngine(); //remove all cache
 	bool start();
-	bool advance(); //true if finished (i.e. no script executers left to run)
+	bool run(); //true if finished (i.e. no script executers left to run)
 	bool IsFinished();
 	void raise_exception( eng_exception const & eng_except );
 	size_t fetchBlock();
@@ -87,9 +99,9 @@ public:
 	script_environment & getScriptEnvironment( size_t index );
 	void addRefScriptEnvironment( size_t index );
 	void releaseScriptEnvironment( size_t & index );
-	size_t fetchScriptMachine();
-	script_machine & getScriptMachine( size_t index );
-	void releaseScriptMachine( size_t & index );
+	size_t fetchScriptContext();
+	script_context * getScriptContext( size_t index );
+	void releaseScriptContext( size_t & index );
 	size_t fetchObjectVector();
 	void releaseObjectVector( size_t & index );
 	void latchScriptObjectToMachine( size_t index, size_t machineIdx );
@@ -104,7 +116,7 @@ public:
 	size_t findScriptDirectory( std::string const & scriptPath );
 	std::string const & getCurrentScriptDirectory( size_t machineIdx ) const;
 	Object * getObjFromScriptVector( size_t objvector, size_t Idx );
-	unsigned getMachineCount() const;
+	unsigned getContextCount() const;
 	void cleanInventory( class script_engine & eng );
 	Direct3DEngine * get_drawmgr();
 };

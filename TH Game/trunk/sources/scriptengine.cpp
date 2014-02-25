@@ -138,7 +138,7 @@ size_t script_engine::findScriptDirectory( std::string const & scriptPath )
 }
 std::string const & script_engine::getCurrentScriptDirectory( size_t machineIdx ) const
 {
-	return vecScriptDirectories[ vecScripts[ vecMachines[ machineIdx ].getScriptIndex() ].ScriptDirectory ];
+	return vecScriptDirectories[ vecScripts[ vecContexts[ machineIdx ].current_script_index ].ScriptDirectory ];
 }
 
 //script engine - script data - related functions
@@ -192,7 +192,7 @@ size_t script_engine::fetchScriptData( std::string const & string )
 }
 size_t script_engine::fetchScriptData( ObjType typeobj, size_t machineIdx )
 {
-	if( !CheckValidIdx( machineIdx ) || !CheckValidIdx( getScriptMachine( machineIdx ).getObjectVectorIndex() ) )
+	if( !CheckValidIdx( machineIdx ) || !CheckValidIdx( getScriptContext( machineIdx )->object_vector_index ) )
 		return -1;
 	//let objParam be the object type, 4 = bullet, 5 = effect
 	size_t index;
@@ -200,7 +200,7 @@ size_t script_engine::fetchScriptData( ObjType typeobj, size_t machineIdx )
 	auto const objIdx = get_drawmgr()->CreateObject( typeobj );
 	data.objIndex = objIdx;
 	data.type = getObjectType();
-	auto const objvector = getScriptMachine( machineIdx ).getObjectVectorIndex();
+	auto const objvector = getScriptContext( machineIdx )->object_vector_index;
 	get_drawmgr()->AddRefObjHandle( objIdx );
 	vvecObjects[ objvector ].push_back( objIdx );
 	Object * obj = get_drawmgr()->GetObject( objIdx );
@@ -480,20 +480,20 @@ void script_engine::releaseScriptEnvironment( size_t & index )
 }
 
 //script engine - script machine - related functions
-size_t script_engine::fetchScriptMachine()
+size_t script_engine::fetchScriptContext()
 {
 	size_t index;
-	index = vecMachines.size();
-	vecMachines.resize( 1 + index );
+	index = vecContexts.size();
+	vecContexts.resize( 1 + index );
 	return index;
 }
-script_machine & script_engine::getScriptMachine( size_t index )
+script_engine::script_context * script_engine::getScriptContext( size_t index )
 {
-	return vecMachines[ index ];
+	return &vecContexts[ index ];
 }
-void script_engine::releaseScriptMachine( size_t & index )
+void script_engine::releaseScriptContext( size_t & index )
 {
-	vecMachines.erase( vecMachines.begin() + index );
+	vecContexts.erase( vecContexts.begin() + index );
 	index = -1;
 }
 size_t script_engine::fetchObjectVector()
@@ -531,35 +531,29 @@ void script_engine::latchScriptObjectToMachine( size_t index, size_t machineIdx 
 	size_t objHandle = getObjHandleScriptData( index );
 	if( !CheckValidIdx( objHandle )  || !CheckValidIdx( machineIdx ) )
 		return;
-	script_machine & machine = getScriptMachine( machineIdx );
-	size_t objvec = machine.getObjectVectorIndex();
+	script_context & machine = *getScriptContext( machineIdx );
+	size_t objvec = machine.object_vector_index;
 	if( !CheckValidIdx( objvec ) )
 		return;
 	auto & vec = vvecObjects[ objvec ];
 	for( unsigned u = 0; u < vec.size(); ++u )
 		if( vec[ u ] == objHandle )
 		{
-			machine.latchObject( u );
+			machine.script_object = u;
 			break;
 		}
 }
 
 //script engine - other
-void script_engine::cleanInventory( class script_engine & eng )
-{
-	for( unsigned u = 0; u < vecMachines.size(); ++u )
-		vecMachines[ u ].clean( eng );
-	*this = script_engine( get_drawmgr() );
-}
 Object * script_engine::getObjFromScriptVector( size_t objvector, size_t Idx )
 {
 	if( CheckValidIdx( objvector ) && CheckValidIdx( Idx ) )
 		return get_drawmgr()->GetObject( vvecObjects[ objvector ][ Idx ] );
 	return NULL;
 }
-unsigned script_engine::getMachineCount() const
+unsigned script_engine::getContextCount() const
 {
-	return vecMachines.size();
+	return vecContexts.size();
 }
 
 //script engine - public functions, called from the outside
@@ -571,7 +565,10 @@ void script_engine::cleanEngine()
 	currentRunningMachine = -1;
 	error = false;
 	errorMessage.clear();
-	cleanInventory( *this );
+
+	for( unsigned u = 0; u < vecContexts.size(); ++u )
+		clean_script_context( u );
+	*this = script_engine( get_drawmgr() );
 }
 bool script_engine::start()
 {
@@ -600,11 +597,13 @@ bool script_engine::start()
 			return false;
 		}
 		script_parser.parseScript( scriptPath );
-		size_t scriptIdx = findScriptFromFile( script_parser.getCurrentScriptPath() );
-		if( !CheckValidIdx( scriptIdx ) ) raise_exception( eng_exception( eng_exception::eng_error ) );
-		currentRunningMachine = fetchScriptMachine();
-		script_machine & machine = getScriptMachine( currentRunningMachine );
-		machine.initialize( *this, scriptIdx );
+		size_t script_index = findScriptFromFile( script_parser.getCurrentScriptPath() );
+		if( !CheckValidIdx( script_index ) ) raise_exception( eng_exception( eng_exception::eng_error ) );
+
+		script_context * context = getScriptContext( fetchScriptContext() );
+		context->current_script_index = script_index;
+		context->object_vector_index = fetchObjectVector();
+		context->script_object = -1;
 	}
 	catch( eng_exception const & error )
 	{
@@ -618,18 +617,18 @@ bool script_engine::start()
 	}
 	return true;
 }
-bool script_engine::advance()
+bool script_engine::run()
 {
 	currentRunningMachine = 0;
 	get_drawmgr()->UpdateObjectCollisions();
-	while( currentRunningMachine < getMachineCount() )
+	while( currentRunningMachine < vecContexts.size() )
 	{
 		try
 		{
-			for(; currentRunningMachine < getMachineCount(); ++currentRunningMachine )
+			for(; currentRunningMachine < vecContexts.size(); ++currentRunningMachine )
 			{
 				if( error ) return false;
-				script_machine const & machine = getScriptMachine( currentRunningMachine );
+				script_context const & machine = *getScriptContext( currentRunningMachine );
 				Object * current = getObjFromScriptVector( machine.object_vector_index, machine.script_object );
 				if( current )
 				{
@@ -663,7 +662,7 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 {
 	unsigned prevMachine = currentRunningMachine;
 	currentRunningMachine = machineIndex;
-	script_machine & m = getScriptMachine( machineIndex );
+	script_context & m = *getScriptContext( machineIndex );
 	assert( CheckValidIdx( m.current_thread_index ) && CheckValidIdx( m.current_script_index ) );
 	size_t blockIndex = -1;
 	script_container & sc = getScript( m.current_script_index );
@@ -674,8 +673,8 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 		getScriptEnvironment( m.threads[ 0 ] ).parentIndex = -1;
 		getScriptEnvironment( m.threads[ 0 ] ).hasResult = false;
 		m.current_thread_index = 0;
-		while( !getScriptMachine( machineIndex ).advance( *this ) );
-		callSub( machineIndex, script_container::AtInitialize );
+		while( !advance() );
+		callSub( currentRunningMachine, script_container::AtInitialize );
 		currentRunningMachine = prevMachine;
 		return;
 	}
@@ -690,16 +689,16 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 	case script_container::AtMainLoop:
 		{
 			//check to see if latched object (if there is one) is valid
-			if( CheckValidIdx( getScriptMachine( machineIndex ).getLatchedObject() ) && 
-				CheckValidIdx( getScriptMachine( machineIndex ).getObjectVectorIndex() ) )
+			if( CheckValidIdx( getScriptContext( machineIndex )->script_object ) && 
+				CheckValidIdx( getScriptContext( machineIndex )->object_vector_index  ) )
 			{
-				Object * obj = getObjFromScriptVector( getScriptMachine( machineIndex ).getObjectVectorIndex(), getScriptMachine( machineIndex ).getLatchedObject() ); // GetObject( vvecObjects[ getScriptMachine( machineIndex ).getObjectVectorIndex() ][ getScriptMachine( machineIndex ).getLatchedObject() ] );
+				Object * obj = getObjFromScriptVector( getScriptContext( machineIndex )->object_vector_index, getScriptContext( machineIndex )->script_object ); // GetObject( vvecObjects[ getScriptMachine( machineIndex ).getObjectVectorIndex() ][ getScriptMachine( machineIndex ).getLatchedObject() ] );
 				if( !obj )
 				{
 					//latched object has been deleted, terminate machine
 					callSub( machineIndex, script_container::AtFinalize );
-					getScriptMachine( machineIndex ).clean( *this );
-					releaseScriptMachine( machineIndex );
+					clean_script_context( machineIndex );
+					releaseScriptContext( machineIndex );
 					raise_exception( eng_exception( eng_exception::finalizing_machine ) );
 					break;
 				}
@@ -721,7 +720,7 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 		e.parentIndex = m.threads[ m.current_thread_index ];
 		e.hasResult = 0;
 		m.threads[ m.current_thread_index ] = calledEnv;
-		while( !getScriptMachine( machineIndex ).advance( *this ) );
+		while( !advance() );
 	}
 
 	currentRunningMachine = prevMachine;
@@ -733,4 +732,249 @@ void script_engine::raise_exception( eng_exception const & eng_except )
 bool script_engine::IsFinished()
 {
 	return finished;
+}
+
+void script_engine::initialize_script_context( size_t script_index, size_t context_index )
+{
+	script_context * context = getScriptContext( context_index );
+	context->current_script_index = script_index;
+	context->object_vector_index = fetchObjectVector();
+	context->script_object = -1;
+	callSub( context_index, script_container::AtInitialize );
+}
+bool script_engine::advance()
+{
+	script_context * current_context = getScriptContext( currentRunningMachine );
+	assert( current_context->threads.size() > current_context->current_thread_index );
+	script_environment & env = getScriptEnvironment( current_context->threads[ current_context->current_thread_index ] );
+	if( env.codeIndex >= getBlock( env.blockIndex ).vecCodes.size() )
+	{
+		size_t disposing = current_context->threads[ current_context->current_thread_index ];
+		if( !CheckValidIdx( getScriptEnvironment( disposing ).parentIndex ) )
+			return true; //do not dispose initial environment
+		script_environment & disposing_env = getScriptEnvironment( current_context->threads[ current_context->current_thread_index ] );
+		current_context->threads[ current_context->current_thread_index ] = disposing_env.parentIndex;
+
+		if( disposing_env.hasResult )
+		{
+			addRefScriptData( disposing_env.values[ 0 ] );
+			getScriptEnvironment( disposing_env.parentIndex ).stack.push_back( disposing_env.values[ 0 ] );
+		}
+		else if( getBlock( disposing_env.blockIndex ).kind == block::bk_task )
+			current_context->threads.erase( current_context->threads.begin() + current_context->current_thread_index-- );
+
+		do
+		{
+			unsigned refs = getScriptEnvironment( disposing ).refCount;
+			size_t next = getScriptEnvironment( disposing ).parentIndex;
+			releaseScriptEnvironment( disposing );
+			if( refs > 1 )
+				break;
+			disposing = next;
+		}while( true );
+		return false;
+	}
+	code const & current_code = getBlock( env.blockIndex ).vecCodes[ env.codeIndex++ ];
+	switch( current_code.command )
+	{
+	case vc_assign:
+		{
+			script_environment * e;
+			for( e = &env; e->blockIndex != current_code.blockIndex; e = &getScriptEnvironment( e->parentIndex ) );
+			if( e->values.size() <= current_code.variableIndex )
+				e->values.resize( 4 + 2 * e->values.size(), -1 );
+			scriptDataAssign( e->values[ current_code.variableIndex ], env.stack.back() );
+			releaseScriptData( env.stack.back() );
+			env.stack.pop_back();
+		}
+		break;
+	case vc_overWrite:
+		{
+			copyScriptData( env.stack[ env.stack.size() - 2 ], env.stack.back() );
+			releaseScriptData( env.stack.back() );
+			env.stack.pop_back();
+		}
+		break;
+	case vc_pushVal:
+		{
+			env.stack.push_back( -1 );
+			scriptDataAssign( env.stack.back(), current_code.scriptDataIndex );
+		}
+		break;
+	case vc_pushVar:
+		{
+			script_environment * e;
+			for( e = &env; e->blockIndex != current_code.blockIndex; e = &getScriptEnvironment( e->parentIndex ) );
+			env.stack.push_back( -1 );
+			scriptDataAssign( env.stack.back(), e->values[ current_code.variableIndex ] );
+		}
+		break;
+	case vc_duplicate:
+		{
+			addRefScriptData( env.stack.back() );
+			env.stack.push_back( env.stack.back() );
+		}
+		break;
+	case vc_callFunction:
+	case vc_callFunctionPush:
+	case vc_callTask:
+		{
+			block & b = getBlock( current_code.subIndex );
+			if( b.nativeCallBack ) //always functional
+			{
+				env.stack.push_back( -1 );
+				unsigned popCount = current_code.argc + (current_code.command != vc_callFunctionPush ? 1 : 0 );
+				b.nativeCallBack( this, &env.stack[ env.stack.size() - ( 1 + current_code.argc ) ] );
+				{
+					script_context & current_machine = *getScriptContext( currentRunningMachine );
+					script_environment & env = getScriptEnvironment( current_machine.threads[ current_machine.current_thread_index ] ); //in case of re-allocation
+					for( unsigned u = 0; u < popCount; ++ u )
+					{
+						releaseScriptData( env.stack.back() );
+						env.stack.pop_back();
+					}
+				}
+			}
+			else
+			{
+				size_t envIdx = fetchScriptEnvironment( current_code.subIndex );
+				script_environment & current_env = getScriptEnvironment( current_context->threads[ current_context->current_thread_index ] );
+				script_environment & new_env = getScriptEnvironment( envIdx );
+				new_env.hasResult = ( current_code.command == vc_callFunctionPush );
+				new_env.parentIndex = current_context->threads[ current_context->current_thread_index ];
+				++current_env.refCount;
+				for( unsigned u = 0; u < current_code.argc; ++ u )
+					new_env.stack.push_back( *(current_env.stack.end() - 1 - u) );
+				current_env.stack.erase( current_env.stack.end() - current_code.argc, current_env.stack.end() );
+				if( current_code.command != vc_callTask )
+					current_context->threads[ current_context->current_thread_index ] = envIdx;
+				else
+					current_context->threads.insert( current_context->threads.begin() + ++current_context->current_thread_index, envIdx );
+			}
+		}
+		break;
+	case vc_breakRoutine:
+		{
+			bool BaseRoutine = false; //task/function returns
+			script_environment * e = &env;
+			do
+			{
+				block const & b = getBlock( e->blockIndex );
+				e->codeIndex = b.vecCodes.size();
+				if( !(b.kind == block::bk_function || b.kind == block::bk_task || b.kind == block::bk_sub) && CheckValidIdx( e->parentIndex ) )
+					e = &getScriptEnvironment( e->parentIndex );
+				else
+					BaseRoutine = true;
+			}while( !BaseRoutine );
+		}
+		break;
+	case vc_breakLoop:
+		{
+			bool BaseRoutine = false; //loops
+			script_environment * e = &env;
+			do
+			{
+				block const & b = getBlock( e->blockIndex );
+				e->codeIndex = b.vecCodes.size();
+				e = &getScriptEnvironment( e->parentIndex );
+				if( b.kind == block::bk_loop )
+				{
+					BaseRoutine = true;
+					for( unsigned u = 0; u < e->stack.size(); ++u )
+						releaseScriptData( e->stack[ u ] );
+					e->stack.resize( 0 );
+					do
+						++(e->codeIndex);
+					while( getBlock( e->blockIndex ).vecCodes[ e->codeIndex - 1 ].command != vc_loopBack );
+					assert( env.stack.size() == 0 );
+					assert( e->stack.size() == 0 );
+				}
+			}while( !BaseRoutine );
+		}
+		break;
+	case vc_loopIf:
+		{
+			if( getRealScriptData( env.stack.back() ) == 0.f )
+			{
+				do
+					++env.codeIndex;
+				while( getBlock( env.blockIndex ).vecCodes[ env.codeIndex - 1 ].command != vc_loopBack );
+			}
+			releaseScriptData( env.stack.back() );
+			env.stack.pop_back();
+			assert( env.stack.size() == 0 );
+		}
+		break;
+	case vc_loopBack:
+		env.codeIndex = current_code.loopBackIndex;
+		break;
+	case vc_yield:
+		current_context->current_thread_index = ( current_context->current_thread_index ? current_context->current_thread_index : current_context->threads.size() ) - 1;
+		break;
+	case vc_checkIf:
+		{
+			float real = getRealScriptData( env.stack.back() );
+			releaseScriptData( env.stack.back() );
+			env.stack.pop_back();
+			if( real == 0.f )
+			{
+				do
+					++env.codeIndex;
+				while( getBlock( env.blockIndex ).vecCodes[ env.codeIndex - 1 ].command != vc_caseNext );
+				assert( env.stack.size() == 0 );
+			}
+		}
+		break;
+	case vc_loopAscent:
+	case vc_loopDescent:
+		{
+			float real = getRealScriptData( env.stack.back() );
+			releaseScriptData( env.stack.back() );
+			env.stack.pop_back();
+			bool proceed = ((current_code.command == vc_loopAscent) ? real > getRealScriptData( env.stack.back() )
+				: real < getRealScriptData( env.stack.back() ) );
+			if( !proceed )
+			{
+				releaseScriptData( env.stack.back() );
+				env.stack.pop_back();
+				do
+					++env.codeIndex;
+				while( getBlock( env.blockIndex ).vecCodes[ env.codeIndex - 1 ].command != vc_loopBack );
+				assert( env.stack.size() == 0 );
+			}
+		}
+		break;
+	case vc_caseBegin:
+	case vc_caseNext:
+	case vc_caseEnd:
+		break;
+	case vc_gotoEnd:
+			for( block const & b = getBlock( env.blockIndex );
+				b.vecCodes[ env.codeIndex - 1 ].command != vc_caseEnd;
+				++env.codeIndex );
+		break;
+	case vc_invalid:
+	default:
+		assert( false );
+	}
+	return false;
+}
+void script_engine::clean_script_context( size_t context_index )
+{
+	script_context * current_context = this->getScriptContext( context_index );
+	if( !current_context->threads.size() )
+		return;
+	
+	current_context->current_thread_index = current_context->threads.size() - 1;
+	do
+		getScriptEnvironment( current_context->threads[ current_context->current_thread_index ] ).codeIndex = -1;
+	while( !advance() );
+	releaseScriptEnvironment( current_context->threads[ current_context->current_thread_index ] );
+	current_context->threads.pop_back();
+	releaseObjectVector( current_context->object_vector_index );
+	current_context->current_script_index = -1;
+	current_context->current_thread_index = -1;
+	current_context->object_vector_index = -1;
+	current_context->script_object = -1;
+	assert( !current_context->threads.size() );
 }

@@ -36,9 +36,6 @@
     <ClInclude Include="trunk\headers\scriptengine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="trunk\headers\scriptmachine.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="trunk\headers\D3DSmartPtr.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -60,9 +57,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="trunk\sources\scriptengine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="trunk\sources\scriptmachine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="trunk\sources\WinMain.cpp">

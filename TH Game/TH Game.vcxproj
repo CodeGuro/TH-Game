@@ -91,7 +91,6 @@
     <ClInclude Include="trunk\headers\ObjMgr.hpp" />
     <ClInclude Include="trunk\headers\parser.hpp" />
     <ClInclude Include="trunk\headers\scriptengine.hpp" />
-    <ClInclude Include="trunk\headers\scriptmachine.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="trunk\sources\bytecode.cpp" />
@@ -102,7 +101,6 @@
     <ClCompile Include="trunk\sources\ObjMgr.cpp" />
     <ClCompile Include="trunk\sources\parser.cpp" />
     <ClCompile Include="trunk\sources\scriptengine.cpp" />
-    <ClCompile Include="trunk\sources\scriptmachine.cpp" />
     <ClCompile Include="trunk\sources\Shaders.cpp" />
     <ClCompile Include="trunk\sources\WinMain.cpp" />
   </ItemGroup>

@@ -3,12 +3,13 @@
 #include <scriptengine.hpp>
 #include <Windows.h>
 
-class GameEngine : public Direct3DEngine
+class GameEngine
 {
 private:
+	Direct3DEngine draw_mgr;
 	script_engine script_mgr;
 public:
-	GameEngine( HWND hWnd ) : Direct3DEngine( hWnd ), script_mgr( this )
+	GameEngine( HWND hWnd ) : draw_mgr( hWnd ), script_mgr( &draw_mgr )
 	{
 	}
 	bool start()
@@ -18,8 +19,8 @@ public:
 	bool advance( MSG msg )
 	{
 		
-		script_mgr.advance();
-		RenderFrame( msg );
+		script_mgr.run();
+		draw_mgr.RenderFrame( msg );
 		return script_mgr.IsFinished();
 	}
 };
