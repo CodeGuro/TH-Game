@@ -87,7 +87,6 @@
     <ClInclude Include="trunk\headers\defstypedefs.hpp" />
     <ClInclude Include="trunk\headers\Direct3DEngine.hpp" />
     <ClInclude Include="trunk\headers\GameEngine.hpp" />
-    <ClInclude Include="trunk\headers\inventory.hpp" />
     <ClInclude Include="trunk\headers\lightweight_vector.hpp" />
     <ClInclude Include="trunk\headers\ObjMgr.hpp" />
     <ClInclude Include="trunk\headers\parser.hpp" />
@@ -100,7 +99,6 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </CompileAs>
     </ClCompile>
-    <ClCompile Include="trunk\sources\inventory.cpp" />
     <ClCompile Include="trunk\sources\ObjMgr.cpp" />
     <ClCompile Include="trunk\sources\parser.cpp" />
     <ClCompile Include="trunk\sources\scriptengine.cpp" />

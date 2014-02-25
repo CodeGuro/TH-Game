@@ -44,9 +44,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 		PeekMessage( &msg, NULL, NULL, NULL, PM_REMOVE );
 		TranslateMessage( &msg );
 		DispatchMessage( &msg );
-		engine.advance();
-		engine.RenderFrame( msg );
-	}while( msg.message != WM_QUIT && !engine.IsFinished() );
+	}while( msg.message != WM_QUIT && !engine.advance( msg ) );
 
 	return EXIT_SUCCESS;
 }

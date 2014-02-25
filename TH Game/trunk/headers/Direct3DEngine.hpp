@@ -59,7 +59,7 @@ struct WaveHeaderType
 		unsigned long dataSize;
 };
 
-class Battery
+class Direct3DEngine
 {
 private:
 	struct VBuffer
@@ -93,7 +93,7 @@ private:
 	vector< unsigned > vObjHandlesGC;
 	std::string ShotImagePath;
 
-protected:
+public:
 	D3DXMATRIX WorldMatrix;
 	D3DXMATRIX ViewMatrix;
 	D3DXMATRIX ProjectionMatrix;
@@ -167,19 +167,10 @@ protected:
 	void SetFog( float fognear, float fogfar, D3DCOLOR color );
 
 	//constructor
-	Battery( HWND const hWnd );
-	Battery();
-};
-
-class Direct3DEngine : protected virtual Battery
-{
-public:
-	Direct3DEngine();
+	Direct3DEngine( HWND const hWnd );
 	void ToggleWindowed();
 	void DrawGridTerrain( unsigned Rows, unsigned Columns, float Spacing );
 	void DrawFPS();
 	void RenderFrame( MSG const Msg );
 	void ProcUserInput( MSG const Msg );
-
-	void SetFog( D3DCOLOR Color, float Near, float Far );
 };

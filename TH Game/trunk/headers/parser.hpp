@@ -2,10 +2,9 @@
 #include "bytecode.hpp"
 #include <string>
 #include <map>
-#include <inventory.hpp>
 
 /*To parse the script into bytecode*/
-class parser : private virtual inventory
+class parser
 {
 private:
 	enum token
@@ -77,7 +76,7 @@ private:
 	scriptHandler scriptMgr;
 	lexer lexicon;
 	vector< scope > vecScope;
-
+	script_engine * eng;
 	symbol * search( std::string const & name );
 	symbol * searchResult();
 	size_t getBlockIndex();
@@ -106,8 +105,9 @@ private:
 	void importNativeSymbols(); //in the topmost scope
 	void parseDocument( std::string const & scriptPath, std::string const & scriptString );
 	void registerNatives();
-	virtual void raise_exception( eng_exception const & eng_except ) = 0;
+
 public:
+	parser( script_engine * eng );
 	void parseScript( std::string const & scriptPath );
 	void parseShotScript( std::string const & scriptPath );
 	std::string getCurrentScriptPath() const;

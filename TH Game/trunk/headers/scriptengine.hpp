@@ -7,23 +7,104 @@
 #include "parser.hpp"
 #include "Direct3DEngine.hpp"
 
-class script_engine : protected virtual Battery, protected virtual inventory, private parser
+class script_type_manager
+{
+private:
+	vector< type_data > types;
+public:
+	script_type_manager();
+	type_data getRealType() const;
+	type_data getBooleanType() const;
+	type_data getCharacterType() const;
+	type_data getStringType() const;
+	type_data getObjectType() const;
+	type_data getMiscType() const;
+	type_data getArrayType() const;
+	type_data getArrayType( size_t element ); //an array of some type
+};
+
+class script_engine : public script_type_manager
 {
 private:
 	friend class script_machine;
 	friend struct natives;
+
+	vector< script_data > vecScriptData;
+	vector< script_environment > vecScriptEnvironment;
+	vector< block > vecBlocks;
+	vector< script_machine > vecMachines;
+	vector< size_t > vecScriptDataGarbage;
+	vector< size_t > vecRoutinesGabage;
+	vector< vector< size_t > > vvecObjects;
+	vector< size_t > vvecObjectsGarbage;
+	vector< script_container > vecScripts;
+	vector< std::string > vecScriptDirectories;
+	std::map< std::string, size_t > mappedScripts;
+	std::map< std::string, size_t > mappedMainScripts;
+	std::map< std::string, size_t > mappedShotScripts;
 	
 	bool error;
 	bool finished;
 	std::string errorMessage;
 	size_t currentRunningMachine;
 
-	void raise_exception( eng_exception const & eng_except );
+	Direct3DEngine * draw_mgr;
+
 	void callSub( size_t machineIndex, script_container::sub AtSub );
 public:
-	script_engine();
+	script_engine( Direct3DEngine * draw_mgr );
 	void cleanEngine(); //remove all cache
 	bool start();
 	bool advance(); //true if finished (i.e. no script executers left to run)
 	bool IsFinished();
+	void raise_exception( eng_exception const & eng_except );
+	size_t fetchBlock();
+	block & getBlock( size_t index );
+	size_t fetchScriptData();
+	size_t fetchScriptData( float real );
+	size_t fetchScriptData( char character );
+	size_t fetchScriptData( bool boolean );
+	size_t fetchScriptData( std::string const & string );
+	size_t fetchScriptData( ObjType typeobj, size_t MachineIdx );
+	size_t fetchScriptData( D3DPRIMITIVETYPE primType );
+	size_t fetchScriptData( BlendType blend );
+	size_t fetchScriptData( ObjType typeobj );
+	script_data & getScriptData( size_t index );
+	void addRefScriptData( size_t index );
+	void scriptDataAssign( size_t & dst, size_t src );
+	void copyScriptData( size_t & dst, size_t & src );
+	void uniqueizeScriptData( size_t & dst );
+	float getRealScriptData( size_t index ) const;
+	char getCharacterScriptData( size_t index ) const;
+	bool getBooleanScriptData( size_t index ) const;
+	unsigned getObjHandleScriptData( size_t index ) const;
+	D3DPRIMITIVETYPE getPrimitiveTypeScriptData( size_t index ) const;
+	BlendType getBlendModeScriptData( size_t index ) const;
+	ObjType getObjTypeScriptData( size_t index ) const;
+	std::string getStringScriptData( size_t index );
+	void releaseScriptData( size_t & index );
+	size_t fetchScriptEnvironment( size_t blockIndex );
+	script_environment & getScriptEnvironment( size_t index );
+	void addRefScriptEnvironment( size_t index );
+	void releaseScriptEnvironment( size_t & index );
+	size_t fetchScriptMachine();
+	script_machine & getScriptMachine( size_t index );
+	void releaseScriptMachine( size_t & index );
+	size_t fetchObjectVector();
+	void releaseObjectVector( size_t & index );
+	void latchScriptObjectToMachine( size_t index, size_t machineIdx );
+	size_t getBlockFromScript( std::string const & filePath, std::string const & scriptName );
+	void registerScript( std::string const scriptName );
+	void registerMainScript( std::string const scriptPath, std::string const scriptName );
+	void registerInvalidMainScript( std::string const scriptPath );
+	script_container * getScript( std::string const & scriptName );
+	script_container & getScript( size_t index );
+	size_t findScript( std::string const & scriptName );
+	size_t findScriptFromFile( std::string const & scriptPath );
+	size_t findScriptDirectory( std::string const & scriptPath );
+	std::string const & getCurrentScriptDirectory( size_t machineIdx ) const;
+	Object * getObjFromScriptVector( size_t objvector, size_t Idx );
+	unsigned getMachineCount() const;
+	void cleanInventory( class script_engine & eng );
+	Direct3DEngine * get_drawmgr();
 };

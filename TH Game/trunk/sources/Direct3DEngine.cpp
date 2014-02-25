@@ -16,7 +16,7 @@ extern const std::string DefaultShader;
 #define TEXT_LAYER 7
 #define LAYER_COUNT 8
 
-Battery::Battery( HWND const hWnd )
+Direct3DEngine::Direct3DEngine( HWND const hWnd )
 {
 	////////////////////////
 	/////Initialization/////
@@ -134,49 +134,46 @@ Battery::Battery( HWND const hWnd )
 	RECT r = { 32, 16, 416, 464 };
 	GetDevice()->SetScissorRect( &r );
 }
-Battery::Battery()
-{
-}
-LPDIRECT3DDEVICE9 & Battery::GetDevice()
+LPDIRECT3DDEVICE9 & Direct3DEngine::GetDevice()
 {
 	return d3ddev;
 }
-LPDIRECT3D9 & Battery::GetD3D()
+LPDIRECT3D9 & Direct3DEngine::GetD3D()
 {
 	return d3d;
 }
-LPDIRECT3DVERTEXDECLARATION9 Battery::GetDefaultVDeclaration() const
+LPDIRECT3DVERTEXDECLARATION9 Direct3DEngine::GetDefaultVDeclaration() const
 {
 	return pDefaultVDeclaration;
 }
-LPDIRECT3DVERTEXSHADER9 Battery::GetDefaultVShader() const
+LPDIRECT3DVERTEXSHADER9 Direct3DEngine::GetDefaultVShader() const
 {
 	return pDefault3DVShader;
 }
-LPDIRECT3DPIXELSHADER9 Battery::GetDefaultPShader() const
+LPDIRECT3DPIXELSHADER9 Direct3DEngine::GetDefaultPShader() const
 {
 	return pDefault3DPShader;
 }
-LPD3DXCONSTANTTABLE Battery::GetDefaultConstable() const
+LPD3DXCONSTANTTABLE Direct3DEngine::GetDefaultConstable() const
 {
 	return pDefaultConstable;
 }
-LPDIRECTSOUND8 Battery::GetDSound() const
+LPDIRECTSOUND8 Direct3DEngine::GetDSound() const
 {
 	return dsound;
 }
-Battery::vLayer_t & Battery::GetLayers()
+Direct3DEngine::vLayer_t & Direct3DEngine::GetLayers()
 {
 	return vLayers;
 }
-void Battery::LoadShotImage( std::string const & pathname )
+void Direct3DEngine::LoadShotImage( std::string const & pathname )
 {
 	ShotImagePath = pathname;
 	LoadTexture( pathname );
 	for( unsigned u = 0; u < 4; ++u )
 		GetLayers()[ BULLET_LAYER ].vObjMgr[ u ].pTexture = GetTexture( pathname ) ;
 }
-unsigned Battery::CreateObjHandle()
+unsigned Direct3DEngine::CreateObjHandle()
 {
 	unsigned Result;
 	if( vObjHandlesGC.size() )
@@ -193,7 +190,7 @@ unsigned Battery::CreateObjHandle()
 	vObjHandles[ Result ].RefCount = 1;
 	return Result;
 }
-unsigned Battery::CreateObject( ObjType type )
+unsigned Direct3DEngine::CreateObject( ObjType type )
 {
 	unsigned Result;
 	unsigned Layer;
@@ -271,18 +268,18 @@ unsigned Battery::CreateObject( ObjType type )
 
 	return Result;
 }
-void Battery::AddRefObjHandle( unsigned HandleIdx )
+void Direct3DEngine::AddRefObjHandle( unsigned HandleIdx )
 {
 	if( CheckValidIdx( HandleIdx ) )
 		++vObjHandles[ HandleIdx ].RefCount;
 }
-void Battery::ReleaseObjHandle( unsigned HandleIdx )
+void Direct3DEngine::ReleaseObjHandle( unsigned HandleIdx )
 {
 	if( CheckValidIdx( HandleIdx ) )
 		if( !--vObjHandles[ HandleIdx ].RefCount )
 			vObjHandlesGC.push_back( HandleIdx );
 }
-void Battery::ReleaseObject( unsigned HandleIdx )
+void Direct3DEngine::ReleaseObject( unsigned HandleIdx )
 {
 	if( CheckValidIdx( HandleIdx ) )
 	{
@@ -326,7 +323,7 @@ void Battery::ReleaseObject( unsigned HandleIdx )
 		handle.RefCount = RefCount;
 	}
 }
-Object * Battery::GetObject( unsigned HandleIdx )
+Object * Direct3DEngine::GetObject( unsigned HandleIdx )
 {
 	if( CheckValidIdx( HandleIdx ) )
 	{
@@ -336,7 +333,7 @@ Object * Battery::GetObject( unsigned HandleIdx )
 	}
 	return 0;
 }
-ObjMgr * Battery::GetObjMgr( unsigned HandleIdx )
+ObjMgr * Direct3DEngine::GetObjMgr( unsigned HandleIdx )
 {
 	if( CheckValidIdx( HandleIdx ) )
 	{
@@ -346,7 +343,7 @@ ObjMgr * Battery::GetObjMgr( unsigned HandleIdx )
 	}
 	return 0;
 }
-void Battery::LoadTexture( std::string const & pathname )
+void Direct3DEngine::LoadTexture( std::string const & pathname )
 {
 	auto it = mapTextures.find( pathname );
 	if( it == mapTextures.end() )
@@ -355,20 +352,20 @@ void Battery::LoadTexture( std::string const & pathname )
 		D3DXCreateTextureFromFile( d3ddev, pathname.c_str(), &mapTextures[ pathname ] );
 	}
 }
-LPDIRECT3DTEXTURE9 Battery::GetTexture( std::string const & pathname )
+LPDIRECT3DTEXTURE9 Direct3DEngine::GetTexture( std::string const & pathname )
 {
 	auto it = mapTextures.find( pathname );
 	if( it == mapTextures.end() )
 		return 0;
 	return it->second;
 }
-void Battery::DeleteTexture( std::string const & pathname )
+void Direct3DEngine::DeleteTexture( std::string const & pathname )
 {
 	auto it = mapTextures.find( pathname );
 	if( it != mapTextures.end() )
 		mapTextures.erase( it );
 }
-void Battery::LoadSound( std::string const & pathname )
+void Direct3DEngine::LoadSound( std::string const & pathname )
 {
 	if( mapSoundEffects.find( pathname ) != mapSoundEffects.end() )
 		return;
@@ -433,7 +430,7 @@ void Battery::LoadSound( std::string const & pathname )
 
 	SoundFile.close();
 }
-void Battery::PlaySound( std::string const & pathname )
+void Direct3DEngine::PlaySound( std::string const & pathname )
 {
 	auto it = mapSoundEffects.find( pathname );
 	if( it == mapSoundEffects.end() )
@@ -446,13 +443,13 @@ void Battery::PlaySound( std::string const & pathname )
 	buffer->Play( 0, 0, 0 );
 
 }
-void Battery::DeleteSound( std::string const & pathname )
+void Direct3DEngine::DeleteSound( std::string const & pathname )
 {
 	auto it = mapSoundEffects.find( pathname );
 	if( it != mapSoundEffects.end() )
 		mapSoundEffects.erase( it );
 }
-unsigned Battery::CreateFontObject()
+unsigned Direct3DEngine::CreateFontObject()
 {
 	unsigned res;
 	if( vFontObjectsGC.size() )
@@ -476,7 +473,7 @@ unsigned Battery::CreateFontObject()
 	Result.String = "Hello World!";
 	return res;
 }
-FontObject * Battery::GetFontObject( unsigned HandleIdx )
+FontObject * Direct3DEngine::GetFontObject( unsigned HandleIdx )
 {
 	if( CheckValidIdx( HandleIdx ) )
 	{
@@ -486,7 +483,7 @@ FontObject * Battery::GetFontObject( unsigned HandleIdx )
 	}
 	return 0;
 }
-unsigned Battery::CreateShot( ULONG GraphicID )
+unsigned Direct3DEngine::CreateShot( ULONG GraphicID )
 {
 	unsigned Result;
 	Result = CreateObjHandle();
@@ -506,7 +503,7 @@ unsigned Battery::CreateShot( ULONG GraphicID )
 	objvector[ handle.ObjVectorIdx ].SetShotDataParams( shot_data, TemplateOffset );
 	return Result;
 }
-void Battery::CreateShotData( unsigned ID, BlendType blend, RECT const & rect, D3DCOLOR color, DWORD flags, vector< vector< float > > const & AnimationData )
+void Direct3DEngine::CreateShotData( unsigned ID, BlendType blend, RECT const & rect, D3DCOLOR color, DWORD flags, vector< vector< float > > const & AnimationData )
 {
 	assert( GetLayers().size() > 4 );
 	ShotData shot_data;
@@ -538,7 +535,7 @@ void Battery::CreateShotData( unsigned ID, BlendType blend, RECT const & rect, D
 		Bullet_Templates.push_back( shot_data );
 	}while( ++i < AnimationData.size() );
 }
-void Battery::PushQuadShotBuffer( RECT const Quad, D3DCOLOR const Color )
+void Direct3DEngine::PushQuadShotBuffer( RECT const Quad, D3DCOLOR const Color )
 {
 	D3DSURFACE_DESC SurfaceDesc;
 	GetTexture( ShotImagePath )->GetLevelDesc( 0, &SurfaceDesc );
@@ -555,7 +552,7 @@ void Battery::PushQuadShotBuffer( RECT const Quad, D3DCOLOR const Color )
 }
 
 //ObjEffect functions
-void Battery::ObjEffect_CreateVertex( unsigned HandleIdx, ULONG VertexCount )
+void Direct3DEngine::ObjEffect_CreateVertex( unsigned HandleIdx, ULONG VertexCount )
 {
 	if( CheckValidIdx( HandleIdx ) )
 	{
@@ -567,7 +564,7 @@ void Battery::ObjEffect_CreateVertex( unsigned HandleIdx, ULONG VertexCount )
 		}
 	}
 }
-void Battery::ObjEffect_SetVertexXY( unsigned HandleIdx, ULONG VIndex,  D3DXVECTOR2 Posxy )
+void Direct3DEngine::ObjEffect_SetVertexXY( unsigned HandleIdx, ULONG VIndex,  D3DXVECTOR2 Posxy )
 {
 	if( CheckValidIdx( HandleIdx ) )
 	{
@@ -576,7 +573,7 @@ void Battery::ObjEffect_SetVertexXY( unsigned HandleIdx, ULONG VIndex,  D3DXVECT
 			GetVertexBuffer( handle.VertexBuffer )[ VIndex ].pos = D3DXVECTOR3( Posxy.x, Posxy.y, 0.f );
 	}
 }
-void Battery::ObjEffect_SetVertexUV( unsigned HandleIdx, ULONG VIndex, D3DXVECTOR2 Posuv )
+void Direct3DEngine::ObjEffect_SetVertexUV( unsigned HandleIdx, ULONG VIndex, D3DXVECTOR2 Posuv )
 {
 	if( CheckValidIdx( HandleIdx ) )
 	{
@@ -585,7 +582,7 @@ void Battery::ObjEffect_SetVertexUV( unsigned HandleIdx, ULONG VIndex, D3DXVECTO
 			GetVertexBuffer( handle.VertexBuffer )[ VIndex ].tex = Posuv;
 	}
 }
-void Battery::ObjEffect_SetVertexColor( unsigned HandleIdx, ULONG VIndex, D3DCOLOR Color )
+void Direct3DEngine::ObjEffect_SetVertexColor( unsigned HandleIdx, ULONG VIndex, D3DCOLOR Color )
 {
 	if( CheckValidIdx( HandleIdx ) )
 	{
@@ -594,7 +591,7 @@ void Battery::ObjEffect_SetVertexColor( unsigned HandleIdx, ULONG VIndex, D3DCOL
 			GetVertexBuffer( handle.VertexBuffer )[ VIndex ].color = Color;
 	}
 }
-void Battery::ObjEffect_SetRenderState( unsigned HandleIdx, BlendType BlendState )
+void Direct3DEngine::ObjEffect_SetRenderState( unsigned HandleIdx, BlendType BlendState )
 {
 	if( CheckValidIdx( HandleIdx ) )
 	{
@@ -603,7 +600,7 @@ void Battery::ObjEffect_SetRenderState( unsigned HandleIdx, BlendType BlendState
 			GetLayers()[ handle.Layer ].vObjMgr[ handle.MgrIdx ].BlendState = BlendState;
 	}
 }
-void Battery::ObjEffect_SetPrimitiveType( unsigned HandleIdx, D3DPRIMITIVETYPE PrimitiveType )
+void Direct3DEngine::ObjEffect_SetPrimitiveType( unsigned HandleIdx, D3DPRIMITIVETYPE PrimitiveType )
 {
 	if( CheckValidIdx( HandleIdx ) )
 	{
@@ -612,7 +609,7 @@ void Battery::ObjEffect_SetPrimitiveType( unsigned HandleIdx, D3DPRIMITIVETYPE P
 			GetLayers()[ handle.Layer ].vObjMgr[ handle.MgrIdx ].PrimitiveType = PrimitiveType;
 	}
 }
-void Battery::ObjEffect_SetLayer( unsigned HandleIdx, ULONG Layer )
+void Direct3DEngine::ObjEffect_SetLayer( unsigned HandleIdx, ULONG Layer )
 {
 	if( CheckValidIdx( HandleIdx ) && Layer < LAYER_COUNT )
 	{
@@ -633,7 +630,7 @@ void Battery::ObjEffect_SetLayer( unsigned HandleIdx, ULONG Layer )
 }
 
 //ObjShot functions
-void Battery::ObjShot_SetGraphic( unsigned HandleIdx, ULONG ID )
+void Direct3DEngine::ObjShot_SetGraphic( unsigned HandleIdx, ULONG ID )
 {
 	Object * pObj = GetObject( HandleIdx );
 	if( pObj && ID < Bullet_TemplateOffsets.size() && pObj->FlagBullet( -1 ) )
@@ -652,7 +649,7 @@ void Battery::ObjShot_SetGraphic( unsigned HandleIdx, ULONG ID )
 }
 
 //ObjFont functions
-void Battery::ObjFont_SetSize( unsigned HandleIdx, ULONG Size )
+void Direct3DEngine::ObjFont_SetSize( unsigned HandleIdx, ULONG Size )
 {
 	FontObject * fobj = GetFontObject( HandleIdx );
 	if( !fobj )
@@ -667,7 +664,7 @@ void Battery::ObjFont_SetSize( unsigned HandleIdx, ULONG Size )
 		D3DXCreateFontIndirect( GetDevice(), &desc, &(fobj->pFont) );
 	}
 }
-void Battery::ObjFont_SetFaceName( unsigned HandleIdx, std::string const & FaceName )
+void Direct3DEngine::ObjFont_SetFaceName( unsigned HandleIdx, std::string const & FaceName )
 {
 	FontObject * fobj = GetFontObject( HandleIdx );
 	if( !fobj )
@@ -684,7 +681,7 @@ void Battery::ObjFont_SetFaceName( unsigned HandleIdx, std::string const & FaceN
 }
 
 //misc
-unsigned Battery::FetchVertexBuffer()
+unsigned Direct3DEngine::FetchVertexBuffer()
 {
 	unsigned res;
 	if( VertexBuffersGC.size() )
@@ -700,15 +697,15 @@ unsigned Battery::FetchVertexBuffer()
 	VertexBuffers[ res ].RefCount = 1;
 	return res;
 }
-vector< Vertex > & Battery::GetVertexBuffer( unsigned Idx )
+vector< Vertex > & Direct3DEngine::GetVertexBuffer( unsigned Idx )
 {
 	return VertexBuffers[ Idx ].VertexBuffer;
 }
-void Battery::AddRefVertexBuffer( unsigned Idx )
+void Direct3DEngine::AddRefVertexBuffer( unsigned Idx )
 {
 	++VertexBuffers[ Idx ].RefCount;
 }
-void Battery::DisposeVertexBuffer( unsigned Idx )
+void Direct3DEngine::DisposeVertexBuffer( unsigned Idx )
 {
 	if( VertexBuffers[ Idx ].RefCount == 0 )
 		assert( 0 );
@@ -718,7 +715,7 @@ void Battery::DisposeVertexBuffer( unsigned Idx )
 		VertexBuffersGC.push_back( Idx );
 	}
 }
-void Battery::DrawObjects()
+void Direct3DEngine::DrawObjects()
 {
 	D3DXMATRIX world, view, proj;
 	D3DXMatrixIdentity( &world );
@@ -855,7 +852,7 @@ void Battery::DrawObjects()
 	}
 	GetDevice()->SetTexture( 0, 0 );
 }
-void Battery::UpdateObjectCollisions()
+void Direct3DEngine::UpdateObjectCollisions()
 {
 	auto CollisionCheck = []( vector< Object > & LayerA, vector< Object > & LayerB )
 	{
@@ -918,11 +915,11 @@ void Battery::UpdateObjectCollisions()
 }
 
 //camera
-void Battery::SetLookAtViewMatrix( D3DXVECTOR3 const & eye, D3DXVECTOR3 const & at )
+void Direct3DEngine::SetLookAtViewMatrix( D3DXVECTOR3 const & eye, D3DXVECTOR3 const & at )
 {
 	D3DXMatrixLookAtLH( &ViewMatrix, &eye, &at, &D3DXVECTOR3( 0.f, 1.f, 0.f ) );
 }
-void Battery::SetFog( float fognear, float fogfar, D3DCOLOR color )
+void Direct3DEngine::SetFog( float fognear, float fogfar, D3DCOLOR color )
 {
 	/*
 	GetDevice()->SetRenderState( D3DRS_FOGENABLE, TRUE );
@@ -934,9 +931,6 @@ void Battery::SetFog( float fognear, float fogfar, D3DCOLOR color )
 	*/
 }
 
-Direct3DEngine::Direct3DEngine()
-{
-}
 void Direct3DEngine::ToggleWindowed()
 {
 	D3DPRESENT_PARAMETERS d3dpp;

@@ -354,7 +354,8 @@ void natives::_CreateEnemyFromScript( script_engine * eng, size_t * argv )
 void natives::_CreateEnemyFromFile( script_engine * eng, size_t * argv )
 {
 	std::string scriptPath = eng->getStringScriptData( argv[ 0 ] );
-	eng->parseScript( scriptPath );
+	parser p( eng );
+	p.parseScript( scriptPath );
 	size_t scriptIndex;
 	if( CheckValidIdx( (scriptIndex = eng->findScriptFromFile( scriptPath )) ) )
 	{
@@ -378,15 +379,15 @@ void natives::_GetCurrentScriptDirectory( script_engine * eng, size_t * argv )
 }
 void natives::_LoadSound( script_engine * eng, size_t * argv )
 {
- 	eng->LoadSound( eng->getStringScriptData( argv[ 0 ] ) );
+ 	eng->get_drawmgr()->LoadSound( eng->getStringScriptData( argv[ 0 ] ) );
 }
 void natives::_PlaySound( script_engine * eng, size_t * argv )
 {
-	eng->PlaySound( eng->getStringScriptData( argv[ 0 ] ) );
+	eng->get_drawmgr()->PlaySound( eng->getStringScriptData( argv[ 0 ] ) );
 }
 void natives::_DeleteSound( script_engine * eng, size_t * argv )
 {
-	eng->DeleteSound( eng->getStringScriptData( argv[ 0 ] ) );
+	eng->get_drawmgr()->DeleteSound( eng->getStringScriptData( argv[ 0 ] ) );
 }
 void natives::_Obj_Create( script_engine * eng, size_t * argv )
 {
@@ -397,54 +398,48 @@ void natives::_Obj_Create( script_engine * eng, size_t * argv )
 void natives::_Obj_Delete( script_engine * eng, size_t * argv )
 {
 	unsigned objHandle = eng->getObjHandleScriptData( argv[ 0 ] );
-	eng->ReleaseObject( objHandle );
+	eng->get_drawmgr()->ReleaseObject( objHandle );
 }
 void natives::_Obj_BeDeleted( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->fetchScriptData( eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) ) == 0 );
+	size_t tmp = eng->fetchScriptData( eng->get_drawmgr()->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) ) == 0 );
 	eng->scriptDataAssign( argv[ 0 ], tmp );
 	eng->releaseScriptData( tmp );
 }
 void natives::_Obj_SetPosition( script_engine * eng, size_t * argv )
 {
-	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( obj )
+	if( Object * obj = eng->get_drawmgr()->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) ) )
 		obj->SetPosition( D3DXVECTOR3( eng->getRealScriptData( argv[ 1 ] ), eng->getRealScriptData( argv[ 2 ] ), 0.0f ) );
 }
 void natives::_Obj_SetPosition3D( script_engine * eng, size_t * argv )
 {
-	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( obj )
+	if( Object * obj = eng->get_drawmgr()->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) ))
 		obj->SetPosition( D3DXVECTOR3( eng->getRealScriptData( argv[ 1 ] ), eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) ) );
 }
 void natives::_Obj_SetSpeed( script_engine * eng, size_t * argv )
 {
-	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
+	Object * obj = eng->get_drawmgr()->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
 	if( obj )
 		obj->SetSpeed( eng->getRealScriptData( argv[ 1 ] ) );
 }
 void natives::_Obj_SetAcceleration( script_engine * eng, size_t * argv )
 {
-	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( obj )
+	if( Object * obj = eng->get_drawmgr()->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) ) )
 		obj->SetAccel( D3DXVECTOR3( eng->getRealScriptData( argv[ 1 ] ), eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) ) );
 }
 void natives::_Obj_SetAngle( script_engine * eng, size_t * argv )
 {
-	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( obj )
+	if( Object * obj = eng->get_drawmgr()->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) ) )
 		obj->SetAngle( eng->getRealScriptData( argv[ 1 ] ) );
 }
 void natives::_Obj_SetVelocity( script_engine * eng, size_t * argv )
 {
-	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( obj )
+	if( Object * obj = eng->get_drawmgr()->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) ) )
 		obj->SetVelocity( D3DXVECTOR3( eng->getRealScriptData( argv[ 1 ] ), eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) ) );
 }
 void natives::_Obj_SetAutoDelete( script_engine * eng, size_t * argv )
 {
-	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( obj )
+	if( Object * obj = eng->get_drawmgr()->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) ) )
 		obj->FlagScreenDeletable( (int)eng->getBooleanScriptData( argv[ 1 ] ) );
 }
 void natives::_Obj_ScriptLatch( script_engine * eng, size_t * argv )
@@ -453,52 +448,49 @@ void natives::_Obj_ScriptLatch( script_engine * eng, size_t * argv )
 }
 void natives::_ObjEffect_SetTexture( script_engine * eng, size_t * argv )
 {
-	ObjMgr * objmgr = eng->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( objmgr )
-		objmgr->pTexture = eng->GetTexture( eng->getStringScriptData( argv[ 1 ] ) );
+	if( ObjMgr * objmgr = eng->get_drawmgr()->GetObjMgr( eng->getObjHandleScriptData( argv[ 0 ] ) ) )
+		objmgr->pTexture = eng->get_drawmgr()->GetTexture( eng->getStringScriptData( argv[ 1 ] ) );
 }
 void natives::_ObjEffect_CreateVertex( script_engine * eng, size_t * argv )
 {
-	eng->ObjEffect_CreateVertex( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ) );
+	eng->get_drawmgr()->ObjEffect_CreateVertex( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ) );
 }
 void natives::_ObjEffect_SetPrimitiveType( script_engine * eng, size_t * argv )
 {
-	eng->ObjEffect_SetPrimitiveType( eng->getObjHandleScriptData( argv[ 0 ] ), eng->getPrimitiveTypeScriptData( argv[ 1 ] ) );
+	eng->get_drawmgr()->ObjEffect_SetPrimitiveType( eng->getObjHandleScriptData( argv[ 0 ] ), eng->getPrimitiveTypeScriptData( argv[ 1 ] ) );
 }
 void natives::_ObjEffect_SetRenderState( script_engine * eng, size_t * argv )
 {
-	eng->ObjEffect_SetRenderState( eng->getObjHandleScriptData( argv[ 0 ] ), eng->getBlendModeScriptData( argv[ 1 ] ) );
+	eng->get_drawmgr()->ObjEffect_SetRenderState( eng->getObjHandleScriptData( argv[ 0 ] ), eng->getBlendModeScriptData( argv[ 1 ] ) );
 }
 void natives::_ObjEffect_SetVertexUV( script_engine * eng, size_t * argv )
 {
-	eng->ObjEffect_SetVertexUV( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ), D3DXVECTOR2( eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) ) );
+	eng->get_drawmgr()->ObjEffect_SetVertexUV( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ), D3DXVECTOR2( eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) ) );
 }
 void natives::_ObjEffect_SetVertexXY( script_engine * eng, size_t * argv )
 {
-	eng->ObjEffect_SetVertexXY( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ), D3DXVECTOR2( eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) ) );
+	eng->get_drawmgr()->ObjEffect_SetVertexXY( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ), D3DXVECTOR2( eng->getRealScriptData( argv[ 2 ] ), eng->getRealScriptData( argv[ 3 ] ) ) );
 }
 void natives::_ObjEffect_SetVertexColor( script_engine * eng, size_t * argv )
 {
-	eng->ObjEffect_SetVertexColor( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ), D3DCOLOR_RGBA( (ULONG)eng->getRealScriptData( argv[ 2 ] ), (ULONG)eng->getRealScriptData( argv[ 3 ] ), (ULONG)eng->getRealScriptData( argv[ 4 ] ), (ULONG)eng->getRealScriptData( argv[ 5 ] ) ) );
+	eng->get_drawmgr()->ObjEffect_SetVertexColor( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ), D3DCOLOR_RGBA( (ULONG)eng->getRealScriptData( argv[ 2 ] ), (ULONG)eng->getRealScriptData( argv[ 3 ] ), (ULONG)eng->getRealScriptData( argv[ 4 ] ), (ULONG)eng->getRealScriptData( argv[ 5 ] ) ) );
 }
 void natives::_ObjEffect_SetLayer( script_engine * eng, size_t * argv )
 {
-	eng->ObjEffect_SetLayer( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ) );
+	eng->get_drawmgr()->ObjEffect_SetLayer( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ) );
 }
 void natives::_ObjEffect_SetScale( script_engine * eng, size_t * argv )
 {
-	Object * obj = eng->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( obj )
+	if( Object * obj = eng->get_drawmgr()->GetObject( eng->getObjHandleScriptData( argv[ 0 ] ) ) )
 		obj->SetScale( D3DXVECTOR3( eng->getRealScriptData( argv[ 1 ] ), eng->getRealScriptData( argv[ 2 ] ), 1.f ) );
 }
 void natives::_ObjShot_SetGraphic( script_engine * eng, size_t * argv )
 {
-	eng->ObjShot_SetGraphic( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ) );
+	eng->get_drawmgr()->ObjShot_SetGraphic( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ) );
 }
 void natives::_ObjFont_SetRect( script_engine * eng, size_t * argv )
 {
-	FontObject * obj = eng->GetFontObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( obj )
+	if( FontObject * obj = eng->get_drawmgr()->GetFontObject( eng->getObjHandleScriptData( argv[ 0 ] ) ) )
 	{
 		RECT r = { (UINT)eng->getRealScriptData( argv[ 1 ] ), (UINT)eng->getRealScriptData( argv[ 2 ] ),
 			(UINT)eng->getRealScriptData( argv[ 3 ] ), (UINT)eng->getRealScriptData( argv[ 4 ] ) };
@@ -507,24 +499,22 @@ void natives::_ObjFont_SetRect( script_engine * eng, size_t * argv )
 }
 void natives::_ObjFont_SetString( script_engine * eng, size_t * argv )
 {
-	FontObject * obj = eng->GetFontObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( obj )
+	if( FontObject * obj = eng->get_drawmgr()->GetFontObject( eng->getObjHandleScriptData( argv[ 0 ] ) ) )
 		obj->String = eng->getStringScriptData( argv[ 1 ] );
 }
 void natives::_ObjFont_SetColor( script_engine * eng, size_t * argv )
 {
-	FontObject * obj = eng->GetFontObject( eng->getObjHandleScriptData( argv[ 0 ] ) );
-	if( obj )
+	if( FontObject * obj = eng->get_drawmgr()->GetFontObject( eng->getObjHandleScriptData( argv[ 0 ] ) ) )
 		obj->Color = D3DCOLOR_RGBA( (UINT)eng->getRealScriptData( argv[ 1 ] ), (UINT)eng->getRealScriptData( argv[ 2 ] ),
 			(UINT)eng->getRealScriptData( argv[ 3 ] ), (UINT)eng->getRealScriptData( argv[ 4 ] ) );
 }
 void natives::_ObjFont_SetSize( script_engine * eng, size_t * argv )
 {
-	eng->ObjFont_SetSize( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ) );
+	eng->get_drawmgr()->ObjFont_SetSize( eng->getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->getRealScriptData( argv[ 1 ] ) );
 }
 void natives::_ObjFont_SetFaceName( script_engine * eng, size_t * argv )
 {
-	eng->ObjFont_SetFaceName( eng->getObjHandleScriptData( argv[ 0 ] ), eng->getStringScriptData( argv[ 1 ] ) );
+	eng->get_drawmgr()->ObjFont_SetFaceName( eng->getObjHandleScriptData( argv[ 0 ] ), eng->getStringScriptData( argv[ 1 ] ) );
 }
 void natives::_ALPHA_BLEND( script_engine * eng, size_t * argv )
 {
@@ -553,19 +543,20 @@ void natives::_PRIMITIVE_TRIANGLEFAN( script_engine * eng, size_t * argv )
 }
 void natives::_LoadTexture( script_engine * eng, size_t * argv )
 {
-	eng->LoadTexture( eng->getStringScriptData( argv[ 0 ] ) );
+	eng->get_drawmgr()->LoadTexture( eng->getStringScriptData( argv[ 0 ] ) );
 }
 void natives::_LoadUserShotData( script_engine * eng, size_t * argv )
 {
+	parser p( eng );
 	std::string scriptPath = eng->getStringScriptData( argv[ 0 ] );
-	eng->parseShotScript( scriptPath );
+	p.parseShotScript( scriptPath );
 }
 void natives::_CreateShot01( script_engine * eng, size_t * argv )
 {
 	size_t tmp = eng->fetchScriptData();
 	eng->getScriptData( tmp ).type = eng->getObjectType();
-	eng->getScriptData( tmp ).objIndex = eng->CreateShot( (ULONG)eng->getRealScriptData( argv[ 4 ] )  );
-	Object * obj = eng->GetObject( eng->getObjHandleScriptData( tmp ) );
+	eng->getScriptData( tmp ).objIndex = eng->get_drawmgr()->CreateShot( (ULONG)eng->getRealScriptData( argv[ 4 ] )  );
+	Object * obj = eng->get_drawmgr()->GetObject( eng->getObjHandleScriptData( tmp ) );
 	obj->position = D3DXVECTOR3( eng->getRealScriptData( argv[ 0 ] ), eng->getRealScriptData( argv[ 1 ] ), 0.f );
 	obj->SetSpeed( eng->getRealScriptData( argv[ 2 ] ) );
 	obj->SetAngle( eng->getRealScriptData( argv[ 3 ] ) );
@@ -580,7 +571,7 @@ void natives::_TerminateProgram( script_engine * eng, size_t * argv )
 }
 void natives::_SetEyeView( script_engine * eng, size_t * argv )
 {
-	eng->SetLookAtViewMatrix
+	eng->get_drawmgr()->SetLookAtViewMatrix
 		(
 			D3DXVECTOR3( eng->getRealScriptData( argv[ 0 ] ), eng->getRealScriptData( argv[ 1 ] ), eng->getRealScriptData( argv[ 2 ] ) ),
 			D3DXVECTOR3( eng->getRealScriptData( argv[ 3 ] ), eng->getRealScriptData( argv[ 4 ] ), eng->getRealScriptData( argv[ 5 ] ) )
@@ -588,7 +579,7 @@ void natives::_SetEyeView( script_engine * eng, size_t * argv )
 }
 void natives::_SetFog( script_engine * eng, size_t * argv )
 {
-	eng->SetFog
+	eng->get_drawmgr()->SetFog
 		(
 			eng->getRealScriptData( argv[ 0 ] ), eng->getRealScriptData( argv[ 1 ] ),
 			D3DCOLOR_XRGB( (unsigned char)eng->getRealScriptData( argv[ 2 ] ),

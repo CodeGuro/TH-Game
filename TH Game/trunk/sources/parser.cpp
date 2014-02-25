@@ -4,7 +4,7 @@
 #include <Windows.h>
 #include <math.h>
 #include <sstream>
-#include <scriptmachine.hpp>
+#include <scriptengine.hpp>
 #define CSTRFUNCRESULT "(RESULT)"
 
 parser::lexer::lexer() : current( &character ), next( tk_end ), character( '\0' )
@@ -372,6 +372,10 @@ const char * parser::lexer::getCurrent() const
 	return current;
 }
 
+parser::parser( script_engine * eng ) : eng( eng )
+{
+}
+
 void parser::parseExpression()
 {
 	parseLogic();
@@ -496,15 +500,15 @@ void parser::parseClause()
 	switch( lexicon.getToken() )
 	{
 	case tk_real:
-		pushCode( code::dat( vc_pushVal, fetchScriptData( lexicon.getReal() ) ) );
+		pushCode( code::dat( vc_pushVal, eng->fetchScriptData( lexicon.getReal() ) ) );
 		lexicon.advance();
 		break;
 	case tk_character:
-		pushCode( code::dat( vc_pushVal, fetchScriptData( lexicon.getCharacter() ) ) );
+		pushCode( code::dat( vc_pushVal, eng->fetchScriptData( lexicon.getCharacter() ) ) );
 		lexicon.advance();
 		break;
 	case tk_string:
-		pushCode( code::dat( vc_pushVal, fetchScriptData( lexicon.getString() ) ) );
+		pushCode( code::dat( vc_pushVal, eng->fetchScriptData( lexicon.getString() ) ) );
 		writeOperation( "uniqueize" );
 		lexicon.advance();
 		break;
@@ -517,10 +521,10 @@ void parser::parseClause()
 			lexicon.advance();
 			if( CheckValidIdx( sym->blockIndex ) )
 			{
-				if( inventory::getBlock( sym->blockIndex ).kind != block::bk_function )
+				if( eng->getBlock( sym->blockIndex ).kind != block::bk_function )
 					raiseError( std::string() + "\"" + name + "\"" + " is not a function", error::er_syntax );
 				int argc;
-				if( (argc = parseArguments()) != inventory::getBlock( sym->blockIndex ).argc )
+				if( (argc = parseArguments()) != eng->getBlock( sym->blockIndex ).argc )
 					raiseError( "wrong number of arguments", error::er_syntax );
 				pushCode( code::subArg( vc_callFunctionPush, sym->blockIndex, argc ) );
 			}
@@ -536,8 +540,8 @@ void parser::parseClause()
 		break;
 	case tk_openbra:
 		{
-			size_t scriptDataIdx = fetchScriptData();
-			getScriptData( scriptDataIdx ).type = getArrayType();
+			size_t scriptDataIdx = eng->fetchScriptData();
+			eng->getScriptData( scriptDataIdx ).type = eng->getArrayType();
 			pushCode( code::dat( vc_pushVal, scriptDataIdx ) );
 			writeOperation( "uniqueize" );
 			do
@@ -590,7 +594,7 @@ unsigned parser::parseArguments()
 }
 block & parser::getCurrentBlock()
 {
-	return inventory::getBlock( getBlockIndex() );
+	return eng->getBlock( getBlockIndex() );
 }
 void parser::pushCode( code const & val )
 {
@@ -618,7 +622,7 @@ void parser::raiseError( std::string errmsg, error::errReason reason)
 	}
 
 	if( scriptMgr.pragmaFiles.size() )
-		inventory::registerInvalidMainScript( scriptMgr.pragmaFiles[ 0 ] );
+		eng->registerInvalidMainScript( scriptMgr.pragmaFiles[ 0 ] );
 	scriptMgr.pragmaFiles.resize( 0 );
 	std::stringstream sstr;
 	std::stringstream sstrAdditional;
@@ -667,7 +671,7 @@ size_t parser::getBlockIndex()
 }
 void parser::parseScript( std::string const & scriptPath )
 {
-	if( CheckValidIdx( findScriptFromFile( scriptPath ) )  )
+	if( CheckValidIdx( eng->findScriptFromFile( scriptPath ) )  )
 		return;
 	try
 	{
@@ -684,15 +688,15 @@ void parser::parseScript( std::string const & scriptPath )
 			raiseError( std::string() + "Invalid document \"" + scriptMgr.currentScriptPath + "\"", error::er_parser );
 		lexicon = lexer( scriptMgr.scriptString.c_str() );
 		parseDocument( scriptPath, scriptMgr.scriptString );
-		if( !CheckValidIdx( inventory::findScriptFromFile( scriptMgr.currentScriptPath ) ) )
-			inventory::registerInvalidMainScript( scriptMgr.currentScriptPath );
+		if( !CheckValidIdx( eng->findScriptFromFile( scriptMgr.currentScriptPath ) ) )
+			eng->registerInvalidMainScript( scriptMgr.currentScriptPath );
 	}
 	catch( error const & err )
 	{
 		if( scriptMgr.pragmaFiles.size() )
-			inventory::registerInvalidMainScript( scriptMgr.pragmaFiles[ 0 ] );
+			eng->registerInvalidMainScript( scriptMgr.pragmaFiles[ 0 ] );
 		scriptMgr.pragmaFiles.resize( 0 );
-		raise_exception( eng_exception::eng_error );
+		eng->raise_exception( eng_exception::eng_error );
 	}
 }
 void parser::parseBlock( symbol const symSub, vector< std::string > const & args )
@@ -702,7 +706,7 @@ void parser::parseBlock( symbol const symSub, vector< std::string > const & args
 	lexicon.advance();
 	vecScope.push_back( scope() );
 	vecScope[ vecScope.size() - 1 ].blockIndex = symSub.blockIndex;
-	scanCurrentScope( inventory::getBlock( symSub.blockIndex ).kind, args );
+	scanCurrentScope( eng->getBlock( symSub.blockIndex ).kind, args );
 	for( unsigned i = 0; i < args.size(); ++i )
 		pushCode( code::varSub( vc_assign, search( args[ i ] )->id, vecScope[ search( args[ i ] )->level ].blockIndex  ) );
 	parseStatements();
@@ -714,8 +718,8 @@ void parser::parseBlock( symbol const symSub, vector< std::string > const & args
 }
 void parser::parseInlineBlock( block::block_kind const bk_kind )
 {
-	size_t blockIndex = inventory::fetchBlock();
-	block & inlineBlock = inventory::getBlock( blockIndex );
+	size_t blockIndex = eng->fetchBlock();
+	block & inlineBlock = eng->getBlock( blockIndex );
 	inlineBlock.argc = 0;
 	inlineBlock.kind = bk_kind;
 	inlineBlock.nativeCallBack = 0;
@@ -786,21 +790,21 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 					if( currentScope.find( subroutine ) != currentScope.end() )
 						raiseError( subroutine, error::er_symbol );
 					symbol routine;
-					routine.blockIndex = inventory::fetchBlock();
+					routine.blockIndex = eng->fetchBlock();
 					routine.id = -1;
 					routine.level = level + 1;
 					currentScope[ subroutine ] = routine;
-					block & blockRoutine = inventory::getBlock( routine.blockIndex );
+					block & blockRoutine = eng->getBlock( routine.blockIndex );
 					blockRoutine.kind = (tok == tk_FUNCTION? block::bk_function : (tok == tk_TASK? block::bk_task : (tok == tk_at? block::bk_sub : block::bk_normal )));
 					blockRoutine.name = subroutine;
 					blockRoutine.nativeCallBack = 0;
 					blockRoutine.argc = 0;
 					if( tok == tk_SCRIPT_MAIN || tok == tk_SCRIPT )
 					{
-						tok == tk_SCRIPT_MAIN ? inventory::registerMainScript( scriptMgr.currentScriptPath, subroutine ) : inventory::registerScript( subroutine );
-						script_container * sc = inventory::getScript( subroutine );
+						tok == tk_SCRIPT_MAIN ? eng->registerMainScript( scriptMgr.currentScriptPath, subroutine ) : eng->registerScript( subroutine );
+						script_container * sc = eng->getScript( subroutine );
 						sc->ScriptBlock = routine.blockIndex;
-						sc->ScriptDirectory = inventory::findScriptDirectory( scriptMgr.currentScriptPath );
+						sc->ScriptDirectory = eng->findScriptDirectory( scriptMgr.currentScriptPath );
 
 					}
 					else if( lexicon.advance() == tk_lparen )
@@ -914,9 +918,9 @@ void parser::parseStatements()
 				raiseError( "script_main and script routine types have zero parameters", error::er_syntax );
 			if( routineDeclToken == tk_at )
 			{
-				if( inventory::getBlock( subsym->blockIndex ).kind == block::bk_function )
+				if( eng->getBlock( subsym->blockIndex ).kind == block::bk_function )
 					raiseError( std::string() + "\"" + subname + "\" must be prefixed with \"@\"", error::er_syntax );
-				script_container * s_cont = getScript( getCurrentBlock().name );
+				script_container * s_cont = eng->getScript( getCurrentBlock().name );
 				if( !s_cont ) raiseError( std::string() +"@\"" + subname + "\" must be defined 1 level above the scope of script's block", error::er_parser );
 				if( subname == "Initialize" ) s_cont->InitializeBlock = subsym->blockIndex;
 				else if( subname == "MainLoop" ) s_cont->MainLoopBlock = subsym->blockIndex;
@@ -999,9 +1003,9 @@ void parser::parseStatements()
 				if( !CheckValidIdx( sym->blockIndex ) )
 					raiseError( std::string() + "\"" + lexicon.getWord() + "\" is not a routine", error::er_syntax );
 				unsigned argc = parseArguments();
-				if( argc != inventory::getBlock( sym->blockIndex ).argc )
+				if( argc != eng->getBlock( sym->blockIndex ).argc )
 					raiseError( "wrong number of arguments", error::er_syntax );
-				instruction callInst = ( (inventory::getBlock( sym->blockIndex ).kind == block::bk_task)? vc_callTask : vc_callFunction );
+				instruction callInst = ( (eng->getBlock( sym->blockIndex ).kind == block::bk_task)? vc_callTask : vc_callFunction );
 				pushCode( code::subArg( callInst, sym->blockIndex, argc ) );
 			}
 		}
@@ -1016,7 +1020,7 @@ void parser::parseStatements()
 				parseParentheses();
 				writeOperation( "uniqueize" ); 
 				loopBackIndex = getCurrentBlock().vecCodes.size();
-				pushCode( code::dat( vc_pushVal, fetchScriptData( 0.f ) ) );
+				pushCode( code::dat( vc_pushVal, eng->fetchScriptData( 0.f ) ) );
 				pushCode( code::code( vc_loopDescent ) );
 			}
 			else
@@ -1047,10 +1051,10 @@ void parser::parseStatements()
 			token loopType = lexicon.getToken();
 			vector< std::string > arg;
 			symbol loop_symbol;
-			loop_symbol.blockIndex = fetchBlock();
+			loop_symbol.blockIndex = eng->fetchBlock();
 			loop_symbol.id = -1;
 			loop_symbol.level = -1;
-			block & b = getBlock( loop_symbol.blockIndex );
+			block & b = eng->getBlock( loop_symbol.blockIndex );
 			b.argc = 0;
 			b.kind = block::bk_loop;
 			b.nativeCallBack = 0;
@@ -1125,7 +1129,7 @@ void parser::parseStatements()
 			for( unsigned u = vecScope.size() - 1 ; u != (unsigned)-1; --u )
 			{
 				if( CheckValidIdx( vecScope[ u ].blockIndex ) )
-					if( inventory::getBlock( vecScope[ u ].blockIndex ).kind == block::bk_loop )
+					if( eng->getBlock( vecScope[ u ].blockIndex ).kind == block::bk_loop )
 					{
 						isBreakable = true;
 						break;
@@ -1235,7 +1239,7 @@ void parser::parseShotScript( std::string const & scriptPath )
 				}
 				if( lexicon.getToken() != tk_string )
 					raiseError( "lexer::tk_string expected", error::er_syntax );
-				LoadShotImage( ShotImagePath + lexicon.getString() );
+				eng->get_drawmgr()->LoadShotImage( ShotImagePath + lexicon.getString() );
 				break;
 			}
 			else lexicon.advance();
@@ -1395,7 +1399,7 @@ void parser::parseShotScript( std::string const & scriptPath )
 				lexicon.advance();
 				if( !CheckValidIdx( id ) ) raiseError( "\"id\" must be provided with a real number", error::er_syntax );
 				RECT r = { (ULONG)rec[ 0 ], (ULONG)rec[ 1 ], (ULONG)rec[ 2 ], (ULONG)rec[ 3 ] };
-				CreateShotData( id, render, r, D3DCOLOR_RGBA( (UCHAR)col[ 0 ], (UCHAR)col[ 1 ], (UCHAR)col[ 2 ], (UCHAR)col[ 3 ] ), flags, animation_data );
+				eng->get_drawmgr()->CreateShotData( id, render, r, D3DCOLOR_RGBA( (UCHAR)col[ 0 ], (UCHAR)col[ 1 ], (UCHAR)col[ 2 ], (UCHAR)col[ 3 ] ), flags, animation_data );
 			}
 		} while( lexicon.getToken() != tk_end );
 		lexicon = lexsave;
@@ -1412,7 +1416,7 @@ void parser::parseShotScript( std::string const & scriptPath )
 	}
 	catch( error const & err )
 	{
-		raise_exception( eng_exception::eng_error );
+		eng->raise_exception( eng_exception::eng_error );
 	}
 }
 
@@ -1518,8 +1522,8 @@ void parser::registerNatives()
 	};
 	for( unsigned i = 0; i <  sizeof( funcs ) / sizeof( native_function ); ++i )
 	{
-		unsigned blockIndex = fetchBlock();
-		block & b = inventory::getBlock( blockIndex );
+		unsigned blockIndex = eng->fetchBlock();
+		block & b = eng->getBlock( blockIndex );
 		b.kind = block::bk_function;
 		b.name = funcs[i].name;
 		b.argc = funcs[i].argc;
@@ -1536,7 +1540,7 @@ void parser::writeOperation( std::string const & nativeFunc )
 	symbol * func;
 	if( !(func = search( nativeFunc )) || !CheckValidIdx( func->blockIndex ) )
 		raiseError( "parser::writeOperation", error::er_internal );
-	block & blockFunc = inventory::getBlock( func->blockIndex );
+	block & blockFunc = eng->getBlock( func->blockIndex );
 	if( !(blockFunc.kind == block::bk_function && blockFunc.nativeCallBack != 0) )
 		raiseError( "parser::writeOperation", error::er_internal );
 	pushCode( code::subArg( vc_callFunctionPush, func->blockIndex, blockFunc.argc ) );
