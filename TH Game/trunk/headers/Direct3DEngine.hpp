@@ -72,7 +72,10 @@ private:
 	D3DSmartPtr< LPDIRECT3DVERTEXDECLARATION9 > pDefaultVDeclaration;
 	D3DSmartPtr< LPDIRECT3DVERTEXSHADER9 > pDefault3DVShader;
 	D3DSmartPtr< LPDIRECT3DPIXELSHADER9 > pDefault3DPShader;
-	D3DSmartPtr< LPD3DXCONSTANTTABLE > pDefaultConstable;
+	D3DSmartPtr< LPD3DXCONSTANTTABLE > pDefault3DConstable;
+	D3DSmartPtr< LPDIRECT3DVERTEXSHADER9 > pDefault2DVShader;
+	D3DSmartPtr< LPDIRECT3DPIXELSHADER9 > pDefault2DPShader;
+	D3DSmartPtr< LPD3DXCONSTANTTABLE > pDefault2DConstable;
 	D3DSmartPtr< LPDIRECTSOUND8 > dsound;
 	
 	typedef vector< Layer > vLayer_t;
@@ -97,14 +100,18 @@ public:
 	D3DXMATRIX WorldMatrix;
 	D3DXMATRIX ViewMatrix;
 	D3DXMATRIX ProjectionMatrix;
+	D3DCOLOR ClearColor;
 
 	vLayer_t & GetLayers();
 	LPDIRECT3DDEVICE9 & GetDevice();
 	LPDIRECT3D9 & GetD3D();
 	LPDIRECT3DVERTEXDECLARATION9 GetDefaultVDeclaration() const;
-	LPDIRECT3DVERTEXSHADER9 GetDefaultVShader() const;
-	LPDIRECT3DPIXELSHADER9 GetDefaultPShader() const;
-	LPD3DXCONSTANTTABLE GetDefaultConstable() const;
+	LPDIRECT3DVERTEXSHADER9 GetDefault3DVShader() const;
+	LPDIRECT3DPIXELSHADER9 GetDefault3DPShader() const;
+	LPD3DXCONSTANTTABLE GetDefault3DConstable() const;
+	LPDIRECT3DVERTEXSHADER9 GetDefault2DVShader() const;
+	LPDIRECT3DPIXELSHADER9 GetDefault2DPShader() const;
+	LPD3DXCONSTANTTABLE GetDefault2DConstable() const;
 	LPDIRECTSOUND8 GetDSound() const;
 
 	//objects
@@ -164,7 +171,7 @@ public:
 
 	//camera
 	void SetLookAtViewMatrix( D3DXVECTOR3 const & eye, D3DXVECTOR3 const & at );
-	void SetFog( float fognear, float fogfar, D3DCOLOR color );
+	void SetFog( float fognear, float fogfar, float fred, float fgreen, float fblue );
 
 	//constructor
 	Direct3DEngine( HWND const hWnd );

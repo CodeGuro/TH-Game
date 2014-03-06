@@ -27,6 +27,8 @@ script_main main_script //main routine
 		Task();
 		CreateEnemyFromScript( "youkai" );
 		CreateEnemyFromFile( GetCurrentScriptDirectory() ~ "Reimu.th" );
+
+		SetFog( 3, 10, 100, 100, 100 );
 	}
 	@MainLoop //routine called every frame post-Initialize
 	{

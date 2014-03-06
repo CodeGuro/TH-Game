@@ -16,6 +16,26 @@ extern const std::string DefaultShader;
 #define TEXT_LAYER 7
 #define LAYER_COUNT 8
 
+void CompileShaders( LPDIRECT3DDEVICE9 pdev, char const * vmainfunc, D3DSmartPtr< LPDIRECT3DVERTEXSHADER9 > & VShader, D3DSmartPtr< LPD3DXCONSTANTTABLE > & CTable, char * pmainfunc, D3DSmartPtr< LPDIRECT3DPIXELSHADER9 > & PShader )
+{
+	LPD3DXBUFFER pshaderbuff = NULL;
+	LPD3DXBUFFER pshadererrbuff = NULL;
+	if( VShader || CTable || PShader )
+		MessageBox( NULL, "Shaders already initialized", "Shader Initialization Error", 0 );
+
+	if( D3D_OK != D3DXCompileShader( DefaultShader.c_str(), DefaultShader.size(), NULL, NULL, vmainfunc, "vs_3_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, &CTable ) )
+		MessageBox( NULL, pshadererrbuff? (LPCSTR)pshadererrbuff->GetBufferPointer() : "Vertex Shader Compiler Error", "DX Shader Error", NULL );
+	if( pshadererrbuff ) pshadererrbuff->Release();
+	pdev->CreateVertexShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &VShader );
+	pshaderbuff->Release();
+
+	if( D3D_OK != D3DXCompileShader( DefaultShader.c_str(), DefaultShader.size(), NULL, NULL, pmainfunc, "ps_3_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, NULL ) )
+		MessageBox( NULL, pshadererrbuff? (LPCSTR)pshadererrbuff->GetBufferPointer() : "Pixel Shader Compiler Error", "DX Shader Error", NULL );
+	if( pshadererrbuff ) pshadererrbuff->Release();
+	pdev->CreatePixelShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &PShader );
+	pshaderbuff->Release();
+}
+
 Direct3DEngine::Direct3DEngine( HWND const hWnd )
 {
 	////////////////////////
@@ -66,15 +86,13 @@ Direct3DEngine::Direct3DEngine( HWND const hWnd )
 	GetDevice()->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
 	
 
-	GetDevice()->Clear( 0, 0, D3DCLEAR_TARGET, D3DCOLOR_XRGB( 100, 30, 180 ), 1.f, 0 );
+	GetDevice()->Clear( 0, 0, D3DCLEAR_TARGET, ClearColor, 1.f, 0 );
 	GetDevice()->Present( NULL, NULL, NULL, NULL );
 
 	///////////////
 	////shaders////
 	///////////////
 
-	LPD3DXBUFFER pshaderbuff = NULL;
-	LPD3DXBUFFER pshadererrbuff = NULL;
 	if( !pDefaultVDeclaration )
 	{
 		D3DVERTEXELEMENT9 ve[] = 
@@ -87,22 +105,11 @@ Direct3DEngine::Direct3DEngine( HWND const hWnd )
 		GetDevice()->CreateVertexDeclaration( ve, &pDefaultVDeclaration );
 	}
 
-	if( !pDefault3DVShader && !pDefaultConstable )
-	{
-		if( D3D_OK != D3DXCompileShader( DefaultShader.c_str(), DefaultShader.size(), NULL, NULL, "vs_main", "vs_3_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, &pDefaultConstable ) )
-			MessageBox( NULL, pshadererrbuff? (LPCSTR)pshadererrbuff->GetBufferPointer() : "Vertex Shader Compiler Error", "DX Shader Error", NULL );
-		GetDevice()->CreateVertexShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &pDefault3DVShader );
-		pshaderbuff->Release();
-		if(pshadererrbuff ) pshadererrbuff->Release();
-	}
-	if( !pDefault3DPShader )
-	{
-		if( D3D_OK != D3DXCompileShader( DefaultShader.c_str(), DefaultShader.size(), NULL, NULL, "ps_main", "ps_3_0", D3DXSHADER_DEBUG, &pshaderbuff, &pshadererrbuff, NULL ) )
-			MessageBox( NULL, pshadererrbuff? (LPCSTR)pshadererrbuff->GetBufferPointer() : "Pixel Shader Compiler Error", "DX Shader Error", NULL );	
-		GetDevice()->CreatePixelShader( (DWORD const*)pshaderbuff->GetBufferPointer(), &pDefault3DPShader );
-		pshaderbuff->Release();
-		if(pshadererrbuff ) pshadererrbuff->Release();
-	}
+	/*Create the 2D vertex and 3D shaders*/
+	CompileShaders( GetDevice(), "vs_main3D", pDefault3DVShader, pDefault3DConstable, "ps_main3D", pDefault3DPShader );
+	CompileShaders( GetDevice(), "vs_main2D", pDefault2DVShader, pDefault2DConstable, "ps_main2D", pDefault2DPShader );
+
+
 	if( !PipelineVertexBuffer.Buffer )
 		d3ddev->CreateVertexBuffer( PipelineVertexBuffer.BufferSize = 1000, D3DUSAGE_WRITEONLY, 0, D3DPOOL_MANAGED, &PipelineVertexBuffer.Buffer, NULL );
 
@@ -121,9 +128,9 @@ Direct3DEngine::Direct3DEngine( HWND const hWnd )
 	{
 		ObjMgr & mgr = GetLayers()[ BulletLayer ].vObjMgr[ u ];
 		mgr.VDeclaration = GetDefaultVDeclaration();
-		mgr.VShader = GetDefaultVShader();
-		mgr.PShader = GetDefaultPShader();
-		mgr.Constable = GetDefaultConstable();
+		mgr.VShader = GetDefault2DVShader();
+		mgr.PShader = GetDefault2DPShader();
+		mgr.Constable = GetDefault2DConstable();
 		mgr.VertexBufferIdx = VertexBufferIdx;
 		mgr.VertexCount = 6;
 		mgr.ObjBufferIdx = u ;
@@ -132,6 +139,7 @@ Direct3DEngine::Direct3DEngine( HWND const hWnd )
 	}
 	RECT r = { 32, 16, 416, 464 };
 	GetDevice()->SetScissorRect( &r );
+	SetFog( 3.f, 10.f, 100.f, 30.f, 180.f );
 }
 LPDIRECT3DDEVICE9 & Direct3DEngine::GetDevice()
 {
@@ -145,17 +153,29 @@ LPDIRECT3DVERTEXDECLARATION9 Direct3DEngine::GetDefaultVDeclaration() const
 {
 	return pDefaultVDeclaration;
 }
-LPDIRECT3DVERTEXSHADER9 Direct3DEngine::GetDefaultVShader() const
+LPDIRECT3DVERTEXSHADER9 Direct3DEngine::GetDefault3DVShader() const
 {
 	return pDefault3DVShader;
 }
-LPDIRECT3DPIXELSHADER9 Direct3DEngine::GetDefaultPShader() const
+LPDIRECT3DPIXELSHADER9 Direct3DEngine::GetDefault3DPShader() const
 {
 	return pDefault3DPShader;
 }
-LPD3DXCONSTANTTABLE Direct3DEngine::GetDefaultConstable() const
+LPD3DXCONSTANTTABLE Direct3DEngine::GetDefault3DConstable() const
 {
-	return pDefaultConstable;
+	return pDefault3DConstable;
+}
+LPDIRECT3DVERTEXSHADER9 Direct3DEngine::GetDefault2DVShader() const
+{
+	return pDefault2DVShader;
+}
+LPDIRECT3DPIXELSHADER9 Direct3DEngine::GetDefault2DPShader() const
+{
+	return pDefault2DPShader;
+}
+LPD3DXCONSTANTTABLE Direct3DEngine::GetDefault2DConstable() const
+{
+	return pDefault2DConstable;
 }
 LPDIRECTSOUND8 Direct3DEngine::GetDSound() const
 {
@@ -237,10 +257,17 @@ unsigned Direct3DEngine::CreateObject( ObjType type )
 		if( type != ObjShot )
 		{
 			ObjMgr * objMgr = &(*GetLayers()[ Layer ].vObjMgr.insert( GetLayers()[ Layer ].vObjMgr.end(), ObjMgr() ) );
+
+			switch( type )
+			{
+			case ObjEffect:
+			default:
+				objMgr->VShader = GetDefault2DVShader();
+				objMgr->PShader = GetDefault2DPShader();
+				objMgr->Constable = GetDefault2DConstable();
+				break;
+			}
 			objMgr->VDeclaration = pDefaultVDeclaration;
-			objMgr->VShader = pDefault3DVShader;
-			objMgr->PShader = pDefault3DPShader;
-			objMgr->Constable = pDefaultConstable;
 			objMgr->VertexBufferIdx = handle.VertexBuffer;
 			objMgr->ObjBufferIdx = handle.ObjVector;
 			objMgr->BlendState = BlendAlpha;
@@ -719,12 +746,21 @@ void Direct3DEngine::DrawObjects()
 	D3DXMATRIX world, view, proj;
 	D3DXMatrixIdentity( &world );
 	D3DXMatrixOrthoLH( &proj, 640.f, -480.f, 0.f, 100.f );
-	D3DXMatrixLookAtLH( &view, &D3DXVECTOR3( 0, 0, -1.f), &D3DXVECTOR3( 0, 0, 0), &D3DXVECTOR3( 0, 1, 0) );
+	D3DXMatrixLookAtLH( &view, &D3DXVECTOR3( 0, 0, -1.f ), &D3DXVECTOR3( 0, 0, 0 ), &D3DXVECTOR3( 0, 1, 0 ) );
 	D3DXMatrixTranslation( &world, -320.f - 0.5f, -240.f - 0.5f, 0.f );
-	pDefaultConstable->SetMatrix( GetDevice(), "WorldViewProjMat", &( world * view * proj ) );
-	pDefaultConstable->SetMatrix( GetDevice(), "WorldViewMat", &( world * view ) );
+
+	D3DXMATRIX mat2;
+	D3DXMatrixTranslation( &mat2, 200.f, 100.f, -1000.f );
+	
 	for( auto L = GetLayers().begin(); L < GetLayers().end(); ++L )
 	{
+		/*constant buffers do not own their own constants, they use slots and the names are symbolic*/
+		if( L - GetLayers().begin() == BACKGROUND_LAYER )
+				pDefault3DConstable->SetMatrix( GetDevice(), "WorldViewProjMat", &( WorldMatrix * ViewMatrix * ProjectionMatrix ) ),
+				pDefault3DConstable->SetMatrix( GetDevice(), "WorldViewMat", &( WorldMatrix * ViewMatrix ) );
+		else
+				pDefault2DConstable->SetMatrix( GetDevice(), "WorldViewProjMat", &( world * view * proj ) );
+
 		GetDevice()->SetRenderState( D3DRS_SCISSORTESTENABLE, (L - GetLayers().begin() < ENEMY_LAYER || L - GetLayers().begin() > EFFECT_LAYER )? FALSE : TRUE );
 		for( auto Objmgr = L->vObjMgr.begin(); Objmgr != L->vObjMgr.end(); )
 		{
@@ -798,6 +834,8 @@ void Direct3DEngine::DrawObjects()
 				if( Objmgr == L->vObjMgr.end() )
 					continue;
 			}
+
+
 			GetDevice()->SetTexture( 0, Objmgr->pTexture );
 			GetDevice()->SetVertexDeclaration( Objmgr->VDeclaration );
 			GetDevice()->SetVertexShader( Objmgr->VShader );
@@ -838,8 +876,8 @@ void Direct3DEngine::DrawObjects()
 			GetDevice()->SetStreamSource( 0, PipelineVertexBuffer.Buffer, 0, sizeof( Vertex ) );
 			DWORD VCount = ptr - pstart;
 			if( VCount )
-				GetDevice()->DrawPrimitive( Objmgr->PrimitiveType, 0, Objmgr->PrimitiveType == D3DPT_TRIANGLELIST ? VCount / 3 :
-					Objmgr->PrimitiveType == D3DPT_TRIANGLESTRIP || Objmgr->PrimitiveType == D3DPT_TRIANGLEFAN ? VCount - 2 : 0 );
+				if( D3D_OK != GetDevice()->DrawPrimitive( Objmgr->PrimitiveType, 0, Objmgr->PrimitiveType == D3DPT_TRIANGLELIST ? VCount / 3 :
+					Objmgr->PrimitiveType == D3DPT_TRIANGLESTRIP || Objmgr->PrimitiveType == D3DPT_TRIANGLEFAN ? VCount - 2 : 0 ) ) MessageBox( 0, "", "", 0 );
 
 			if( CheckValidIdx( Objmgr->ObjFontIdx ) )
 			{
@@ -913,21 +951,19 @@ void Direct3DEngine::UpdateObjectCollisions()
 	}
 }
 
+
 //camera
 void Direct3DEngine::SetLookAtViewMatrix( D3DXVECTOR3 const & eye, D3DXVECTOR3 const & at )
 {
 	D3DXMatrixLookAtLH( &ViewMatrix, &eye, &at, &D3DXVECTOR3( 0.f, 1.f, 0.f ) );
 }
-void Direct3DEngine::SetFog( float fognear, float fogfar, D3DCOLOR color )
+void Direct3DEngine::SetFog( float fognear, float fogfar, float fred, float fgreen, float fblue )
 {
-	/*
-	GetDevice()->SetRenderState( D3DRS_FOGENABLE, TRUE );
-	GetDevice()->SetRenderState( D3DRS_RANGEFOGENABLE, TRUE );
-	GetDevice()->SetRenderState( D3DRS_FOGVERTEXMODE, D3DFOG_LINEAR );
-	GetDevice()->SetRenderState( D3DRS_FOGCOLOR, color );
-	GetDevice()->SetRenderState( D3DRS_FOGSTART, *(DWORD*)&fognear );
-	GetDevice()->SetRenderState( D3DRS_FOGEND, *(DWORD*)&fogfar );
-	*/
+	float fog[ 4 ] = { fred / 255.f, fgreen / 255.f, fblue / 255.f, 1.f };
+	float fognf[ 2 ] = { fognear, fogfar };
+	ClearColor = D3DCOLOR_XRGB( (UCHAR)fred, (UCHAR)fgreen, (UCHAR)fblue );
+	GetDefault3DConstable()->SetFloatArray( GetDevice(), "FogRGBA", fog, 4 );
+	GetDefault3DConstable()->SetFloatArray( GetDevice(), "FogNF", fognf, 2 );
 }
 
 void Direct3DEngine::ToggleWindowed()
@@ -946,8 +982,8 @@ void Direct3DEngine::ToggleWindowed()
 	GetDevice()->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
 	GetDevice()->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
 	GetDevice()->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
-	GetDevice()->SetVertexShader( GetDefaultVShader() );
-	GetDevice()->SetPixelShader( GetDefaultPShader() );
+	GetDevice()->SetVertexShader( GetDefault3DVShader() );
+	GetDevice()->SetPixelShader( GetDefault3DPShader() );
 
 	RECT rec = { 0, 0, 640, 480 };
 	AdjustWindowRect( &rec, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE, FALSE );
@@ -956,7 +992,7 @@ void Direct3DEngine::ToggleWindowed()
 }
 void Direct3DEngine::RenderFrame( MSG const msg )
 {
-	GetDevice()->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB( 100, 30, 180 ), 1.f, 0 );
+	GetDevice()->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, ClearColor, 1.f, 0 );
 	GetDevice()->BeginScene();
 	DrawGridTerrain( 1000, 1000, 1.f );
 	DrawObjects();
@@ -967,9 +1003,6 @@ void Direct3DEngine::RenderFrame( MSG const msg )
 }
 void Direct3DEngine::DrawGridTerrain( unsigned Rows, unsigned Columns, float Spacing )
 {
-	GetDevice()->SetTransform( D3DTS_WORLD, &WorldMatrix );
-	GetDevice()->SetTransform( D3DTS_VIEW, &ViewMatrix );
-	GetDevice()->SetTransform( D3DTS_PROJECTION, &ProjectionMatrix );
 	LPDIRECT3DVERTEXBUFFER9 pvb;
 	GetDevice()->CreateVertexBuffer( 2 * sizeof( Vertex ) * ( Rows + Columns), D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &pvb, NULL );
 
@@ -992,11 +1025,14 @@ void Direct3DEngine::DrawGridTerrain( unsigned Rows, unsigned Columns, float Spa
 		*pverts++ = v2;
 	}
 	pvb->Unlock();
+	D3DXMATRIX mat;
+	D3DXMatrixIdentity( &mat );
 	GetDevice()->SetVertexDeclaration( GetDefaultVDeclaration() );
 	GetDevice()->SetStreamSource( 0, pvb, 0, sizeof( Vertex ) );
-	GetDefaultConstable()->SetMatrix( GetDevice(), "WorldViewProjMat", &( WorldMatrix * ViewMatrix * ProjectionMatrix ) );
-	GetDevice()->SetVertexShader( GetDefaultVShader() );
-	GetDevice()->SetPixelShader( GetDefaultPShader() );
+	GetDefault3DConstable()->SetMatrix( GetDevice(), "WorldViewProjMat", &( WorldMatrix * ViewMatrix * ProjectionMatrix ) );
+	GetDefault3DConstable()->SetMatrix( GetDevice(), "WorldViewMat", &( WorldMatrix * ViewMatrix ) );
+	GetDevice()->SetVertexShader( GetDefault3DVShader() );
+	GetDevice()->SetPixelShader( GetDefault3DPShader() );
 	GetDevice()->SetTexture( 0, NULL );
 	GetDevice()->DrawPrimitive( D3DPT_LINELIST, 0, Rows + Columns );
 	pvb->Release();

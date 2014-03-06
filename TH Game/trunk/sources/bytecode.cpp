@@ -584,7 +584,8 @@ void natives::_SetFog( script_engine * eng, size_t * argv )
 	eng->get_drawmgr()->SetFog
 		(
 			eng->scriptdata_mgr.getRealScriptData( argv[ 0 ] ), eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ),
-			D3DCOLOR_XRGB( (unsigned char)eng->scriptdata_mgr.getRealScriptData( argv[ 2 ] ),
-			(unsigned char)eng->scriptdata_mgr.getRealScriptData( argv[ 3 ] ),	(unsigned char)eng->scriptdata_mgr.getRealScriptData( argv[ 4 ] ) )
+			eng->scriptdata_mgr.getRealScriptData( argv[ 2 ] ),
+			eng->scriptdata_mgr.getRealScriptData( argv[ 3 ] ),
+			eng->scriptdata_mgr.getRealScriptData( argv[ 4 ] ) 
 		);
 }
