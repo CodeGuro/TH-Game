@@ -21,16 +21,16 @@ void parser::lexer::skip()
 {
 
 	while( *current == 10 || *current == 13 || *current == 9 || *current == 32 || 
-			( current[0] == '/' && (current[1] == '/' || current[1] == '*') ) )
+			( current[ 0 ] == '/' && (current[ 1 ] == '/' || current[ 1 ] == '*') ) )
 	{
-		if( current[0] == '/' && current[1] == '/' )
+		if( current[ 0 ] == '/' && current[ 1 ] == '/' )
 		{
 			do
 			{
 				++current;
-			}while( !( current[0] == '\n' || current[0] == '\0' ) );
+			}while( !( current[ 0 ] == '\n' || current[ 0 ] == '\0' ) );
 		}
-		else if( current[0] == '/' && current[1] == '*' )
+		else if( current[ 0 ] == '/' && current[ 1 ] == '*' )
 		{
 			do
 			{
@@ -264,7 +264,7 @@ parser::token parser::lexer::advance()
 			++current;
 			word = str;
 			if( word.size() )
-				character = word[0];
+				character = word[ 0 ];
 			if( str.size() > 1 && tok == tk_character )
 				next = tk_invalid;
 			else
@@ -284,7 +284,7 @@ parser::token parser::lexer::advance()
 					real = real * 10 + ( *current - '0' );
 					++current;
 				}while( isdigit( *current ) );
-				if( current[0] == '.' && isdigit( current[1] ) )
+				if( current[ 0 ] == '.' && isdigit( current[ 1 ] ) )
 				{
 					++current;
 					float tmp = 1.0f;
@@ -655,8 +655,8 @@ parser::symbol * parser::search( std::string const & name )
 {
 	for( unsigned i = vecScope.size(); i--; )
 	{
-		if( vecScope[i].find( name ) != vecScope[i].end() )
-			return &(vecScope[i][name]);
+		if( vecScope[ i ].find( name ) != vecScope[ i ].end() )
+			return &(vecScope[ i ][name]);
 	}
 	return NULL;
 }
@@ -751,7 +751,7 @@ void parser::scanCurrentScope( block::block_kind kind, vector< std::string > con
 		arg.blockIndex = -1;
 		arg.id = id++;
 		arg.level = level;
-		currentScope[ args[i] ] = arg;
+		currentScope[ args[ i ] ] = arg;
 	}
 
 	lexer anchorpoint = lexicon;
@@ -1267,8 +1267,8 @@ void parser::parseShotScript( std::string const & scriptPath )
 				size_t id = -1;
 				BlendType render = BlendAlpha;
 				float angular_velocity = 0;
-				float rec[4] = { 0, 0, 0, 0 };
-				float col[4] = { 255, 255, 255, 255 };
+				float rec[ 4 ] = { 0, 0, 0, 0 };
+				float col[ 4 ] = { 255, 255, 255, 255 };
 				vector< vector< float > > animation_data;
 				DWORD flags = 0;
 
@@ -1525,14 +1525,14 @@ void parser::registerNatives()
 		unsigned blockIndex = eng->fetchBlock();
 		block & b = eng->getBlock( blockIndex );
 		b.kind = block::bk_function;
-		b.name = funcs[i].name;
-		b.argc = funcs[i].argc;
-		b.nativeCallBack = funcs[i].nCallBack;
+		b.name = funcs[ i ].name;
+		b.argc = funcs[ i ].argc;
+		b.nativeCallBack = funcs[ i ].nCallBack;
 		symbol sym;
 		sym.blockIndex = blockIndex;
 		sym.id = -1;
 		sym.level = 0;
-		scriptMgr.includeSymbols[ "[natives]" ][funcs[i].name] = sym;
+		scriptMgr.includeSymbols[ "[natives]" ][funcs[ i ].name] = sym;
 	}
 }
 void parser::writeOperation( std::string const & nativeFunc )

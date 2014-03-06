@@ -6,7 +6,7 @@
 type_data::type_data() : kind( tk_invalid ), element( -1 )
 {
 }
-type_data::type_data( type_kind k, size_t e ) : kind(k), element(e)
+type_data::type_data( type_kind k, size_t e ) : kind( k ), element( e )
 {
 }
 type_data::type_kind type_data::get_kind() const
@@ -76,219 +76,219 @@ script_data_manager::script_data_manager( Direct3DEngine * draw_mgr, script_engi
 
 void natives::_add( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[0] ).real + eng->scriptdata_mgr.getScriptData( argv[1] ).real );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real + eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_subtract( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[0] ).real - eng->scriptdata_mgr.getScriptData( argv[1] ).real );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real - eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_multiply( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[0] ).real * eng->scriptdata_mgr.getScriptData( argv[1] ).real );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real * eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_divide( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[0] ).real / eng->scriptdata_mgr.getScriptData( argv[1] ).real );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real / eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_modulus( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( fmod( eng->scriptdata_mgr.getScriptData( argv[0] ).real, eng->scriptdata_mgr.getScriptData( argv[1] ).real ) );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( fmod( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real, eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real ) );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_negative( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( -(eng->scriptdata_mgr.getScriptData( argv[0] ).real) );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( -(eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real) );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_power( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( pow( eng->scriptdata_mgr.getScriptData( argv[0] ).real, eng->scriptdata_mgr.getScriptData( argv[1] ).real ) );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( pow( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real, eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real ) );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_concatenate( script_engine * eng, size_t * argv )
 {
-	eng->scriptdata_mgr.uniqueizeScriptData( argv[0] );
-	unsigned s = eng->scriptdata_mgr.getScriptData( argv[1] ).vec.size();
+	eng->scriptdata_mgr.uniqueizeScriptData( argv[ 0 ] );
+	unsigned s = eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).vec.size();
 	for( unsigned i = 0; i < s; ++i )
 	{
 		size_t idx = -1;
-		eng->scriptdata_mgr.scriptDataAssign( idx, eng->scriptdata_mgr.getScriptData( argv[1] ).vec[i] );
-		eng->scriptdata_mgr.getScriptData( argv[0] ).vec.push_back( idx );
+		eng->scriptdata_mgr.scriptDataAssign( idx, eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).vec[ i ] );
+		eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).vec.push_back( idx );
 	}
 }
 void natives::_absolute( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( abs( eng->scriptdata_mgr.getScriptData( argv[0] ).real ) );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( abs( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real ) );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_not( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( !(eng->scriptdata_mgr.getScriptData( argv[0] ).real) );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( !(eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real) );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_compareEqual( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[0] ).real == eng->scriptdata_mgr.getScriptData( argv[1] ).real );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real == eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_compareNotEqual( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[0] ).real != eng->scriptdata_mgr.getScriptData( argv[1] ).real );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real != eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_compareGreater( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[0] ).real > eng->scriptdata_mgr.getScriptData( argv[1] ).real );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real > eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_compareGreaterEqual( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[0] ).real >= eng->scriptdata_mgr.getScriptData( argv[1] ).real );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real >= eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_compareLess( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[0] ).real < eng->scriptdata_mgr.getScriptData( argv[1] ).real );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real < eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_compareLessEqual( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[0] ).real <= eng->scriptdata_mgr.getScriptData( argv[1] ).real );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real <= eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_logicOr( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[0] ).real || eng->scriptdata_mgr.getScriptData( argv[1] ).real );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real || eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_logicAnd( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[0] ).real && eng->scriptdata_mgr.getScriptData( argv[1] ).real );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real && eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_roof( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( ceil( eng->scriptdata_mgr.getScriptData( argv[0] ).real ) );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( ceil( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real ) );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_floor( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( floor( eng->scriptdata_mgr.getScriptData( argv[0] ).real ) );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( floor( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real ) );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_index( script_engine * eng, size_t * argv )
 {
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], eng->scriptdata_mgr.getScriptData( argv[0] ).vec[ (unsigned)eng->scriptdata_mgr.getScriptData( argv[1] ).real ] );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).vec[ (unsigned)eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real ] );
 }
 void natives::_appendArray( script_engine * eng, size_t * argv )
 {
 	eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).vec.push_back( -1 );
-	eng->scriptdata_mgr.scriptDataAssign( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).vec.back(), argv[1] );
+	eng->scriptdata_mgr.scriptDataAssign( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).vec.back(), argv[ 1 ] );
 }
 void natives::_uniqueize( script_engine * eng, size_t * argv )
 {
-	eng->scriptdata_mgr.uniqueizeScriptData( argv[0] );
+	eng->scriptdata_mgr.uniqueizeScriptData( argv[ 0 ] );
 }
 void natives::_rand( script_engine * eng, size_t * argv )
 {
-	float domain = eng->scriptdata_mgr.getScriptData( argv[1] ).real - eng->scriptdata_mgr.getScriptData( argv[0] ).real;
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[0] ).real + fmod( (float)rand(), 1 + domain ) );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	float domain = eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real - eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real;
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real + fmod( (float)rand(), 1 + domain ) );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_rand_int( script_engine * eng, size_t * argv )
 {
-	float domain = floor( eng->scriptdata_mgr.getScriptData( argv[1] ).real - eng->scriptdata_mgr.getScriptData( argv[0] ).real );
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( floor( eng->scriptdata_mgr.getScriptData( argv[0] ).real ) + fmod( (float)rand(), 1 + domain ) );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	float domain = floor( eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real - eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( floor( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real ) + fmod( (float)rand(), 1 + domain ) );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_print( script_engine * eng, size_t * argv )
 {
-	std::string str = eng->scriptdata_mgr.getStringScriptData( argv[0] );
+	std::string str = eng->scriptdata_mgr.getStringScriptData( argv[ 0 ] );
 	std::cout << str << std::endl;
 }
 void natives::_true( script_engine * eng, size_t * argv )
 {
 	assert( !CheckValidIdx( argv[ 0 ] ) );
 	size_t tmp = eng->scriptdata_mgr.fetchScriptData( true );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_false( script_engine * eng, size_t * argv )
 {
 	assert( !CheckValidIdx( argv[ 0 ] ) );
 	size_t tmp = eng->scriptdata_mgr.fetchScriptData( false );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_PI( script_engine * eng, size_t * argv )
 {
 	assert( !CheckValidIdx( argv[ 0 ] ) );
 	size_t tmp = eng->scriptdata_mgr.fetchScriptData( D3DX_PI );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_OBJ_SHOT( script_engine * eng, size_t * argv )
 {
 	assert( !CheckValidIdx( argv[ 0 ] ) );
 	size_t tmp = eng->scriptdata_mgr.fetchScriptData( ObjShot );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_OBJ_EFFECT( script_engine * eng, size_t * argv )
 {
 	assert( !CheckValidIdx( argv[ 0 ] ) );
 	size_t tmp = eng->scriptdata_mgr.fetchScriptData( ObjEffect );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_OBJ_FONT( script_engine * eng, size_t * argv )
 {
 	assert( !CheckValidIdx( argv[ 0 ] ) );
 	size_t tmp = eng->scriptdata_mgr.fetchScriptData( ObjFont );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_increment( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( 1.f + eng->scriptdata_mgr.getRealScriptData( argv[0] ) );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( 1.f + eng->scriptdata_mgr.getRealScriptData( argv[ 0 ] ) );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );	
 }
 void natives::_decrement( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( -1.f + eng->scriptdata_mgr.getRealScriptData( argv[0] ) );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( -1.f + eng->scriptdata_mgr.getRealScriptData( argv[ 0 ] ) );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );	
 }
 void natives::_ToString( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getStringScriptData( argv[0] ) );
-	eng->scriptdata_mgr.scriptDataAssign( argv[0], tmp );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getStringScriptData( argv[ 0 ] ) );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_cos( script_engine * eng, size_t * argv )
@@ -567,8 +567,8 @@ void natives::_CreateShot01( script_engine * eng, size_t * argv )
 }
 void natives::_TerminateProgram( script_engine * eng, size_t * argv )
 {
-	eng->finished = true;
 	eng->cleanEngine();
+	eng->finished = true;
 	eng->raise_exception( eng_exception::finalizing_machine );
 }
 void natives::_SetEyeView( script_engine * eng, size_t * argv )

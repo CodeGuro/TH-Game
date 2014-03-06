@@ -538,7 +538,7 @@ void Direct3DEngine::PushQuadShotBuffer( RECT const Quad, D3DCOLOR const Color )
 {
 	D3DSURFACE_DESC SurfaceDesc;
 	GetTexture( ShotImagePath )->GetLevelDesc( 0, &SurfaceDesc );
-	Vertex v[6] = 
+	Vertex v[ 6 ] = 
 	{
 		{ D3DXVECTOR3( -(float)(Quad.right - Quad.left)/2, -(float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.left / (float)SurfaceDesc.Width, (float)Quad.top / (float)SurfaceDesc.Height ), Color },
 		{ D3DXVECTOR3( (float)(Quad.right - Quad.left)/2, -(float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.right / (float)SurfaceDesc.Width, (float)Quad.top / (float)SurfaceDesc.Height ), Color },
@@ -547,7 +547,7 @@ void Direct3DEngine::PushQuadShotBuffer( RECT const Quad, D3DCOLOR const Color )
 		{ D3DXVECTOR3( (float)(Quad.right - Quad.left)/2, (float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.right / (float)SurfaceDesc.Width, (float)Quad.bottom / (float)SurfaceDesc.Height ), Color },
 		{ D3DXVECTOR3( -(float)(Quad.right - Quad.left)/2, (float)(Quad.bottom - Quad.top) / 2, 0.f ), D3DXVECTOR2( (float)Quad.left / (float)SurfaceDesc.Width, (float)Quad.bottom / (float)SurfaceDesc.Height ), Color }
 	};
-	for( unsigned u = 0; u < 6; ++u ) GetVertexBuffer( 0 ).push_back( v[u] );
+	for( unsigned u = 0; u < 6; ++u ) GetVertexBuffer( 0 ).push_back( v[ u ] );
 }
 
 //ObjEffect functions

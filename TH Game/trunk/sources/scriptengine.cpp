@@ -60,8 +60,8 @@ type_data script_type_manager::getArrayType( size_t element )
 {
 	for( unsigned i = 0; i < types.size(); ++i )
 	{
-		if( types[i].get_kind() == type_data::tk_array && types[i].get_element() == element )
-			return types[i];
+		if( types[ i ].get_kind() == type_data::tk_array && types[ i ].get_element() == element )
+			return types[ i ];
 	}
 	//else
 	return *(types.insert( types.end(), type_data( type_data::tk_array, element ) ));
@@ -187,7 +187,7 @@ size_t script_data_manager::fetchScriptData( std::string const & string )
 	size_t index = fetchScriptData();
 	getScriptData( index ).type = type_mgr.getStringType();
 	for( unsigned i = 0; i < string.size(); ++i )
-		getScriptData( index ).vec.push_back( fetchScriptData( string[i] ) );
+		getScriptData( index ).vec.push_back( fetchScriptData( string[ i ] ) );
 	return index;
 }
 size_t script_data_manager::fetchScriptData( ObjType typeobj, size_t machineIdx )
@@ -269,7 +269,7 @@ void script_data_manager::copyScriptData( size_t & dst, size_t & src ) //content
 	script_data & destDat = getScriptData( dst );
 
 	for( unsigned i = 0; i < destDat.vec.size(); ++i )
-		releaseScriptData( destDat.vec[i] );
+		releaseScriptData( destDat.vec[ i ] );
 	destDat.vec.resize( 0 );
 
 	if( CheckValidIdx( src ) )
@@ -292,7 +292,7 @@ void script_data_manager::copyScriptData( size_t & dst, size_t & src ) //content
 			{
 				destDat.vec.resize( sourDat.vec.size() );
 				for( unsigned i = 0; i < sourDat.vec.size(); ++i )
-					(!CheckValidIdx( sourDat.vec[i] )) ? (destDat.vec[i] = -1) : (copyScriptData( ( destDat.vec[i] = fetchScriptData() ), sourDat.vec[i] ));
+					(!CheckValidIdx( sourDat.vec[ i ] )) ? (destDat.vec[ i ] = -1) : (copyScriptData( ( destDat.vec[ i ] = fetchScriptData() ), sourDat.vec[ i ] ));
 			}
 			break;
 		}
@@ -468,7 +468,7 @@ void script_engine::releaseScriptEnvironment( size_t & index )
 		if( !( --env.refCount ) )
 		{
 			for( unsigned i = 0; i < env.stack.size(); ++i )
-				scriptdata_mgr.releaseScriptData( env.stack[i] );
+				scriptdata_mgr.releaseScriptData( env.stack[ i ] );
 			for( unsigned u = 0; u < env.values.size(); ++u )
 				scriptdata_mgr.releaseScriptData( env.values[ u ] );
 			env.stack.resize( 0 );
@@ -562,13 +562,13 @@ script_engine::script_engine( Direct3DEngine * draw_mgr ) : scriptdata_mgr( draw
 }
 void script_engine::cleanEngine()
 {
-	currentRunningMachine = -1;
-	error = false;
-	errorMessage.clear();
-
 	for( unsigned u = 0; u < vecContexts.size(); ++u )
 		clean_script_context( u );
 	*this = script_engine( get_drawmgr() );
+
+	currentRunningMachine = -1;
+	error = false;
+	errorMessage.clear();
 }
 bool script_engine::start()
 {
@@ -581,7 +581,7 @@ bool script_engine::start()
 		parser script_parser( this );
 		std::string scriptPath;
 		OPENFILENAMEA ofn ={ 0 };
-		char buff2[1024] ={ 0 };
+		char buff2[ 1024 ] ={ 0 };
 		ofn.lStructSize = sizeof( OPENFILENAMEA );
 		ofn.lpstrFilter = "All Files\0*.*\0\0";
 		ofn.lpstrFile = buff2;
@@ -961,6 +961,7 @@ bool script_engine::advance()
 }
 void script_engine::clean_script_context( size_t context_index )
 {
+	currentRunningMachine = context_index;
 	script_context * current_context = this->getScriptContext( context_index );
 	if( !current_context->threads.size() )
 		return;

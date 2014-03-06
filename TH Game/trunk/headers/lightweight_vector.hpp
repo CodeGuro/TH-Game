@@ -26,7 +26,7 @@ public:
 		{
 			at = new T[ source.capacity ];
 			for( unsigned int i = 0; i < length; ++i )
-				at[i] = source.at[i];
+				at[ i ] = source.at[ i ];
 			return;
 		}
 		at = 0;
@@ -40,7 +40,7 @@ public:
 		{
 			at = new T[ source.capacity ];
 			for( unsigned int i = 0; i <length; ++i )
-				at[i] = source.at[i];
+				at[ i ] = source.at[ i ];
 		}
 		else
 			at = 0;
@@ -64,14 +64,14 @@ public:
 		if( !capacity )
 		{
 			capacity = 4;
-			at = new T[4];
+			at = new T[ 4 ];
 		}
 		else
 		{
 			capacity *= 2;
 			T * n = new T[capacity];
 			for(int i = length - 1; i >= 0; --i)
-				n[i] = at[i];
+				n[ i ] = at[ i ];
 			delete[] at;
 			at = n;
 		}
