@@ -140,6 +140,8 @@ Direct3DEngine::Direct3DEngine( HWND const hWnd )
 	RECT r = { 32, 16, 416, 464 };
 	GetDevice()->SetScissorRect( &r );
 	SetFog( 3.f, 10.f, 100.f, 30.f, 180.f );
+	SetLookAtViewMatrix( D3DXVECTOR3( 0.f, 5.f, 10.f ), D3DXVECTOR3( 0.f, 0.f, 0.f ) );
+	GetDevice()->SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
 }
 LPDIRECT3DDEVICE9 & Direct3DEngine::GetDevice()
 {
@@ -590,13 +592,13 @@ void Direct3DEngine::ObjEffect_CreateVertex( unsigned HandleIdx, ULONG VertexCou
 		}
 	}
 }
-void Direct3DEngine::ObjEffect_SetVertexXY( unsigned HandleIdx, ULONG VIndex,  D3DXVECTOR2 Posxy )
+void Direct3DEngine::ObjEffect_SetVertexXYZ( unsigned HandleIdx, ULONG VIndex,  D3DXVECTOR3 Posxyz )
 {
 	if( CheckValidIdx( HandleIdx ) )
 	{
 		ObjHandle & handle = vObjHandles[ HandleIdx ];
 		if( CheckValidIdx( handle.VertexBuffer ) )
-			GetVertexBuffer( handle.VertexBuffer )[ VIndex ].pos = D3DXVECTOR3( Posxy.x, Posxy.y, 0.f );
+			GetVertexBuffer( handle.VertexBuffer )[ VIndex ].pos = Posxyz;
 	}
 }
 void Direct3DEngine::ObjEffect_SetVertexUV( unsigned HandleIdx, ULONG VIndex, D3DXVECTOR2 Posuv )
@@ -651,6 +653,16 @@ void Direct3DEngine::ObjEffect_SetLayer( unsigned HandleIdx, ULONG Layer )
 					--(it->MgrIdx);
 			handle.Layer = (USHORT)Layer;
 			handle.MgrIdx = mgrIdx;
+			if( Layer == BACKGROUND_LAYER )
+			{
+				GetLayers()[ Layer ].vObjMgr.back().PShader = GetDefault3DPShader();
+				GetLayers()[ Layer ].vObjMgr.back().VShader = GetDefault3DVShader();
+			}
+			else
+			{
+				GetLayers()[ Layer ].vObjMgr.back().PShader = GetDefault2DPShader();
+				GetLayers()[ Layer ].vObjMgr.back().VShader = GetDefault2DVShader();
+			}
 		}
 	}
 }
@@ -1062,13 +1074,13 @@ void Direct3DEngine::DrawFPS()
 }
 void Direct3DEngine::ProcUserInput( MSG const Msg )
 {
-	D3DXVECTOR3 vout;
-	D3DXVec3TransformCoord( &vout, &D3DXVECTOR3(0,0,0), &(WorldMatrix * ViewMatrix) );
-	//automate motion
-	//undo rotation by multiplying it by its inverse rotation matrix
-	ViewMatrix *= *D3DXMatrixRotationQuaternion( &D3DXMATRIX(),
-	D3DXQuaternionInverse( &D3DXQUATERNION(), 
-	D3DXQuaternionRotationMatrix( &D3DXQUATERNION(), &ViewMatrix ) ) );
-	//translate and rotate
-	ViewMatrix *= *D3DXMatrixTranslation( &D3DXMATRIX(), /*-10/60.f*/0, 0, -10/30.f );// * *D3DXMatrixRotationY( &D3DXMATRIX(), -2 * D3DX_PI / 3 );
+	//D3DXVECTOR3 vout;
+	//D3DXVec3TransformCoord( &vout, &D3DXVECTOR3(0,0,0), &(WorldMatrix * ViewMatrix) );
+	////automate motion
+	////undo rotation by multiplying it by its inverse rotation matrix
+	//ViewMatrix *= *D3DXMatrixRotationQuaternion( &D3DXMATRIX(),
+	//D3DXQuaternionInverse( &D3DXQUATERNION(), 
+	//D3DXQuaternionRotationMatrix( &D3DXQUATERNION(), &ViewMatrix ) ) );
+	////translate and rotate
+	//ViewMatrix *= *D3DXMatrixTranslation( &D3DXMATRIX(), /*-10/60.f*/0, 0, -10/30.f );// * *D3DXMatrixRotationY( &D3DXMATRIX(), -2 * D3DX_PI / 3 );
 }

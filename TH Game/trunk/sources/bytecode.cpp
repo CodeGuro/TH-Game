@@ -471,7 +471,11 @@ void natives::_ObjEffect_SetVertexUV( script_engine * eng, size_t * argv )
 }
 void natives::_ObjEffect_SetVertexXY( script_engine * eng, size_t * argv )
 {
-	eng->get_drawmgr()->ObjEffect_SetVertexXY( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ), D3DXVECTOR2( eng->scriptdata_mgr.getRealScriptData( argv[ 2 ] ), eng->scriptdata_mgr.getRealScriptData( argv[ 3 ] ) ) );
+	eng->get_drawmgr()->ObjEffect_SetVertexXYZ( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ), D3DXVECTOR3( eng->scriptdata_mgr.getRealScriptData( argv[ 2 ] ), eng->scriptdata_mgr.getRealScriptData( argv[ 3 ] ), 0.f ) );
+}
+void natives::_ObjEffect_SetVertexXYZ( script_engine * eng, size_t * argv )
+{
+	eng->get_drawmgr()->ObjEffect_SetVertexXYZ( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ), D3DXVECTOR3( eng->scriptdata_mgr.getRealScriptData( argv[ 2 ] ), eng->scriptdata_mgr.getRealScriptData( argv[ 3 ] ), eng->scriptdata_mgr.getRealScriptData( argv[ 4 ] ) ) );
 }
 void natives::_ObjEffect_SetVertexColor( script_engine * eng, size_t * argv )
 {

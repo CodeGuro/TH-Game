@@ -252,6 +252,7 @@ private:
 	static void _ObjEffect_SetRenderState( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetVertexUV( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetVertexXY( script_engine * eng, size_t * argv );
+	static void _ObjEffect_SetVertexXYZ( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetVertexColor( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetLayer( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetScale( script_engine * eng, size_t * argv );
