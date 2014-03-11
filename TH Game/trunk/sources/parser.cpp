@@ -1503,6 +1503,7 @@ void parser::registerNatives()
 		{ "ObjEffect_SetVertexColor", &natives::_ObjEffect_SetVertexColor, 6 },
 		{ "ObjEffect_SetLayer", &natives::_ObjEffect_SetLayer, 2 },
 		{ "ObjEffect_SetScale", &natives::_ObjEffect_SetScale, 3 },
+		{ "ObjEffect_SetRotationAxis", &natives::_ObjEffect_SetRotationAxis, 5 },
 		{ "ObjShot_SetGraphic", &natives::_ObjShot_SetGraphic, 2 },
 		{ "ObjFont_SetRect", &natives::_ObjFont_SetRect, 5 },
 		{ "ObjFont_SetString", &natives::_ObjFont_SetString, 2 },
