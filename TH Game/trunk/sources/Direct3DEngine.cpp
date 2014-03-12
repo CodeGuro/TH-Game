@@ -854,7 +854,7 @@ void Direct3DEngine::DrawObjects()
 			GetDevice()->SetPixelShader( Objmgr->PShader );
 
 			GetDevice()->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-			GetDevice()->SetRenderState( D3DRS_ZENABLE, L == GetLayers().begin() ? TRUE : FALSE );
+			GetDevice()->SetRenderState( D3DRS_ZENABLE, L - GetLayers().begin() == BACKGROUND_LAYER? TRUE : FALSE );
 	
 			switch( Objmgr->BlendState )
 			{

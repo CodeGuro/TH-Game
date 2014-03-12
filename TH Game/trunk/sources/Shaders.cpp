@@ -30,8 +30,8 @@ extern std::string const DefaultShader =
 	float4 ps_main3D( in Vertex3D data ) : COLOR					\n\
 	{																\n\
 		float4 finalcolor =											\n\
-			tex2D( texsampler, data.tposition.xy ) * data.color;	\n\
-			finalcolor = data.fogfac * finalcolor +  (1.0 - data.fogfac) * data.fogcol;\n\
+			tex2D( texsampler, data.tposition.xy );	\n\
+			finalcolor = data.color * (data.fogfac * finalcolor +  (1.0 - data.fogfac) * data.fogcol);\n\
 		return finalcolor;											\n\
 	}																\n\
 																	\n\
