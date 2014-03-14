@@ -256,6 +256,7 @@ private:
 	static void _ObjEffect_SetVertexColor( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetLayer( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetScale( script_engine * eng, size_t * argv );
+	static void _ObjEffect_SetScale3D( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetRotationAxis( script_engine * eng, size_t * argv );
 	static void _ObjShot_SetGraphic( script_engine * eng, size_t * argv );
 	static void _ObjFont_SetRect( script_engine * eng, size_t * argv );

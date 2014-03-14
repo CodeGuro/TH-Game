@@ -490,6 +490,11 @@ void natives::_ObjEffect_SetScale( script_engine * eng, size_t * argv )
 	if( Object * obj = eng->get_drawmgr()->GetObject( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ) ) )
 		obj->SetScale( D3DXVECTOR3( eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ), eng->scriptdata_mgr.getRealScriptData( argv[ 2 ] ), 1.f ) );
 }
+void natives::_ObjEffect_SetScale3D( script_engine * eng, size_t * argv )
+{
+	if( Object * obj = eng->get_drawmgr()->GetObject( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ) ) )
+		obj->SetScale( D3DXVECTOR3( eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ), eng->scriptdata_mgr.getRealScriptData( argv[ 2 ] ), eng->scriptdata_mgr.getRealScriptData( argv[ 3 ] ) ) );
+}
 void natives::_ObjEffect_SetRotationAxis( script_engine * eng, size_t * argv )
 {
 	if( Object * obj = eng->get_drawmgr()->GetObject( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ) ) )
