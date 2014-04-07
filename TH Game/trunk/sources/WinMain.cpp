@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <D3DX10math.h>
 #include <GameEngine.hpp>
 
 LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
@@ -13,6 +14,14 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 
 int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd )
 {
+	float pi = acos( 0.f );
+	D3DXQUATERNION rot, ang, rot_inv, buff;
+	D3DXQuaternionRotationAxis( &buff, &D3DXVECTOR3( 1.f, 0.f, 0.f ), acos( 0.f ) );
+	ang = D3DXQUATERNION( 0.f, 0.f, 1.f, 0.f );
+	D3DXQuaternionInverse( &rot_inv, D3DXQuaternionNormalize( &rot, &D3DXQUATERNION( sin( pi ), sin( pi), sin(pi), cos(pi) ) ) );
+
+	D3DXQuaternionMultiply( &buff, D3DXQuaternionMultiply( &buff, &rot, &ang ), &rot_inv );
+
 	WNDCLASS wc;
 	wc.style = CS_HREDRAW | CS_VREDRAW;
 	wc.lpfnWndProc = &WndProc;

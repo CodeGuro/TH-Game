@@ -77,6 +77,7 @@ private:
 	D3DSmartPtr< LPDIRECT3DPIXELSHADER9 > pDefault2DPShader;
 	D3DSmartPtr< LPD3DXCONSTANTTABLE > pDefault2DConstable;
 	D3DSmartPtr< LPDIRECTSOUND8 > dsound;
+	D3DSmartPtr< LPDIRECT3DVERTEXBUFFER9 > pVBGridTerrain;
 	
 	typedef vector< Layer > vLayer_t;
 	D3DVBuffer PipelineVertexBuffer;
@@ -95,6 +96,8 @@ private:
 	vector< ObjHandle > vObjHandles;
 	vector< unsigned > vObjHandlesGC;
 	std::string ShotImagePath;
+
+	void GenerateGridTerrain( unsigned Rows, unsigned Columns, float Spacing );
 
 public:
 	D3DXMATRIX WorldMatrix;

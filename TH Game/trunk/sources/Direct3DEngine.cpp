@@ -1006,48 +1006,56 @@ void Direct3DEngine::RenderFrame( MSG const msg )
 {
 	GetDevice()->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, ClearColor, 1.f, 0 );
 	GetDevice()->BeginScene();
-	DrawGridTerrain( 1000, 1000, 1.f );
+	DrawGridTerrain( 100, 100, 1.f );
 	DrawObjects();
 	DrawFPS();
 	GetDevice()->EndScene();
 	GetDevice()->Present( NULL, NULL, NULL, NULL );
-	ProcUserInput( msg );
 }
-void Direct3DEngine::DrawGridTerrain( unsigned Rows, unsigned Columns, float Spacing )
+void Direct3DEngine::GenerateGridTerrain( unsigned Rows, unsigned Columns, float Spacing )
 {
-	LPDIRECT3DVERTEXBUFFER9 pvb;
-	GetDevice()->CreateVertexBuffer( 2 * sizeof( Vertex ) * ( Rows + Columns), D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &pvb, NULL );
+	D3DSmartPtr< LPDIRECT3DVERTEXBUFFER9 > pvb;
+	GetDevice()->CreateVertexBuffer( 2 * sizeof( Vertex ) * 2 * ( Rows * Columns), D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &pvb, NULL );
 
 	void * ptr;
 	Vertex * pverts;
-	pvb->Lock( 0, 0, &ptr, D3DLOCK_DISCARD );
+	pvb->Lock( 0, 0, &ptr, 0 );
 	pverts = (Vertex*)ptr;
-	for( unsigned i = 0; i < Columns; ++i )
-	{
-		Vertex v1 = { D3DXVECTOR3( Spacing / 2.f * (float)Columns - Spacing * (float)i, 0, Spacing / 2 * (float)Rows ), D3DXVECTOR2( 0, 0 ), D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
-		Vertex v2 = { D3DXVECTOR3( Spacing / 2.f * (float)Columns - Spacing * (float)i, 0, Spacing / -2 * (float)Rows ), D3DXVECTOR2( 0, 0 ), D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
-		*pverts++ = v1;
-		*pverts++ = v2;
-	}
+
+	float FarLeft = Spacing * (float)Columns / -2.f;
+	float FarBottom = Spacing * (float)Rows / -2.f;
 	for( unsigned i = 0; i < Rows; ++i )
 	{
-		Vertex v1 = { D3DXVECTOR3( Spacing / 2.f * (float)Columns, 0, Spacing / 2.f * Columns - Spacing * (float)i ), D3DXVECTOR2( 0, 0 ), D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
-		Vertex v2 = { D3DXVECTOR3( Spacing / -2.f * (float)Columns, 0, Spacing / 2.f * Columns - Spacing * (float)i ), D3DXVECTOR2( 0, 0 ), D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
-		*pverts++ = v1;
-		*pverts++ = v2;
+		for( unsigned j = 0; j < Columns; ++j )
+		{
+			Vertex v1 = { D3DXVECTOR3( FarLeft + (float)j, 0.f, FarBottom + (float)i ), D3DXVECTOR2( 0, 0 ), D3DCOLOR_ARGB( 255, 255, 255, 255 ) };
+			Vertex v2 = v1; v2.pos.x += Spacing;
+			Vertex v3 = v1; v3.pos.z += Spacing;
+			*pverts++ = v1;
+			*pverts++ = v2;
+			*pverts++ = v1;
+			*pverts++ = v3;
+		}
 	}
 	pvb->Unlock();
+	pVBGridTerrain = pvb;
+}
+void Direct3DEngine::DrawGridTerrain( unsigned Rows, unsigned Columns, float Spacing )
+{
+	static unsigned R = -1, C = -1;
+	static float S = -1;
+	if( !( R == Rows || C == Columns || S == Spacing) )
+		GenerateGridTerrain( R = Rows, C = Columns, S = Spacing );
 	D3DXMATRIX mat;
 	D3DXMatrixIdentity( &mat );
 	GetDevice()->SetVertexDeclaration( GetDefaultVDeclaration() );
-	GetDevice()->SetStreamSource( 0, pvb, 0, sizeof( Vertex ) );
+	GetDevice()->SetStreamSource( 0, pVBGridTerrain, 0, sizeof( Vertex ) );
 	GetDefault3DConstable()->SetMatrix( GetDevice(), "WorldViewProjMat", &( WorldMatrix * ViewMatrix * ProjectionMatrix ) );
 	GetDefault3DConstable()->SetMatrix( GetDevice(), "WorldViewMat", &( WorldMatrix * ViewMatrix ) );
 	GetDevice()->SetVertexShader( GetDefault3DVShader() );
 	GetDevice()->SetPixelShader( GetDefault3DPShader() );
 	GetDevice()->SetTexture( 0, NULL );
-	GetDevice()->DrawPrimitive( D3DPT_LINELIST, 0, Rows + Columns );
-	pvb->Release();
+	GetDevice()->DrawPrimitive( D3DPT_LINELIST, 0, 2 * (Rows * Columns) );
 }
 void Direct3DEngine::DrawFPS()
 {
@@ -1071,16 +1079,4 @@ void Direct3DEngine::DrawFPS()
 	pFont->Release();
 	++Frame;
 	
-}
-void Direct3DEngine::ProcUserInput( MSG const Msg )
-{
-	//D3DXVECTOR3 vout;
-	//D3DXVec3TransformCoord( &vout, &D3DXVECTOR3(0,0,0), &(WorldMatrix * ViewMatrix) );
-	////automate motion
-	////undo rotation by multiplying it by its inverse rotation matrix
-	//ViewMatrix *= *D3DXMatrixRotationQuaternion( &D3DXMATRIX(),
-	//D3DXQuaternionInverse( &D3DXQUATERNION(), 
-	//D3DXQuaternionRotationMatrix( &D3DXQUATERNION(), &ViewMatrix ) ) );
-	////translate and rotate
-	//ViewMatrix *= *D3DXMatrixTranslation( &D3DXMATRIX(), /*-10/60.f*/0, 0, -10/30.f );// * *D3DXMatrixRotationY( &D3DXMATRIX(), -2 * D3DX_PI / 3 );
 }
