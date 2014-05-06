@@ -5,7 +5,8 @@
 #include <math.h>
 #include <sstream>
 #include <scriptengine.hpp>
-#define CSTRFUNCRESULT "(RESULT)"
+
+static const char * CSTRFUNCRESULT = "(RESULT)";
 
 parser::lexer::lexer() : current( &character ), next( tk_end ), character( '\0' )
 {
