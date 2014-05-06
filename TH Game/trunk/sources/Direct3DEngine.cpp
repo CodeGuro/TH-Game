@@ -458,6 +458,18 @@ void Direct3DEngine::LoadSound( std::string const & pathname )
 
 	SoundFile.close();
 }
+void Direct3DEngine::StopSound( std::string const & pathname )
+{
+	auto it = mapSoundEffects.find( pathname );
+	if( it == mapSoundEffects.end() )
+		return;
+
+	LPDIRECTSOUNDBUFFER8 buffer = it->second;
+
+	buffer->SetCurrentPosition( 0 );
+	buffer->SetVolume( DSBVOLUME_MAX );
+	buffer->Stop();
+}
 void Direct3DEngine::PlaySound( std::string const & pathname )
 {
 	auto it = mapSoundEffects.find( pathname );
@@ -469,7 +481,6 @@ void Direct3DEngine::PlaySound( std::string const & pathname )
 	buffer->SetCurrentPosition( 0 );
 	buffer->SetVolume( DSBVOLUME_MAX );
 	buffer->Play( 0, 0, 0 );
-
 }
 void Direct3DEngine::DeleteSound( std::string const & pathname )
 {

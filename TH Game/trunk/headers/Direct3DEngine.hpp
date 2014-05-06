@@ -136,6 +136,7 @@ public:
 	//sounds
 	void LoadSound( std::string const & pathname );
 	void PlaySound( std::string const & pathname );
+	void StopSound( std::string const & pathname );
 	void DeleteSound( std::string const & pathname );
 
 	//text

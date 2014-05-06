@@ -387,6 +387,10 @@ void natives::_PlaySound( script_engine * eng, size_t * argv )
 {
 	eng->get_drawmgr()->PlaySound( eng->scriptdata_mgr.getStringScriptData( argv[ 0 ] ) );
 }
+void natives::_StopSound( script_engine * eng, size_t * argv )
+{
+	eng->get_drawmgr()->StopSound( eng->scriptdata_mgr.getStringScriptData( argv[ 0 ] ) );
+}
 void natives::_DeleteSound( script_engine * eng, size_t * argv )
 {
 	eng->get_drawmgr()->DeleteSound( eng->scriptdata_mgr.getStringScriptData( argv[ 0 ] ) );
