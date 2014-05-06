@@ -6,15 +6,15 @@
 #include <MMSystem.h>
 
 extern const std::string DefaultShader;
-#define BACKGROUND_LAYER 0
-#define THREED_LAYER 1
-#define ENEMY_LAYER 2
-#define PLAYER_LAYER 3
-#define BULLET_LAYER 4
-#define EFFECT_LAYER 5
-#define FOREGROUND_LAYER 6
-#define TEXT_LAYER 7
-#define LAYER_COUNT 8
+unsigned const BACKGROUND_LAYER = 0;
+unsigned const THREED_LAYER = 1;
+unsigned const ENEMY_LAYER = 2;
+unsigned const PLAYER_LAYER = 3;
+unsigned const BULLET_LAYER = 4;
+unsigned const EFFECT_LAYER = 5;
+unsigned const FOREGROUND_LAYER = 6;
+unsigned const TEXT_LAYER = 7;
+unsigned const LAYER_COUNT = 8;
 
 void CompileShaders( LPDIRECT3DDEVICE9 pdev, char const * vmainfunc, D3DSmartPtr< LPDIRECT3DVERTEXSHADER9 > & VShader, D3DSmartPtr< LPD3DXCONSTANTTABLE > & CTable, char * pmainfunc, D3DSmartPtr< LPDIRECT3DPIXELSHADER9 > & PShader )
 {
