@@ -452,6 +452,51 @@ void natives::_Obj_ScriptLatch( script_engine * eng, size_t * argv )
 {
 	eng->latchScriptObjectToMachine( argv[ 0 ], eng->currentRunningMachine );
 }
+void natives::_Obj_GetX( script_engine * eng, size_t * argv )
+{
+	if( Object * obj = eng->get_drawmgr()->GetObject( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ) ) )
+	{
+		size_t tmp = eng->scriptdata_mgr.fetchScriptData( obj->position.x );
+		eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
+		eng->scriptdata_mgr.releaseScriptData( tmp );
+	}
+}
+void natives::_Obj_GetY( script_engine * eng, size_t * argv )
+{
+	if( Object * obj = eng->get_drawmgr()->GetObject( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ) ) )
+	{
+		size_t tmp = eng->scriptdata_mgr.fetchScriptData( obj->position.y );
+		eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
+		eng->scriptdata_mgr.releaseScriptData( tmp );
+	}
+}
+void natives::_Obj_GetZ( script_engine * eng, size_t * argv )
+{
+	if( Object * obj = eng->get_drawmgr()->GetObject( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ) ) )
+	{
+		size_t tmp = eng->scriptdata_mgr.fetchScriptData( obj->position.z );
+		eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
+		eng->scriptdata_mgr.releaseScriptData( tmp );
+	}
+}
+void natives::_Obj_GetSpeed( script_engine * eng, size_t * argv )
+{
+	if( Object * obj = eng->get_drawmgr()->GetObject( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ) ) )
+	{
+		size_t tmp = eng->scriptdata_mgr.fetchScriptData( obj->GetSpeed() );
+		eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
+		eng->scriptdata_mgr.releaseScriptData( tmp );
+	}
+}
+void natives::_Obj_GetAngle( script_engine * eng, size_t * argv )
+{
+	if( Object * obj = eng->get_drawmgr()->GetObject( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ) ) )
+	{
+		size_t tmp = eng->scriptdata_mgr.fetchScriptData( obj->GetAngle() );
+		eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
+		eng->scriptdata_mgr.releaseScriptData( tmp );
+	}
+}
 void natives::_ObjEffect_SetTexture( script_engine * eng, size_t * argv )
 {
 	if( ObjMgr * objmgr = eng->get_drawmgr()->GetObjMgr( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ) ) )

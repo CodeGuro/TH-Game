@@ -247,6 +247,11 @@ private:
 	static void _Obj_SetVelocity( script_engine * eng, size_t * argv );
 	static void _Obj_SetAutoDelete( script_engine * eng, size_t * argv );
 	static void _Obj_ScriptLatch( script_engine * eng, size_t * argv );
+	static void _Obj_GetX( script_engine * eng, size_t * argv );
+	static void _Obj_GetY( script_engine * eng, size_t * argv );
+	static void _Obj_GetZ( script_engine * eng, size_t * argv );
+	static void _Obj_GetSpeed( script_engine * eng, size_t * argv );
+	static void _Obj_GetAngle( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetTexture( script_engine * eng, size_t * argv );
 	static void _ObjEffect_CreateVertex( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetPrimitiveType( script_engine * eng, size_t * argv );
