@@ -576,8 +576,6 @@ bool script_engine::start()
 	//map the scripts to individual units to be parsed
 
 	char buff[ 1024 ] = { 0 };
-	char filter[ 100 ] = { 0 };
-	strcpy( filter, "All\0*.th\0Text\0*.TXT\0" );
 	GetCurrentDirectory( sizeof( buff ), buff );
 	std::string const path = std::string( buff ) + "\\script";
 	parser script_parser( this );
@@ -585,11 +583,10 @@ bool script_engine::start()
 	OPENFILENAMEA ofn ={ 0 };
 	char buff2[ 1024 ] ={ 0 };
 	ofn.lStructSize = sizeof( OPENFILENAMEA );
-	ofn.lpstrFilter = "All Files\0*.*\0\0";
+	ofn.lpstrFilter = "TH Files\0*.th\0Text Files\0*.txt\0";
 	ofn.lpstrFile = buff2;
 	ofn.nMaxFile = sizeof( buff2 );
 	ofn.lpstrTitle = "Open script...";
-	ofn.lpstrFilter = filter;
 	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_FORCESHOWHIDDEN | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST ;
 	GetOpenFileNameA( &ofn );
 	SetCurrentDirectory( buff );
