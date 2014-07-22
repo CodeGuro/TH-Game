@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <Windows.h>
 #include <ObjMgr.hpp>
+#include <FatalException.hpp>
 
 //exception
 eng_exception::eng_exception() : throw_reason( eng_error )
@@ -572,49 +573,38 @@ void script_engine::cleanEngine()
 }
 bool script_engine::start()
 {
-	try
-	{
-		//map the scripts to individual units to be parsed
-		char buff[ 1024 ] = { 0 };
-		GetCurrentDirectory( sizeof( buff ), buff );
-		std::string const path = std::string( buff ) + "\\script";
-		parser script_parser( this );
-		std::string scriptPath;
-		OPENFILENAMEA ofn ={ 0 };
-		char buff2[ 1024 ] ={ 0 };
-		ofn.lStructSize = sizeof( OPENFILENAMEA );
-		ofn.lpstrFilter = "All Files\0*.*\0\0";
-		ofn.lpstrFile = buff2;
-		ofn.nMaxFile = sizeof( buff2 );
-		ofn.lpstrTitle = "Open script...";
-		ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_FORCESHOWHIDDEN | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST ;
-		GetOpenFileNameA( &ofn );
-		SetCurrentDirectory( buff );
-		scriptPath= ofn.lpstrFile;
-		if( !scriptPath.size() )
-		{
-			MessageBox( NULL, "Script not chosen, terminating...", "Engine Error", MB_TASKMODAL );
-			return false;
-		}
-		script_parser.parseScript( scriptPath );
-		size_t script_index = findScriptFromFile( script_parser.getCurrentScriptPath() );
-		if( !CheckValidIdx( script_index ) ) raise_exception( eng_exception( eng_exception::eng_error ) );
+	//map the scripts to individual units to be parsed
 
-		script_context * context = getScriptContext( fetchScriptContext() );
-		context->current_script_index = script_index;
-		context->object_vector_index = fetchObjectVector();
-		context->script_object = -1;
-	}
-	catch( eng_exception const & error )
-	{
-		if( error.throw_reason == eng_exception::eng_error )
-		{
-			if( error.Str.size() )
-				MessageBox( NULL, error.Str.c_str(), "Engine Error", MB_TASKMODAL );
-			cleanEngine();
-			return start();
-		}
-	}
+	char buff[ 1024 ] = { 0 };
+	char filter[ 100 ] = { 0 };
+	strcpy( filter, "All\0*.th\0Text\0*.TXT\0" );
+	GetCurrentDirectory( sizeof( buff ), buff );
+	std::string const path = std::string( buff ) + "\\script";
+	parser script_parser( this );
+	std::string scriptPath;
+	OPENFILENAMEA ofn ={ 0 };
+	char buff2[ 1024 ] ={ 0 };
+	ofn.lStructSize = sizeof( OPENFILENAMEA );
+	ofn.lpstrFilter = "All Files\0*.*\0\0";
+	ofn.lpstrFile = buff2;
+	ofn.nMaxFile = sizeof( buff2 );
+	ofn.lpstrTitle = "Open script...";
+	ofn.lpstrFilter = filter;
+	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_FORCESHOWHIDDEN | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST ;
+	GetOpenFileNameA( &ofn );
+	SetCurrentDirectory( buff );
+	scriptPath= ofn.lpstrFile;
+	if( !scriptPath.size() )
+		throw FatalException( "Script not chosen, terminating..." );
+
+	script_parser.parseScript( scriptPath );
+	size_t script_index = findScriptFromFile( script_parser.getCurrentScriptPath() );
+	if( !CheckValidIdx( script_index ) ) raise_exception( eng_exception( eng_exception::eng_error ) );
+
+	script_context * context = getScriptContext( fetchScriptContext() );
+	context->current_script_index = script_index;
+	context->object_vector_index = fetchObjectVector();
+	context->script_object = -1;
 	return true;
 }
 bool script_engine::run()
@@ -648,6 +638,8 @@ bool script_engine::run()
 					start();
 				}
 				break;
+			default:
+				throw FatalException( "script_engine::run" );
 			}
 		}
 	}

@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include <D3DX10math.h>
 #include <GameEngine.hpp>
+#include <FatalException.hpp>
 
 LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
@@ -36,16 +37,22 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	if( !hWnd )
 		return EXIT_FAILURE;
 	MSG msg;
-	GameEngine engine( hWnd );
-	if( !engine.start() )
-		return EXIT_FAILURE;
-
-	do
+	try
 	{
-		PeekMessage( &msg, NULL, NULL, NULL, PM_REMOVE );
-		TranslateMessage( &msg );
-		DispatchMessage( &msg );
-	}while( msg.message != WM_QUIT && !engine.advance( msg ) );
+		GameEngine engine( hWnd );
+		engine.start();
+		do
+		{
+			PeekMessage( &msg, NULL, NULL, NULL, PM_REMOVE );
+			TranslateMessage( &msg );
+			DispatchMessage( &msg );
+		}while( msg.message != WM_QUIT && !engine.advance( msg ) );
+	}
+	catch( FatalException & except )
+	{
+		OutputDebugString( "A fatal exception has occured\n" );
+		OutputDebugString( (std::string() + except.what() + "\n").c_str() );
+	}
 
 	return EXIT_SUCCESS;
 }

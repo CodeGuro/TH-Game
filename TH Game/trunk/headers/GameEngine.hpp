@@ -18,7 +18,6 @@ public:
 	}
 	bool advance( MSG msg )
 	{
-		
 		script_mgr.run();
 		draw_mgr.RenderFrame( msg );
 		return script_mgr.IsFinished();

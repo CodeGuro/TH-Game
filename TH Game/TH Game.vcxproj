@@ -86,6 +86,7 @@
     <ClInclude Include="trunk\headers\D3DSmartPtr.hpp" />
     <ClInclude Include="trunk\headers\defstypedefs.hpp" />
     <ClInclude Include="trunk\headers\Direct3DEngine.hpp" />
+    <ClInclude Include="trunk\headers\FatalException.hpp" />
     <ClInclude Include="trunk\headers\GameEngine.hpp" />
     <ClInclude Include="trunk\headers\lightweight_vector.hpp" />
     <ClInclude Include="trunk\headers\ObjMgr.hpp" />
