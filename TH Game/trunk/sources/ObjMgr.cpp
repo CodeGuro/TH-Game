@@ -56,6 +56,18 @@ void Object::SetRotationVelocityEx( D3DXVECTOR3 Axis, float Theta )
 {
 	D3DXQuaternionRotationAxis( &orientvel, &Axis, Theta );
 }
+float Object::GetSpeed()
+{
+	if( FlagMotion( -1 ) )
+		return D3DXVec3Length( &velocity );
+	return 0.f;
+}
+float Object::GetAngle()
+{
+	float Theta;
+	D3DXQuaternionToAxisAngle( &orient,&D3DXVECTOR3( 0, 0, 1 ), &Theta );
+	return Theta;
+}
 void Object::Advance()
 {
 	if( FlagMotion( -1 ) )

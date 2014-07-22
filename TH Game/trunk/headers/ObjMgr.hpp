@@ -48,8 +48,8 @@ struct Object
 	void ShotInit();
 	void SetShotDataParams( ShotData const & Shot_Data, ULONG Buffer_Offset );
 
-	float GetSpeed() const;
-	float GetAngle() const;
+	float GetSpeed();
+	float GetAngle();
 
 
 	//flags, -1 to get, 1 for on, 0 for off
