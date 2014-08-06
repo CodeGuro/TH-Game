@@ -870,7 +870,6 @@ bool script_engine::advance()
 					do
 						++(e->codeIndex);
 					while( getBlock( e->blockIndex ).vecCodes[ e->codeIndex - 1 ].command != vc_loopBack );
-					assert( env.stack.size() == 0 );
 					assert( e->stack.size() == 0 );
 				}
 			}while( !BaseRoutine );

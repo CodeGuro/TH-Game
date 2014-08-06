@@ -3,7 +3,6 @@
 #include <sstream>
 #include <fstream>
 #include <cassert>
-#include <MMSystem.h>
 
 extern const std::string DefaultShader;
 unsigned const BACKGROUND_LAYER = 0;
