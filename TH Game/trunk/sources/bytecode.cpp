@@ -610,6 +610,10 @@ void natives::_LoadTexture( script_engine * eng, size_t * argv )
 {
 	eng->get_drawmgr()->LoadTexture( eng->scriptdata_mgr.getStringScriptData( argv[ 0 ] ) );
 }
+void natives::_DeleteTexture( script_engine * eng, size_t * argv )
+{
+	eng->get_drawmgr()->DeleteTexture( eng->scriptdata_mgr.getStringScriptData( argv[ 0 ] ) );
+}
 void natives::_LoadUserShotData( script_engine * eng, size_t * argv )
 {
 	parser p( eng );

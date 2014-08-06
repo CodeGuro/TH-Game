@@ -1524,6 +1524,7 @@ void parser::registerNatives()
 		{ "PRIMITIVE_TRIANGLESTRIP", &natives::_PRIMITIVE_TRIANGLESTRIP, 0 },
 		{ "PRIMITIVE_TRIANGLEFAN", &natives::_PRIMITIVE_TRIANGLEFAN, 0 },
 		{ "LoadTexture", &natives::_LoadTexture, 1 },
+		{ "DeleteTexture", &natives::_DeleteTexture, 1 },
 		{ "LoadUserShotData", &natives::_LoadUserShotData, 1 },
 		{ "CreateShot01", &natives::_CreateShot01, 5 },
 		{ "TerminateProgram", &natives::_TerminateProgram, 0 },

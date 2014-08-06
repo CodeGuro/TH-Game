@@ -276,6 +276,7 @@ private:
 	static void _PRIMITIVE_TRIANGLESTRIP( script_engine * eng, size_t * argv );
 	static void _PRIMITIVE_TRIANGLEFAN( script_engine * eng, size_t * argv );
 	static void _LoadTexture( script_engine * eng, size_t * argv );
+	static void _DeleteTexture( script_engine * eng, size_t * argv );
 	static void _LoadUserShotData( script_engine * eng, size_t * argv );
 	static void _CreateShot01( script_engine * eng, size_t * argv );
 	static void _TerminateProgram( script_engine * eng, size_t * argv );
