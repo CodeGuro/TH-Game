@@ -8,7 +8,7 @@
 #include <FatalException.hpp>
 
 //exception
-eng_exception::eng_exception() : throw_reason( eng_error )
+eng_exception::eng_exception() : throw_reason( eng_exception::invalid_reason )
 {
 }
 eng_exception::eng_exception( Reason const r ) : throw_reason( r )
@@ -596,7 +596,7 @@ bool script_engine::start()
 
 	script_parser.parseScript( scriptPath );
 	size_t script_index = findScriptFromFile( script_parser.getCurrentScriptPath() );
-	if( !CheckValidIdx( script_index ) ) raise_exception( eng_exception( eng_exception::eng_error ) );
+	if( !CheckValidIdx( script_index ) ) raise_exception( FatalException( "main script does not exist" ) );
 
 	script_context * context = getScriptContext( fetchScriptContext() );
 	context->current_script_index = script_index;
@@ -627,17 +627,8 @@ bool script_engine::run()
 		}
 		catch( eng_exception const & e )
 		{
-			switch( e.throw_reason )
-			{
-			case eng_exception::eng_error:
-				{
-					cleanEngine();
-					start();
-				}
-				break;
-			default:
-				throw FatalException( "script_engine::run" );
-			}
+			if( e.throw_reason != e.finalizing_machine )
+				raise_exception( FatalException( "script_engine::run" ) );
 		}
 	}
 	return true;
@@ -717,6 +708,10 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 void script_engine::raise_exception( eng_exception const & eng_except )
 {
 	throw eng_except;
+}
+void script_engine::raise_exception( FatalException const & except )
+{
+	throw except;
 }
 bool script_engine::IsFinished()
 {

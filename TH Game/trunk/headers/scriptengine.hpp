@@ -5,6 +5,7 @@
 #include "bytecode.hpp"
 #include "parser.hpp"
 #include "Direct3DEngine.hpp"
+#include "FatalException.hpp"
 
 class script_engine
 {
@@ -55,6 +56,7 @@ public:
 	bool run(); //true if finished (i.e. no script executers left to run)
 	bool IsFinished();
 	void raise_exception( eng_exception const & eng_except );
+	void raise_exception( FatalException const & except );
 	size_t fetchBlock();
 	block & getBlock( size_t index );
 	size_t fetchScriptEnvironment( size_t blockIndex );

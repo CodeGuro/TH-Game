@@ -697,7 +697,7 @@ void parser::parseScript( std::string const & scriptPath )
 		if( scriptMgr.pragmaFiles.size() )
 			eng->registerInvalidMainScript( scriptMgr.pragmaFiles[ 0 ] );
 		scriptMgr.pragmaFiles.resize( 0 );
-		eng->raise_exception( eng_exception::eng_error );
+		eng->raise_exception( FatalException( err.errmsg ) );
 	}
 }
 void parser::parseBlock( symbol const symSub, vector< std::string > const & args )
@@ -1417,7 +1417,7 @@ void parser::parseShotScript( std::string const & scriptPath )
 	}
 	catch( error const & err )
 	{
-		eng->raise_exception( eng_exception::eng_error );
+		eng->raise_exception( FatalException( err.errmsg ) );
 	}
 }
 

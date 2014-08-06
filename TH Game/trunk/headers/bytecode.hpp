@@ -287,7 +287,7 @@ struct eng_exception
 {
 	enum Reason
 	{
-		eng_error, finalizing_machine
+		finalizing_machine, invalid_reason
 	};
 	Reason throw_reason;
 	std::string const Str;
