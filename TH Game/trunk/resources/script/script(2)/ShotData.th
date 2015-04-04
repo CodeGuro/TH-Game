@@ -1,0 +1,45 @@
+#UserShotData
+
+ShotImage = GetCurrentScriptDirectory() ~ "etama.png"
+
+ShotData
+{
+	id = 0
+	render = ALPHA_BLEND
+	angular_velocity = 0
+	pixel_perfect = FALSE
+	rect = ( 16, 16, 32, 32 )
+	color = ( 255, 255, 255, 255 )
+}
+ShotData
+{
+	id = 1
+	render = ALPHA_BLEND
+	angular_velocity = 0
+	pixel_perfect = TRUE
+	rect = ( 64, 32, 80, 48 )
+	color = ( 255, 255, 255, 255 )
+}
+ShotData
+{
+	id = 2
+	render = ALPHA_BLEND
+	angular_velocity = 0
+	pixel_perfect = TRUE
+	rect = ( 48, 48, 64, 64 )
+	color = ( 255, 255, 255, 255 )
+}
+ShotData
+{
+	id = 3
+	render = ALPHA_BLEND
+	AnimationData
+	{
+		animation_data = ( 16, 00, 16, 16, 32 )
+		animation_data = ( 16, 16, 16, 32, 32 )
+		animation_data = ( 16, 32, 16, 48, 32 )
+		animation_data = ( 16, 48, 16, 64, 32 )
+		animation_data = ( 16, 64, 16, 80, 32 )
+		animation_data = ( 16, 80, 16, 96, 32 )
+	}
+}

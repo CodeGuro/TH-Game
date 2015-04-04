@@ -1,0 +1,163 @@
+#TouhouDanmaku[ menu ]
+
+script_main menu
+{
+	let dir = GetCurrentScriptDirectory();
+	let menu_created = false;
+	@Initialize
+	{
+
+		LoadSound( dir ~ "Title.wav" );
+		LoadSound( dir ~ "se_select00.wav" );
+		LoadSound( dir ~ "se_ok00.wav" );
+		LoadTexture( dir ~ "logo.jpg" );
+		LoadTexture( dir ~ "menu.jpg" );
+		Start();
+	}
+	@MainLoop
+	{
+		yield;
+	}
+	@Finalize
+	{
+	}
+	task Start()
+	{
+	//	LogoScreen();
+		MenuScreen();
+	}
+	function SetQuadCenterScreen( let obj, let width, let height )
+	{
+
+		ObjEffect_SetLayer( obj, 6 );
+		Obj_SetPosition( obj, 640 / 2, 480 / 2 );
+		ObjEffect_CreateVertex( obj, 4 );
+		ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLESTRIP );
+		ObjEffect_SetVertexXY( obj, 0, -width / 2, -height / 2 );
+		ObjEffect_SetVertexXY( obj, 1, width / 2, -height / 2 );
+		ObjEffect_SetVertexXY( obj, 2, -width / 2, height / 2 );
+		ObjEffect_SetVertexXY( obj, 3, width / 2, height / 2 );
+		ObjEffect_SetVertexUV( obj, 0, 0/width, 0/height );
+		ObjEffect_SetVertexUV( obj, 1, width / width, 0 / height );
+		ObjEffect_SetVertexUV( obj, 2, 0 / width, height / height );
+		ObjEffect_SetVertexUV( obj, 3, width / width, height / height );
+	}
+	function LogoScreen()
+	{
+		let obj = Obj_Create( OBJ_EFFECT );
+		SetQuadCenterScreen( obj, 640, 480 );
+		ObjEffect_SetTexture( obj, dir ~ "logo.jpg" );
+		let timer = 0;
+		let color = 0;
+		loop( 600 )
+		{
+			let i = 0;
+			if( color < 255 && timer < 300 )
+			{
+				color = color + 3;
+			}
+			else if( timer > 300 && color > 0 )
+			{
+				color = color - 1.5;
+				if( color <= 0 ){ break; }
+			}
+			loop( 4 )
+			{
+				ObjEffect_SetVertexColor( obj, i, color, color, color, 255 );
+				i = i + 1;
+			}
+			timer = timer + 1;
+			yield;
+		}
+		Obj_Delete( obj );
+		
+	}
+	function CreateFontObject( let x, let y, let text )
+	{
+		let obj = Obj_Create( OBJ_FONT );
+		Obj_SetPosition( obj, 32, 32 );
+		ObjFont_SetString( obj, text );
+		ObjFont_SetRect( obj, x, y, x + 250, y + 200 );
+		ObjFont_SetColor( obj, 255, 255, 255, 255 );
+		ObjFont_SetSize( obj, 32 );
+		ObjFont_SetFaceName( obj, "Tahoma" );
+		return obj;
+	}
+	task MenuScreen()
+	{
+		if( menu_created == false )
+		{
+			menu_created = true;
+			PlaySound( dir ~ "Title.wav" );
+			let obj = Obj_Create( OBJ_EFFECT );
+			SetQuadCenterScreen( obj, 640, 480 );
+			ObjEffect_SetTexture( obj, dir ~ "menu.jpg" );
+			let i = 0;
+			while( i < 4 )
+			{
+				ObjEffect_SetVertexColor( obj, i, 255, 255, 255, 255 );
+				i = i + 1;
+			}
+		}
+		let font_x = 50;
+		let font_y = 250;
+		let y_dis = 30;
+		let start =		CreateFontObject( font_x, font_y + y_dis * 0, "Start" );
+		let practice_start =	CreateFontObject( font_x, font_y + y_dis * 1, "Practice Start" );
+		let spell_practice =	CreateFontObject( font_x, font_y + y_dis * 2, "Spell Practice" );
+		let music_room =	CreateFontObject( font_x, font_y + y_dis * 3, "Music Room" );
+		let option =		CreateFontObject( font_x, font_y + y_dis * 4, "Option" );
+		let quit =		CreateFontObject( font_x, font_y + y_dis * 5, "Quit" );
+		let key_up = 38;
+		let key_down = 40;
+		let options = [ start, practice_start, spell_practice, music_room, option, quit ];
+		let option_select = 0;
+		let time = 0;
+		let red;
+		let green;
+		let blue;
+		while( true )
+		{
+			let t2 = time / 60;
+			red = 255 * cos( t2 );
+			if( red < 0){ red = -red;}
+			green = 255 * cos( 2 * PI / 3 + t2 );
+			if( green < 0 ){ green = -green;}
+			blue = 255 * cos( PI + t2 );
+			if( blue < 0 ){ blue = -blue; }
+			time = time + 1;
+			ObjFont_SetColor( options[ option_select ], red, green, blue, 255 );			
+			if( KeyPressed( key_up ) || KeyPressed( key_down ) )
+			{
+				PlaySound( dir ~ "se_select00.wav" );
+				ObjFont_SetColor( options[ option_select ], 255, 255, 255, 255 );	
+				if( KeyDown( key_down ) )
+				{
+					option_select = option_select + 1;
+				}
+				else
+				{
+					option_select = option_select - 1;
+				}
+				if( option_select < 0 ){ option_select = 5; }
+				option_select = option_select % 6;
+			}
+			if( KeyPressed( 90 ) )
+			{
+				PlaySound( dir ~ "se_ok00.wav" );
+				let select = options[ option_select ];
+				if( select == quit ){ loop( 35 ){ yield; } TerminateProgram; }
+				if( select == start ){ loop( 35 ){ yield; } StartStage; break; }
+			}
+			yield;
+		}
+		let i = 0;
+		while( i < 6 ){ Obj_Delete( options[ i ] ); i = i + 1;}
+	}
+	task StartStage
+	{
+		StopSound( dir ~ "Title.wav" );
+		CreateEnemyFromFile( dir ~ "stage.th" );
+		TerminateScript();
+	}
+}

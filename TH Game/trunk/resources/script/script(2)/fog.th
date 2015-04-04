@@ -1,0 +1,66 @@
+#TouhouDanmaku[ Stage ]
+
+script_main main_script
+{
+	let img;
+	@Initialize
+	{
+		img = GetCurrentScriptDirectory ~ "bg1.PNG";
+		LoadTexture( img );
+		bgtask();
+	}
+	@MainLoop
+	{
+		yield;
+	}
+	@Finalize
+	{
+	}
+	function CreateFace( let w, let h, let posx, let posy, let posz, let va, let vx, let vy, let vz )
+	{
+		let vertices = 6;
+		let obj = Obj_Create( OBJ_EFFECT );
+		ObjEffect_SetLayer( obj, 0 );
+		ObjEffect_SetTexture( obj, img );
+		ObjEffect_CreateVertex( obj, vertices );
+		ObjEffect_SetVertexUV( obj, 0, 0, 0 );
+		ObjEffect_SetVertexUV( obj, 1, 1, 0 );
+		ObjEffect_SetVertexUV( obj, 2, 0, 1 );
+		ObjEffect_SetVertexUV( obj, 3, 0, 1 );
+		ObjEffect_SetVertexUV( obj, 4, 1, 0 );
+		ObjEffect_SetVertexUV( obj, 5, 1, 1 );
+		ObjEffect_SetVertexXYZ( obj, 0, -w/2, h/2, 0 );
+		ObjEffect_SetVertexXYZ( obj, 1, w/2, h/2, 0 );
+		ObjEffect_SetVertexXYZ( obj, 2, -w/2, -h/2, 0 );
+		ObjEffect_SetVertexXYZ( obj, 3, -w/2, -h/2, 0 );
+		ObjEffect_SetVertexXYZ( obj, 4, w/2, h/2, 0 );
+		ObjEffect_SetVertexXYZ( obj, 5, w/2, -h/2, 0 );
+		ascent( i in 0..vertices ){ ObjEffect_SetVertexColor( obj, i, 255, 255, 255, 200 ); }
+		ObjEffect_SetRenderState( obj, ALPHA_BLEND );
+		Obj_SetPosition3D( obj, posx, posy, posz );
+		ObjEffect_SetRotationAxis( obj, va, vx, vy, vz );
+		Obj_SetAutoDelete( obj, false );
+
+		return obj;
+	}
+	task bgtask()
+	{
+		//SetFog( 0, 20, 100, 30, 180 );
+		SetFog( 0, 20, 16, 16, 120 );
+		let face1 = CreateFace( 2, 2, 0, 0, -1, 0, 0, 1, 0 );
+		let face2 = CreateFace( 2, 2, 0, 0, 1, PI, 0, 1, 0 );
+		let face3 = CreateFace( 2, 2, -1, 0, 0, PI / 2, 0, 1, 0 );
+		let face4 = CreateFace( 2, 2, 1, 0, 0, PI / -2, 0, 1, 0 );
+		let face5 = CreateFace( 2, 2, 0, -1, 0, PI / 2, 1, 0, 0 );
+		let face6 = CreateFace( 2, 2, 0, 1, 0, PI / -2, 1, 0, 0 );
+
+		
+		let ang = 0;
+		loop
+		{
+			SetEyeView( 10 * sin( ang ), 0 + 5*sin(ang / 2 ), 10 * cos( ang ), 0, 0, 0 );
+			ang = ang + 2 * PI / 60 / 8;
+			yield;
+		}
+	}
+}

@@ -1,0 +1,66 @@
+#TouhouDanmaku[ stage ]
+
+script_main main_script
+{
+	let dir;
+	let dir_se;
+	let dir_img;
+	@Initialize
+	{
+		dir = GetCurrentScriptDirectory();
+		dir_se = dir ~ "se/";
+		dir_img = dir ~ "img/";
+		
+		load_images();
+		load_sounds();
+		LoadUserShotData( dir ~ "ShotData.th" );
+
+		main_stage();
+		
+	}
+	@MainLoop
+	{
+		yield;
+	}
+	@Finalize
+	{
+	}
+	function load_images()
+	{
+		LoadTexture( dir_img ~ "enemy.png" );
+		LoadTexture( dir_img ~ "etama.png" );
+		LoadTexture( dir_img ~ "etama2.png" );
+		LoadTexture( dir_img ~ "etama3.png" );
+		LoadTexture( dir_img ~ "etama4.png" );
+		LoadTexture( dir_img ~ "etama5.png" );
+		LoadTexture( dir_img ~ "etama6.png" );
+	}
+	function load_sounds()
+	{
+		LoadSound( dir_se ~ "se_tan00.wav" );
+		LoadSound( dir_se ~ "se_tan01.wav" );
+		LoadSound( dir_se ~ "se_tan02.wav" );
+		LoadSound( dir_se ~ "se_option.wav" );
+		LoadSound( dir_se ~ "se_opshow.wav" );
+		LoadSound( dir_se ~ "se_ophide.wav" );
+		LoadSound( dir_se ~ "se_item00.wav" );
+		LoadSound( dir_se ~ "se_item01.wav" );
+		LoadSound( dir_se ~ "se_kira00.wav" );
+		LoadSound( dir_se ~ "se_kira01.wav" );
+		LoadSound( dir_se ~ "se_kira02.wav" );
+		LoadSound( dir_se ~ "se_graze.wav" );
+		LoadSound( dir_se ~ "se_slash.wav" );
+		LoadSound( dir_se ~ "se_damage00.wav" );
+		LoadSound( dir_se ~ "se_damage01.wav" );
+		LoadSound( dir_se ~ "se_invalid.wav" );
+	}
+	
+	task main_stage()
+	{
+		CreateEnemyFromFile( dir ~ "enemy.th" );
+	}
+	function wait( let n )
+	{
+		loop( n ){ yield; }
+	}
+}
