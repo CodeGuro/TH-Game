@@ -321,7 +321,10 @@ void Direct3DEngine::ReleaseObjHandle( unsigned HandleIdx )
 {
 	if( CheckValidIdx( HandleIdx ) )
 		if( !--vObjHandles[ HandleIdx ].RefCount )
+		{
+			ReleaseObject( HandleIdx );
 			vObjHandlesGC.push_back( HandleIdx );
+		}
 }
 void Direct3DEngine::ReleaseObject( unsigned HandleIdx )
 {
