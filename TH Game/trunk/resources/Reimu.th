@@ -12,9 +12,9 @@ script_main main_script
 	let border_of_life;
 	@Initialize
 	{
-		img = GetCurrentScriptDirectory() ~ "player00.png";
-		pchuun = GetCurrentScriptDirectory ~ "se_pldead00.wav";
-		border_of_life = GetCurrentScriptDirectory ~ "etama3.png";
+		img = GetCurrentScriptDirectory() ~ "img/player00.png";
+		border_of_life = GetCurrentScriptDirectory ~ "img/etama3.png";
+		pchuun = GetCurrentScriptDirectory ~ "se/se_pldead00.wav";
 		LoadTexture( img );
 		LoadTexture( border_of_life );
 		LoadSound( pchuun );

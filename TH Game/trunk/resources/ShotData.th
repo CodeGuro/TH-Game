@@ -1,6 +1,6 @@
 #UserShotData
 
-ShotImage = GetCurrentScriptDirectory() ~ "etama.png"
+ShotImage = GetCurrentScriptDirectory() ~ "img/etama.png"
 
 ShotData
 {

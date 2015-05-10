@@ -11,10 +11,10 @@ script_main menu
 	{
 
 		LoadSound( dir ~ "Title.wav" );
-		LoadSound( dir ~ "se_select00.wav" );
-		LoadSound( dir ~ "se_ok00.wav" );
-		LoadTexture( dir ~ "logo.jpg" );
-		LoadTexture( dir ~ "menu.jpg" );
+		LoadSound( dir ~ "se/se_select00.wav" );
+		LoadSound( dir ~ "se/se_ok00.wav" );
+		LoadTexture( dir ~ "img/logo.jpg" );
+		LoadTexture( dir ~ "img/menu.jpg" );
 		Start();
 	}
 	@MainLoop
@@ -24,10 +24,10 @@ script_main menu
 	@Finalize
 	{
 		DeleteSound( dir ~ "Title.wav" );
-		DeleteSound( dir ~ "se_select00.wav" );
-		DeleteSound( dir ~ "se_ok00.wav" );
-		DeleteTexture( dir ~ "logo.jpg" );
-		DeleteTexture( dir ~ "menu.jpg" );
+		DeleteSound( dir ~ "se/se_select00.wav" );
+		DeleteSound( dir ~ "se/se_ok00.wav" );
+		DeleteTexture( dir ~ "img/logo.jpg" );
+		DeleteTexture( dir ~ "img/menu.jpg" );
 	}
 	task Start()
 	{
@@ -54,7 +54,7 @@ script_main menu
 	{
 		let obj = Obj_Create( OBJ_EFFECT );
 		SetQuadCenterScreen( obj, 640, 480 );
-		ObjEffect_SetTexture( obj, dir ~ "logo.jpg" );
+		ObjEffect_SetTexture( obj, dir ~ "img/logo.jpg" );
 		let timer = 0;
 		let color = 0;
 		loop( 600 )
@@ -99,7 +99,7 @@ script_main menu
 			PlaySound( dir ~ "Title.wav" );
 			let obj = Obj_Create( OBJ_EFFECT );
 			SetQuadCenterScreen( obj, 640, 480 );
-			ObjEffect_SetTexture( obj, dir ~ "menu.jpg" );
+			ObjEffect_SetTexture( obj, dir ~ "img/menu.jpg" );
 			let i = 0;
 			while( i < 4 )
 			{

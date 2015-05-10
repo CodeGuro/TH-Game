@@ -8,10 +8,10 @@ script_main menu
 	{
 
 		LoadSound( dir ~ "Title.wav" );
-		LoadSound( dir ~ "se_select00.wav" );
-		LoadSound( dir ~ "se_ok00.wav" );
-		LoadTexture( dir ~ "logo.jpg" );
-		LoadTexture( dir ~ "menu.jpg" );
+		LoadSound( dir ~ "se/se_select00.wav" );
+		LoadSound( dir ~ "se/se_ok00.wav" );
+		LoadTexture( dir ~ "img/logo.jpg" );
+		LoadTexture( dir ~ "img/menu.jpg" );
 		Start();
 	}
 	@MainLoop
@@ -46,7 +46,7 @@ script_main menu
 	{
 		let obj = Obj_Create( OBJ_EFFECT );
 		SetQuadCenterScreen( obj, 640, 480 );
-		ObjEffect_SetTexture( obj, dir ~ "logo.jpg" );
+		ObjEffect_SetTexture( obj, dir ~ "img/logo.jpg" );
 		let timer = 0;
 		let color = 0;
 		loop( 600 )
@@ -91,7 +91,7 @@ script_main menu
 			PlaySound( dir ~ "Title.wav" );
 			let obj = Obj_Create( OBJ_EFFECT );
 			SetQuadCenterScreen( obj, 640, 480 );
-			ObjEffect_SetTexture( obj, dir ~ "menu.jpg" );
+			ObjEffect_SetTexture( obj, dir ~ "img/menu.jpg" );
 			let i = 0;
 			while( i < 4 )
 			{
@@ -129,7 +129,7 @@ script_main menu
 			ObjFont_SetColor( options[ option_select ], red, green, blue, 255 );			
 			if( KeyPressed( key_up ) || KeyPressed( key_down ) )
 			{
-				PlaySound( dir ~ "se_select00.wav" );
+				PlaySound( dir ~ "se/se_select00.wav" );
 				ObjFont_SetColor( options[ option_select ], 255, 255, 255, 255 );	
 				if( KeyDown( key_down ) )
 				{
@@ -144,7 +144,7 @@ script_main menu
 			}
 			if( KeyPressed( 90 ) )
 			{
-				PlaySound( dir ~ "se_ok00.wav" );
+				PlaySound( dir ~ "se/se_ok00.wav" );
 				let select = options[ option_select ];
 				if( select == quit ){ loop( 35 ){ yield; } TerminateProgram; }
 				if( select == start ){ loop( 35 ){ yield; } StartStage; break; }
