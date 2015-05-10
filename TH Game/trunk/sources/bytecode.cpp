@@ -656,3 +656,8 @@ void natives::_SetFog( script_engine * eng, size_t * argv )
 			eng->scriptdata_mgr.getRealScriptData( argv[ 4 ] ) 
 		);
 }
+void natives::_SetPerspectiveClip( script_engine * eng, size_t * argv )
+{
+	eng->get_drawmgr()->SetPerspectiveClip( eng->scriptdata_mgr.getRealScriptData( argv[ 0 ] ),
+		eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ) );
+}

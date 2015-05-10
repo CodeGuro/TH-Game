@@ -1529,7 +1529,8 @@ void parser::registerNatives()
 		{ "CreateShot01", &natives::_CreateShot01, 5 },
 		{ "TerminateProgram", &natives::_TerminateProgram, 0 },
 		{ "SetEyeView", &natives::_SetEyeView, 6 },
-		{ "SetFog", &natives::_SetFog, 5 }
+		{ "SetFog", &natives::_SetFog, 5 },
+		{ "SetPerspectiveClip", &natives::_SetPerspectiveClip, 2 }
 	};
 	for( unsigned i = 0; i <  sizeof( funcs ) / sizeof( native_function ); ++i )
 	{

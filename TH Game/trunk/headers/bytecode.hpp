@@ -281,7 +281,8 @@ private:
 	static void _CreateShot01( script_engine * eng, size_t * argv );
 	static void _TerminateProgram( script_engine * eng, size_t * argv );
 	static void _SetEyeView( script_engine * eng, size_t *argv );
-	static void _SetFog( script_engine * eng, size_t *argv );
+	static void _SetFog( script_engine * eng, size_t * argv );
+	static void _SetPerspectiveClip( script_engine * eng, size_t *argv );
 };
 
 struct eng_exception

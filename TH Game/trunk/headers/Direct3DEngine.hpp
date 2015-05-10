@@ -176,6 +176,10 @@ public:
 	//camera
 	void SetLookAtViewMatrix( D3DXVECTOR3 const & eye, D3DXVECTOR3 const & at );
 	void SetFog( float fognear, float fogfar, float fred, float fgreen, float fblue );
+	void SetPerspectiveClip( float zNear, float zFar )
+	{
+		D3DXMatrixPerspectiveFovLH( &ProjectionMatrix, D3DXToRadian( 45 ), 640.f/480.f, zNear, zFar );
+	}
 
 	//constructor
 	Direct3DEngine( HWND const hWnd );
