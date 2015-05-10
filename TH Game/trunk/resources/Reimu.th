@@ -10,14 +10,17 @@ script_main main_script
 	let img;
 	let pchuun;
 	let border_of_life;
+	let playerShotSound;
 	@Initialize
 	{
 		img = GetCurrentScriptDirectory() ~ "img/player00.png";
 		border_of_life = GetCurrentScriptDirectory ~ "img/etama3.png";
 		pchuun = GetCurrentScriptDirectory ~ "se/se_pldead00.wav";
+		playerShotSound = GetCurrentScriptDirectory ~ "se/se_plst00.wav";
 		LoadTexture( img );
 		LoadTexture( border_of_life );
 		LoadSound( pchuun );
+		LoadSound( playerShotSound );
 		x = 240;
 		y = 400;
 		hit = false;
@@ -112,6 +115,7 @@ script_main main_script
 				ObjEffect_SetVertexUV( objShot, 3, (_x+uw)/imgW, (_y+uh)/imgH );
 
 				loop( 4 ){ yield; }
+				PlaySound( playerShotSound );
 			}
 			yield;
 		}
