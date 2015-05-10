@@ -14,6 +14,7 @@ script_main main_script
 		hit = false;
 		vulnerable = true;
 		PlayerGraphic();
+		FireShot();
 		SetFog( 0.000001, 0.9999, 255, 255, 255 )
 	}
 	@MainLoop
@@ -67,6 +68,45 @@ script_main main_script
 	}
 	@Finalize
 	{
+	}
+	task FireShot()
+	{
+		let imgW = 256;
+		let imgH = 256;
+		let _y = 144 + 1;
+		let _x = 0;
+		let uw = 64;
+		let uh = 16;
+		loop
+		{
+			if( KeyDown( 90 ) )
+			{
+				let objShot = Obj_Create( OBJ_EFFECT );
+				Obj_SetAutoDelete( objShot, true );
+				Obj_SetPosition( objShot, Obj_GetX( ObjPlayer ), Obj_GetY( ObjPlayer ) );
+				Obj_SetAngle( objShot, -PI/2 );
+				Obj_SetSpeed( objShot,  15 );
+				ObjEffect_SetTexture( objShot, GetCurrentScriptDirectory ~ "player00.png" );
+				ObjEffect_CreateVertex( objShot, 4 );
+				ObjEffect_SetPrimitiveType( objShot, PRIMITIVE_TRIANGLESTRIP );
+				ascent( i in 0..4 )
+				{
+					ObjEffect_SetVertexColor( objShot, i, 255, 255, 255, 255 );
+				}
+				ObjEffect_SetVertexXY( objShot, 0, -uw/2, -uh/2 );
+				ObjEffect_SetVertexXY( objShot, 1, uw/2, -uh/2 );
+				ObjEffect_SetVertexXY( objShot, 2, -uw/2, uh/2 );
+				ObjEffect_SetVertexXY( objShot, 3, uw/2, uh/2 );
+				ObjEffect_SetVertexUV( objShot, 0, _x/imgW, _y/imgH );
+				ObjEffect_SetVertexUV( objShot, 1, (_x+uw)/imgW, _y/imgH );
+				ObjEffect_SetVertexUV( objShot, 2, _x/imgW, (_y+uh)/imgH );
+				ObjEffect_SetVertexUV( objShot, 3, (_x+uw)/imgW, (_y+uh)/imgH );
+
+				loop( 4 ){ yield; }
+			}
+			yield;
+		}
+
 	}
 	task PlayerGraphic()
 	{
