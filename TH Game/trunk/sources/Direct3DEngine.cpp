@@ -2,7 +2,9 @@
 #include <ObjMgr.hpp>
 #include <sstream>
 #include <fstream>
+#include <regex>
 #include <cassert>
+#include <iostream>
 
 extern const std::string DefaultShader;
 unsigned const BACKGROUND_LAYER = 0;
@@ -14,6 +16,17 @@ unsigned const EFFECT_LAYER = 5;
 unsigned const FOREGROUND_LAYER = 6;
 unsigned const TEXT_LAYER = 7;
 unsigned const LAYER_COUNT = 8;
+
+bool isFileExistsMsg( const std::string &fpath, const std::string funcName )
+{
+	std::smatch sm;
+	std::regex_search( fpath, sm, std::regex( "([^\\/\\\\]*$)" ) ); 
+	std::ifstream ifile( fpath );
+	if( !ifile )
+		MessageBoxA( NULL, (std::string( "File does not exist: " ) + sm[0].str() + "\n" 
+		"When searching for:\n"+ fpath).c_str(), (funcName + ": File does not exist").c_str(), NULL );
+	return ifile != false;
+}
 
 void CompileShaders( LPDIRECT3DDEVICE9 pdev, char const * vmainfunc, D3DSmartPtr< LPDIRECT3DVERTEXSHADER9 > & VShader, D3DSmartPtr< LPD3DXCONSTANTTABLE > & CTable, char * pmainfunc, D3DSmartPtr< LPDIRECT3DPIXELSHADER9 > & PShader )
 {
@@ -189,6 +202,9 @@ Direct3DEngine::vLayer_t & Direct3DEngine::GetLayers()
 void Direct3DEngine::LoadShotImage( std::string const & pathname )
 {
 	ShotImagePath = pathname;
+	if( !isFileExistsMsg( pathname, "LoadShotData" ) )
+		return;
+
 	LoadTexture( pathname );
 	for( unsigned u = 0; u < 4; ++u )
 		GetLayers()[ BULLET_LAYER ].vObjMgr[ u ].pTexture = GetTexture( pathname ) ;
@@ -375,6 +391,8 @@ void Direct3DEngine::LoadTexture( std::string const & pathname )
 	auto it = mapTextures.find( pathname );
 	if( it == mapTextures.end() )
 	{
+		if( !isFileExistsMsg( pathname, "LoadTexture" ) )
+			return;
 		mapTextures[ pathname ];
 		D3DXCreateTextureFromFile( d3ddev, pathname.c_str(), &mapTextures[ pathname ] );
 	}
@@ -396,8 +414,10 @@ void Direct3DEngine::LoadSound( std::string const & pathname )
 {
 	if( mapSoundEffects.find( pathname ) != mapSoundEffects.end() )
 		return;
-	mapSoundEffects[ pathname ];
+	else if( !isFileExistsMsg( pathname, "LoadSound" ) )
+		return;
 
+	mapSoundEffects[ pathname ];
 	LPDIRECTSOUNDBUFFER8 & SoundBuffer = mapSoundEffects[ pathname ];
 	
 	std::ifstream SoundFile = std::ifstream( pathname, std::ifstream::binary );
