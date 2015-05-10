@@ -765,7 +765,7 @@ bool script_engine::advance()
 		{
 			script_environment * e;
 			for( e = &env; e->blockIndex != current_code.blockIndex; e = &getScriptEnvironment( e->parentIndex ) );
-			if( e->values.size() <= current_code.variableIndex )
+			while( e->values.size() <= current_code.variableIndex )
 				e->values.resize( 4 + 2 * e->values.size(), -1 );
 			scriptdata_mgr.scriptDataAssign( e->values[ current_code.variableIndex ], env.stack.back() );
 			scriptdata_mgr.releaseScriptData( env.stack.back() );
