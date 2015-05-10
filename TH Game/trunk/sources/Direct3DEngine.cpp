@@ -236,6 +236,7 @@ unsigned Direct3DEngine::CreateObject( ObjType type )
 	{
 	case ObjShot: Layer = BULLET_LAYER; break;
 	case ObjEffect: Layer = EFFECT_LAYER; break;
+	case ObjPlayer: Layer = PLAYER_LAYER; break;
 	case ObjFont: Layer = TEXT_LAYER; break;
 	default:
 		abort();
