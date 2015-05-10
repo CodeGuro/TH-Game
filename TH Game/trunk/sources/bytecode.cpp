@@ -266,6 +266,13 @@ void natives::_OBJ_EFFECT( script_engine * eng, size_t * argv )
 	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
+void natives::_OBJ_PLAYER( script_engine * eng, size_t * argv )
+{
+	assert( !CheckValidIdx( argv[ 0 ] ) );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( ObjPlayer );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
+	eng->scriptdata_mgr.releaseScriptData( tmp );
+}
 void natives::_OBJ_FONT( script_engine * eng, size_t * argv )
 {
 	assert( !CheckValidIdx( argv[ 0 ] ) );

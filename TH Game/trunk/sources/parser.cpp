@@ -1463,6 +1463,7 @@ void parser::registerNatives()
 		{ "PI", &natives::_PI, 0 },
 		{ "OBJ_SHOT", &natives::_OBJ_SHOT, 0 },
 		{ "OBJ_EFFECT", &natives::_OBJ_EFFECT, 0 },
+		{ "OBJ_PLAYER", &natives::_OBJ_PLAYER, 0 },
 		{ "OBJ_FONT", &natives::_OBJ_FONT, 0 },
 		{ "increment", &natives::_increment, 1 },
 		{ "decrement", &natives::_decrement, 1 },

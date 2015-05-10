@@ -13,5 +13,5 @@ inline bool CheckValidIdx( T const val )
 
 enum ObjType
 {
-	ObjShot, ObjEffect, ObjFont
+	ObjShot, ObjEffect, ObjPlayer, ObjFont
 };

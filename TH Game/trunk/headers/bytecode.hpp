@@ -215,6 +215,7 @@ private:
 	static void _PI( script_engine * eng, size_t * argv );
 	static void _OBJ_SHOT( script_engine * eng, size_t * argv );
 	static void _OBJ_EFFECT( script_engine * eng, size_t * argv );
+	static void _OBJ_PLAYER( script_engine * eng, size_t * argv );
 	static void _OBJ_FONT( script_engine * eng, size_t * argv );
 	static void _increment( script_engine * eng, size_t * argv );
 	static void _decrement( script_engine * eng, size_t * argv );
