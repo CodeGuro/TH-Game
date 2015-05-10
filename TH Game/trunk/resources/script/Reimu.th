@@ -7,8 +7,17 @@ script_main main_script
 	let hit;
 	let x;
 	let y;
+	let img;
+	let pchuun;
+	let border_of_life;
 	@Initialize
 	{
+		img = GetCurrentScriptDirectory() ~ "player00.png";
+		pchuun = GetCurrentScriptDirectory ~ "se_pldead00.wav";
+		border_of_life = GetCurrentScriptDirectory ~ "etama3.png";
+		LoadTexture( img );
+		LoadTexture( border_of_life );
+		LoadSound( pchuun );
 		x = 240;
 		y = 400;
 		hit = false;
@@ -83,10 +92,10 @@ script_main main_script
 			{
 				let objShot = Obj_Create( OBJ_EFFECT );
 				Obj_SetAutoDelete( objShot, true );
-				Obj_SetPosition( objShot, Obj_GetX( ObjPlayer ), Obj_GetY( ObjPlayer ) );
+				Obj_SetPosition( objShot, Obj_GetX( ObjPlayer ), Obj_GetY( ObjPlayer ) - 8);
 				Obj_SetAngle( objShot, -PI/2 );
 				Obj_SetSpeed( objShot,  15 );
-				ObjEffect_SetTexture( objShot, GetCurrentScriptDirectory ~ "player00.png" );
+				ObjEffect_SetTexture( objShot, img );
 				ObjEffect_CreateVertex( objShot, 4 );
 				ObjEffect_SetPrimitiveType( objShot, PRIMITIVE_TRIANGLESTRIP );
 				ascent( i in 0..4 )
@@ -179,12 +188,11 @@ script_main main_script
 			}
 		}
 		let Radius = 8;
-		LoadTexture( GetCurrentScriptDirectory ~ "player00.png" );
 		ObjPlayer = Obj_Create( OBJ_EFFECT );
 		Obj_SetPosition( ObjPlayer, x, y );
 		ObjEffect_SetLayer( ObjPlayer, 3 );
 		Obj_ScriptLatch( ObjPlayer );
-		ObjEffect_SetTexture( ObjPlayer, GetCurrentScriptDirectory ~ "player00.png" );
+		ObjEffect_SetTexture( ObjPlayer, img );
 		ObjEffect_CreateVertex( ObjPlayer, 4 );
 		ObjEffect_SetPrimitiveType( ObjPlayer, PRIMITIVE_TRIANGLESTRIP );
 		ascent( i in 0..4 )
@@ -224,18 +232,15 @@ script_main main_script
 	task HitEvent()
 	{
 		vulnerable = false;
-		let pchuun = GetCurrentScriptDirectory ~ "se_pldead00.wav";
-		let border_of_life = GetCurrentScriptDirectory ~ "etama3.png";
+
 		let vtxcount = 24;
 		let radius = 150;
 		let radius_init = radius;
 		let width = 32;
 		radius = radius - width/2;
-		LoadSound( pchuun );
 		PlaySound( pchuun );
 		let ObjCircle = Obj_Create( OBJ_EFFECT );
 		Obj_SetPosition( ObjCircle, x, y );
-		LoadTexture( border_of_life );
 		ObjEffect_SetTexture( ObjCircle, border_of_life );
 		ObjEffect_CreateVertex( ObjCircle, vtxcount );
 		ObjEffect_SetPrimitiveType( ObjCircle, PRIMITIVE_TRIANGLESTRIP );
