@@ -50,6 +50,7 @@ script_main main_script //main routine
 			}
 		i = i * -1;
 		wait( 30 );
+		TerminateScript();
 		}
 	}
 	task FireRound( let x, let y, let looper, let a )

@@ -629,9 +629,7 @@ void natives::_LoadUserShotData( script_engine * eng, size_t * argv )
 }
 void natives::_CreateShot01( script_engine * eng, size_t * argv )
 {
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData();
-	eng->scriptdata_mgr.getScriptData( tmp ).type = eng->scriptdata_mgr.type_mgr.getObjectType();
-	eng->scriptdata_mgr.getScriptData( tmp ).objIndex = eng->get_drawmgr()->CreateShot( (ULONG)eng->scriptdata_mgr.getRealScriptData( argv[ 4 ] )  );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( ObjShot, eng->currentRunningMachine );
 	Object * obj = eng->get_drawmgr()->GetObject( eng->scriptdata_mgr.getObjHandleScriptData( tmp ) );
 	obj->position = D3DXVECTOR3( eng->scriptdata_mgr.getRealScriptData( argv[ 0 ] ), eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ), 0.f );
 	obj->SetSpeed( eng->scriptdata_mgr.getRealScriptData( argv[ 2 ] ) );
