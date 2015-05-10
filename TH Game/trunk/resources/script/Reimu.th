@@ -38,7 +38,7 @@ script_main main_script
 			}
 			if( KeyDown( 37 ) ) //left
 			{
-				if( x > 16 )
+				if( x > 32 )
 				{
 					x = x - dx;
 				}

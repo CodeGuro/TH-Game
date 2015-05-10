@@ -11,7 +11,9 @@ script_main main_script
 		dir = GetCurrentScriptDirectory();
 		dir_se = dir ~ "se/";
 		dir_img = dir ~ "img/";
-
+		load_images();
+		load_sounds();
+		LoadUserShotData( dir ~ "ShotData.th" );
 		run();
 	}
 	@MainLoop
@@ -20,6 +22,56 @@ script_main main_script
 	}
 	@Finalize
 	{
+	}
+	function load_images()
+	{
+		LoadTexture( dir_img ~ "enemy.png" );
+		LoadTexture( dir_img ~ "etama.png" );
+		LoadTexture( dir_img ~ "etama2.png" );
+		LoadTexture( dir_img ~ "etama3.png" );
+		LoadTexture( dir_img ~ "etama4.png" );
+		LoadTexture( dir_img ~ "etama5.png" );
+		LoadTexture( dir_img ~ "etama6.png" );
+	}
+	function load_sounds()
+	{
+		LoadSound( dir_se ~ "se_tan00.wav" );
+		LoadSound( dir_se ~ "se_tan01.wav" );
+		LoadSound( dir_se ~ "se_tan02.wav" );
+		LoadSound( dir_se ~ "se_option.wav" );
+		LoadSound( dir_se ~ "se_opshow.wav" );
+		LoadSound( dir_se ~ "se_ophide.wav" );
+		LoadSound( dir_se ~ "se_item00.wav" );
+		LoadSound( dir_se ~ "se_item01.wav" );
+		LoadSound( dir_se ~ "se_kira00.wav" );
+		LoadSound( dir_se ~ "se_kira01.wav" );
+		LoadSound( dir_se ~ "se_kira02.wav" );
+		LoadSound( dir_se ~ "se_graze.wav" );
+		LoadSound( dir_se ~ "se_slash.wav" );
+		LoadSound( dir_se ~ "se_damage00.wav" );
+		LoadSound( dir_se ~ "se_damage01.wav" );
+		LoadSound( dir_se ~ "se_invalid.wav" );
+	}
+	task setMovePosition( let posx, let posy, let maxSpeed, let weight )
+	{
+		loop
+		{
+			let dx = posx - Obj_GetX( obj );
+			let dy = posy - Obj_GetY( obj );
+			let dist = (dx*dx + dy*dy)^0.5;
+			if( dist < 5 )
+			{
+				break;
+			}
+			let theta = atan2( posy - Obj_GetY( obj ), posx - Obj_GetX( obj ) );
+			let speed = dist / weight;
+			if( speed > maxSpeed )
+			{
+				speed = maxSpeed;
+			}
+			Obj_SetPosition( obj, Obj_GetX( obj ) + speed * cos( theta ), Obj_GetY( obj ) + speed * sin( theta ) );
+			yield;
+		}
 	}
 	function setgraphicenemy( let row, let column )
 	{
@@ -65,5 +117,48 @@ script_main main_script
 	task run()
 	{
 		setgraphics();
+		wait( 100 );
+		setMovePosition( 640/2, 480/2, 2, 50 );
+		fireBullets();
+	}
+	task fireBullets()
+	{
+		startFire();
+		streamFire();
+	}
+	task streamFire()
+	{
+		let theta = 0;
+
+		loop( 100 )
+		{
+			CreateShot01( Obj_GetX( obj ), Obj_GetY( obj ), 4, PI * sin( theta ) / 2 + PI/2, 2 );
+			theta = theta + 2*PI / 30;
+			PlaySound( dir_se ~ "se_tan00.wav" );
+			wait( 2 );
+		}
+	}
+	task startFire()
+	{
+		let ring = 40;
+		let interval = 10;
+		loop( 3 )
+		{
+			let theta = 0;
+			loop( ring )
+			{
+				CreateShot01( Obj_GetX( obj ), Obj_GetY( obj ), 3, theta, 3 );
+				theta = theta + 2*PI/ring;
+			}
+			PlaySound( dir_se ~ "se_tan02.wav" );
+			wait( interval );
+		}
+	}
+	function wait( let n )
+	{
+		loop( n )
+		{
+			yield;
+		}
 	}
 }
