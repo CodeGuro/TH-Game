@@ -199,15 +199,16 @@ Direct3DEngine::vLayer_t & Direct3DEngine::GetLayers()
 {
 	return vLayers;
 }
-void Direct3DEngine::LoadShotImage( std::string const & pathname )
+bool Direct3DEngine::LoadShotImage( std::string const & pathname )
 {
 	ShotImagePath = pathname;
-	if( !isFileExistsMsg( pathname, "LoadShotData" ) )
-		return;
+	if( !isFileExistsMsg( pathname, "LoadShotImage" ) )
+		return false;
 
 	LoadTexture( pathname );
 	for( unsigned u = 0; u < 4; ++u )
 		GetLayers()[ BULLET_LAYER ].vObjMgr[ u ].pTexture = GetTexture( pathname ) ;
+	return true;
 }
 unsigned Direct3DEngine::CreateObjHandle()
 {

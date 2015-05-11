@@ -1240,7 +1240,8 @@ void parser::parseShotScript( std::string const & scriptPath )
 				}
 				if( lexicon.getToken() != tk_string )
 					raiseError( "lexer::tk_string expected", error::er_syntax );
-				eng->get_drawmgr()->LoadShotImage( ShotImagePath + lexicon.getString() );
+				if( !eng->get_drawmgr()->LoadShotImage( ShotImagePath + lexicon.getString() ) )
+					raiseError( "image could not be loaded", error::er_internal );
 				break;
 			}
 			else lexicon.advance();

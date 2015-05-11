@@ -146,7 +146,7 @@ public:
 	//shot
 	unsigned CreateShot( ULONG GraphicID );
 	void PushQuadShotBuffer( RECT const Quad, D3DCOLOR const Color );
-	void LoadShotImage( std::string const & pathname );
+	bool LoadShotImage( std::string const & pathname );
 	void CreateShotData( unsigned ID, BlendType blend, RECT const & rect, D3DCOLOR color, DWORD flags, vector< vector< float > > const & AnimationData );
 
 	//ObjEffect Functions
