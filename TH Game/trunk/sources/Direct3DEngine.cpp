@@ -752,6 +752,26 @@ void Direct3DEngine::ObjFont_SetFaceName( unsigned HandleIdx, std::string const 
 		D3DXCreateFontIndirect( GetDevice(), &desc, &(fobj->pFont) );
 	}
 }
+void FontObject::SetAlignmentX( int X )
+{
+	Format = (Format & ~DT_LEFT) & (Format & ~DT_RIGHT) & (Format & ~DT_CENTER);
+	switch( X )
+	{
+		case -1: Format |= DT_LEFT; break;
+		case 0: Format |= DT_CENTER; break;
+		case 1: Format |= DT_RIGHT; break;
+	}
+}
+void FontObject::SetAlignmentY( int Y )
+{
+	Format = (Format & ~DT_TOP) & (Format & ~DT_VCENTER) & (Format & ~(DT_BOTTOM | DT_SINGLELINE) );
+	switch( Y )
+	{
+		case -1: Format |= DT_TOP; break;
+		case 0: Format |= DT_VCENTER; break;
+		case 1: Format |= DT_BOTTOM | DT_SINGLELINE;
+	}
+}
 
 //misc
 unsigned Direct3DEngine::FetchVertexBuffer()

@@ -588,6 +588,16 @@ void natives::_ObjFont_SetFaceName( script_engine * eng, size_t * argv )
 {
 	eng->get_drawmgr()->ObjFont_SetFaceName( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ), eng->scriptdata_mgr.getStringScriptData( argv[ 1 ] ) );
 }
+void natives::_ObjFont_SetAlignmentX( script_engine * eng, size_t * argv )
+{
+	if( FontObject * obj = eng->get_drawmgr()->GetFontObject( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ) ) )
+		obj->SetAlignmentX( eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ) );
+}
+void natives::_ObjFont_SetAlignmentY( script_engine * eng, size_t * argv )
+{
+	if( FontObject * obj = eng->get_drawmgr()->GetFontObject( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ) ) )
+		obj->SetAlignmentY( eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ) );
+}
 void natives::_ALPHA_BLEND( script_engine * eng, size_t * argv )
 {
 	assert( !CheckValidIdx( argv[ 0 ] ) );

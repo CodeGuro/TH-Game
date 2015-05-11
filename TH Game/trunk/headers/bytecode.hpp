@@ -271,6 +271,8 @@ private:
 	static void _ObjFont_SetColor( script_engine * eng, size_t * argv );
 	static void _ObjFont_SetSize( script_engine * eng, size_t * argv );
 	static void _ObjFont_SetFaceName( script_engine * eng, size_t * argv );
+	static void _ObjFont_SetAlignmentX( script_engine * eng, size_t * argv );
+	static void _ObjFont_SetAlignmentY( script_engine * eng, size_t * argv );
 	static void _ALPHA_BLEND( script_engine * eng, size_t * argv );
 	static void _ADDITIVE_BLEND( script_engine * eng, size_t * argv );
 	static void _PRIMITIVE_TRIANGLELIST( script_engine * eng, size_t * argv );

@@ -40,6 +40,8 @@ struct FontObject
 	RECT Rect;
 	DWORD Format;
 	D3DCOLOR Color;
+	void SetAlignmentX( int X );
+	void SetAlignmentY( int Y );
 };
 
 struct WaveHeaderType

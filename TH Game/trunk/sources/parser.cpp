@@ -1520,6 +1520,8 @@ void parser::registerNatives()
 		{ "ObjFont_SetColor", &natives::_ObjFont_SetColor, 5 },
 		{ "ObjFont_SetSize", &natives::_ObjFont_SetSize, 2 },
 		{ "ObjFont_SetFaceName", &natives::_ObjFont_SetFaceName, 2 },
+		{ "ObjFont_SetAlignmentX", &natives::_ObjFont_SetAlignmentX, 2},
+		{ "ObjFont_SetAlignmentY", &natives::_ObjFont_SetAlignmentY, 2 },
 		{ "ALPHA_BLEND", &natives::_ALPHA_BLEND, 0 },
 		{ "ADDITIVE_BLEND", &natives::_ADDITIVE_BLEND, 0 },
 		{ "PRIMITIVE_TRIANGLELIST", &natives::_PRIMITIVE_TRIANGLELIST, 0 },
