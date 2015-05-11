@@ -5,14 +5,19 @@ script_main main_script
 	let dir;
 	let dir_se;
 	let dir_img;
+	let pointCount;
+
 	@Initialize
 	{
 		dir = GetCurrentScriptDirectory();
 		dir_se = dir ~ "se/";
 		dir_img = dir ~ "img/";
-		
+		pointCount = 0;
+
 		load_images();
 		load_sounds();
+		set_frame();
+		set_frame_decorators();
 		LoadUserShotData( dir ~ "ShotData.th" );
 
 		main_stage();
@@ -22,9 +27,11 @@ script_main main_script
 	{
 		yield;
 	}
+
 	@Finalize
 	{
 	}
+
 	function load_images()
 	{
 		LoadTexture( dir_img ~ "enemy.png" );
@@ -34,7 +41,9 @@ script_main main_script
 		LoadTexture( dir_img ~ "etama4.png" );
 		LoadTexture( dir_img ~ "etama5.png" );
 		LoadTexture( dir_img ~ "etama6.png" );
+		LoadTexture( dir_img ~ "DefaultSTGFrame.png" );
 	}
+
 	function load_sounds()
 	{
 		LoadSound( dir_se ~ "se_tan00.wav" );
@@ -55,10 +64,61 @@ script_main main_script
 		LoadSound( dir_se ~ "se_invalid.wav" );
 	}
 	
+	function set_frame()
+	{
+		let frameW = 640;
+		let frameH = 480;
+		let framePXW = 1024;
+		let framePXH = 512;
+
+		let frame = Obj_Create( OBJ_EFFECT );
+		ObjEffect_SetLayer( frame, 6 );
+		ObjEffect_CreateVertex( frame, 4 );
+		ObjEffect_SetPrimitiveType( frame, PRIMITIVE_TRIANGLESTRIP );
+		ObjEffect_SetTexture( frame, dir_img ~ "DefaultSTGFrame.png" );
+
+		ObjEffect_SetVertexUV( frame, 0, 0      / framePXW, 0      / framePXH );
+		ObjEffect_SetVertexUV( frame, 1, frameW / framePXW, 0      / framePXH );
+		ObjEffect_SetVertexUV( frame, 2, 0      / framePXW, frameH / framePXH );
+		ObjEffect_SetVertexUV( frame, 3, frameW / framePXW, frameH / framePXH );
+
+		ObjEffect_SetVertexXY( frame, 0, -frameW / 2, -frameH / 2 );
+		ObjEffect_SetVertexXY( frame, 1,  frameW / 2, -frameH / 2 );
+		ObjEffect_SetVertexXY( frame, 2, -frameW / 2,  frameH / 2 );
+		ObjEffect_SetVertexXY( frame, 3,  frameW / 2,  frameH / 2 );
+
+		ascent( i in 0..4 )
+		{
+			ObjEffect_SetVertexColor( frame, i, 255, 255, 255, 255 );
+		}
+
+		Obj_SetPosition( frame, 640/2, 480/2 );
+	}
+
+	task set_frame_decorators()
+	{
+		let hiScoreFo_l = 32 + 384;
+		let hiScoreFO_t = 64;
+
+		let hiScoreFO = Obj_Create( OBJ_FONT );
+		ObjFont_SetColor( hiScoreFO, 255, 255, 255, 255 );
+		ObjFont_SetRect( hiScoreFO, hiScoreFo_l + 32, hiScoreFO_t, 640, 480 );
+		ObjFont_SetFaceName( hiScoreFO, "Lucida Console" );
+
+		let dx = 0;
+		while( true )
+		{			
+			ObjFont_SetString( hiScoreFO, "HiScore:    " ~ ToString( pointCount ) );
+			pointCount = pointCount + rand_int(1,100);
+			yield;
+		}
+
+	}
+
 	task main_stage()
 	{
-		CreateEnemyFromFile( dir ~ "enemy.th" );
 	}
+
 	function wait( let n )
 	{
 		loop( n ){ yield; }
