@@ -138,19 +138,28 @@ script_main main_script
 			wait( 2 );
 		}
 	}
+	task circlefire()
+	{
+	
+		let ring = 40;
+		let theta = 0;
+		let ox = Obj_GetX( obj );
+		let oy = Obj_GetY( obj );
+		let del = 24;
+		delay( ox, oy, 6, del, 3, 1 );
+		loop( ring )
+		{
+			CreateShot01( ox, oy, 3, theta, 4 );
+			theta = theta + 2*PI/ring;
+		}
+		PlaySound( dir_se ~ "se_tan02.wav" );
+	}
 	task startFire()
 	{
-		let ring = 40;
 		let interval = 10;
 		loop( 3 )
 		{
-			let theta = 0;
-			loop( ring )
-			{
-				CreateShot01( Obj_GetX( obj ), Obj_GetY( obj ), 3, theta, 4 );
-				theta = theta + 2*PI/ring;
-			}
-			PlaySound( dir_se ~ "se_tan02.wav" );
+			circlefire();
 			wait( interval );
 		}
 	}
@@ -160,5 +169,47 @@ script_main main_script
 		{
 			yield;
 		}
+	}
+	function delay( let posx, let posy, let offset, let frames, let sizeInit, let sizeFin )
+	{
+		let objEff = Obj_Create( OBJ_EFFECT );
+		Obj_SetPosition( objEff, posx, posy );
+		ObjEffect_CreateVertex( objEff, 4 );
+		ObjEffect_SetPrimitiveType( objEff, PRIMITIVE_TRIANGLESTRIP );
+		ObjEffect_SetTexture( objEff, dir_img ~ "etama.png" );
+
+		let bottom = 208 / 256;
+		let top = 239 / 256;
+		let left = offset*32 / 256;
+		let right = (offset+1)*32 / 256;
+
+		ObjEffect_SetVertexUV( objEff, 0, left, top );
+		ObjEffect_SetVertexUV( objEff, 1, right, top );
+		ObjEffect_SetVertexUV( objEff, 2, left, bottom );
+		ObjEffect_SetVertexUV( objEff, 3, right, bottom );
+
+		ObjEffect_SetVertexXY( objEff, 0, -16, -16 );
+		ObjEffect_SetVertexXY( objEff, 1,  16, -16 );
+		ObjEffect_SetVertexXY( objEff, 2, -16,  16 );
+		ObjEffect_SetVertexXY( objEff, 3,  16,  16 );
+
+		ascent( i in 0..4 )
+		{
+			ObjEffect_SetVertexColor( objEff, i, 255, 255, 255, 255 );
+		}
+
+		ObjEffect_SetScale( objEff, sizeInit, sizeInit );
+		
+		let frame = 0;
+		loop( frames )
+		{
+			let sca = sizeInit - (sizeInit - sizeFin) / frames * frame;
+			ObjEffect_SetScale( objEff, sca, sca );
+			frame = frame + 1;
+			yield;
+		}
+
+		Obj_Delete( objEff );
+
 	}
 }
