@@ -318,16 +318,16 @@ void Direct3DEngine::AddRefObjHandle( unsigned HandleIdx )
 	if( CheckValidIdx( HandleIdx ) )
 		++vObjHandles[ HandleIdx ].RefCount;
 }
-void Direct3DEngine::ReleaseObjHandle( unsigned HandleIdx )
+void Direct3DEngine::ReleaseObject( unsigned HandleIdx )
 {
 	if( CheckValidIdx( HandleIdx ) )
 		if( !--vObjHandles[ HandleIdx ].RefCount )
 		{
-			ReleaseObject( HandleIdx );
+			DestroyObject( HandleIdx );
 			vObjHandlesGC.push_back( HandleIdx );
 		}
 }
-void Direct3DEngine::ReleaseObject( unsigned HandleIdx )
+void Direct3DEngine::DestroyObject( unsigned HandleIdx ) // keeps handle intact, w/clear
 {
 	if( CheckValidIdx( HandleIdx ) )
 	{
@@ -715,9 +715,9 @@ void Direct3DEngine::ObjShot_SetGraphic( unsigned HandleIdx, ULONG ID )
 		Object ObjCopy = *pObj;
 		unsigned ResHandle = CreateShot( ID );
 		*GetObject( ResHandle ) = *pObj;
-		ReleaseObject( HandleIdx );
+		DestroyObject( HandleIdx );
 		vObjHandles[ HandleIdx ] = vObjHandles[ ResHandle ];
-		ReleaseObjHandle( ResHandle );
+		ReleaseObject( ResHandle );
 	}
 }
 
@@ -883,7 +883,7 @@ void Direct3DEngine::DrawObjects()
 							ObjHandle & handle = vObjHandles[ u ];
 							if( handle.Layer == L - vLayers.begin() && handle.MgrIdx == Objmgr - L->vObjMgr.begin()  && handle.ObjVector == Objmgr->ObjBufferIdx && handle.ObjVectorIdx == objidx )
 							{
-								ReleaseObject( u );
+								DestroyObject( u );
 								break;
 							}
 						}

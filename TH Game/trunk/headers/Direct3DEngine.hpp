@@ -123,8 +123,8 @@ public:
 	unsigned CreateObjHandle();
 	unsigned CreateObject( ObjType type );
 	void AddRefObjHandle( unsigned HandleIdx );
-	void ReleaseObjHandle( unsigned HandleIdx );
-	void ReleaseObject( unsigned HandleIdx );
+	void ReleaseObject( unsigned HandleIdx ); // decrements handle refcount
+	void DestroyObject( unsigned HandleIdx ); // destroy only
 	Object * GetObject( unsigned HandleIdx );
 
 	//object factory

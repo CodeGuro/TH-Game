@@ -411,7 +411,7 @@ void natives::_Obj_Create( script_engine * eng, size_t * argv )
 void natives::_Obj_Delete( script_engine * eng, size_t * argv )
 {
 	unsigned objHandle = eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] );
-	eng->get_drawmgr()->ReleaseObject( objHandle );
+	eng->get_drawmgr()->DestroyObject( objHandle );
 }
 void natives::_Obj_BeDeleted( script_engine * eng, size_t * argv )
 {

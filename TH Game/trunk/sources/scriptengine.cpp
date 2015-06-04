@@ -252,7 +252,7 @@ void script_data_manager::releaseScriptData( size_t & index )
 			dat.vec.resize( 0 );
 			vecScriptDataGarbage.push_back( index );
 			if( dat.type.get_kind() == type_mgr.getObjectType().get_kind() )
-				draw_mgr->ReleaseObjHandle( dat.objIndex );
+				draw_mgr->ReleaseObject( dat.objIndex );
 		}
 		index = -1;
 	}
@@ -519,10 +519,7 @@ void script_engine::releaseObjectVector( size_t & index )
 	auto & objvec = vvecObjects[ index ];
 	unsigned s = objvec.size();
 	for( unsigned u = 0; u < s; ++u )
-	{
 		get_drawmgr()->ReleaseObject( objvec[ u ] );
-		get_drawmgr()->ReleaseObjHandle( objvec[ u ] );
-	}
 	objvec.resize( 0 );
 	vvecObjectsGarbage.push_back( index );
 	index = -1;
