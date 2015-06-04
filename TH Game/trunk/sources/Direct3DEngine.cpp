@@ -708,15 +708,20 @@ void Direct3DEngine::ObjShot_SetGraphic( unsigned HandleIdx, ULONG ID )
 	Object * pObj = GetObject( HandleIdx );
 	if( pObj && ID < Bullet_TemplateOffsets.size() && pObj->FlagBullet( -1 ) )
 	{
-		//create a new shot -> copy old shot to new shot with new ID -> release old handle -> copy new handle to new handle -> release new handle
+		// create a new shot -> destroy old shot -> swap handle info (except refcount) -> release old handle
 		ULONG BufferOffset = Bullet_TemplateOffsets[ ID ];
 		ShotData const & shot_data = Bullet_Templates[ BufferOffset ];
 		pObj->SetShotDataParams( shot_data, BufferOffset );
-		Object ObjCopy = *pObj;
 		unsigned ResHandle = CreateShot( ID );
-		*GetObject( ResHandle ) = *pObj;
+		*GetObject( ResHandle ) = *GetObject( HandleIdx );
 		DestroyObject( HandleIdx );
+		auto refCountHan = vObjHandles[ HandleIdx ].RefCount;
+		auto refCountRes = vObjHandles[ ResHandle ].RefCount;
+		ObjHandle tmp = vObjHandles[ HandleIdx ];
 		vObjHandles[ HandleIdx ] = vObjHandles[ ResHandle ];
+		vObjHandles[ HandleIdx ].RefCount = refCountHan;
+		vObjHandles[ ResHandle ] = tmp;
+		vObjHandles[ ResHandle ].RefCount = refCountRes;
 		ReleaseObject( ResHandle );
 	}
 }

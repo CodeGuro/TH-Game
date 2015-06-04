@@ -43,3 +43,12 @@ ShotData
 		animation_data = ( 16, 80, 16, 96, 32 )
 	}
 }
+ShotData
+{
+	id = 4
+	render = ALPHA_BLEND
+	angular_velocity = 0
+	pixel_perfect = FALSE
+	rect = ( 00, 64, 16, 80 )
+	color = ( 255, 255, 255, 255 )
+}

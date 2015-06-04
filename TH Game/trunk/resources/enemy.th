@@ -147,7 +147,7 @@ script_main main_script
 			let theta = 0;
 			loop( ring )
 			{
-				CreateShot01( Obj_GetX( obj ), Obj_GetY( obj ), 3, theta, 3 );
+				CreateShot01( Obj_GetX( obj ), Obj_GetY( obj ), 3, theta, 4 );
 				theta = theta + 2*PI/ring;
 			}
 			PlaySound( dir_se ~ "se_tan02.wav" );
