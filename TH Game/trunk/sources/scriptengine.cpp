@@ -772,8 +772,11 @@ bool script_engine::advance()
 	case vc_overWrite:
 		{
 			scriptdata_mgr.copyScriptData( env.stack[ env.stack.size() - 2 ], env.stack.back() );
-			scriptdata_mgr.releaseScriptData( env.stack.back() );
-			env.stack.pop_back();
+			for( int i = 0; i < 2; ++i ) //pop the var index and then the var
+			{
+				scriptdata_mgr.releaseScriptData( env.stack.back() );
+				env.stack.pop_back();
+			}
 		}
 		break;
 	case vc_pushVal:
