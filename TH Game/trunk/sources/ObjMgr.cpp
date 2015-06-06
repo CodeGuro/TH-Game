@@ -65,8 +65,10 @@ float Object::GetSpeed()
 float Object::GetAngle()
 {
 	float Theta;
-	D3DXQuaternionToAxisAngle( &orient,&D3DXVECTOR3( 0, 0, 1 ), &Theta );
-	return Theta;
+	D3DXVECTOR3 v;
+	D3DXQuaternionToAxisAngle( &orient, &v, &Theta );
+	Theta *= ((v.z < 0.f) ? -1.f : 1.f);
+	return Theta - (FlagBullet( -1 ) ? D3DX_PI/2 : 0);
 }
 void Object::Advance()
 {

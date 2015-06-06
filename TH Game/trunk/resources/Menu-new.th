@@ -4,6 +4,7 @@ script_main menu
 {
 	let dir = GetCurrentScriptDirectory();
 	let menu_created = false;
+	let musicPlaying = false;
 	@Initialize
 	{
 
@@ -12,6 +13,7 @@ script_main menu
 		LoadSound( dir ~ "se/se_ok00.wav" );
 		LoadTexture( dir ~ "img/logo.jpg" );
 		LoadTexture( dir ~ "img/menu.jpg" );
+		LoadTexture( dir ~ "img/etama2.png" );
 		Start();
 	}
 	@MainLoop
@@ -23,7 +25,8 @@ script_main menu
 	}
 	task Start()
 	{
-	//	LogoScreen();
+		// LogoScreen();
+		PlaySound( dir ~ "Title.wav" );
 		MenuScreen();
 	}
 	function SetQuadCenterScreen( let obj, let width, let height )
@@ -75,12 +78,13 @@ script_main menu
 	function CreateFontObject( let x, let y, let text )
 	{
 		let obj = Obj_Create( OBJ_FONT );
-		Obj_SetPosition( obj, 32, 32 );
+		Obj_SetPosition( obj, x, y );
 		ObjFont_SetString( obj, text );
 		ObjFont_SetRect( obj, x, y, x + 250, y + 200 );
 		ObjFont_SetColor( obj, 255, 255, 255, 255 );
 		ObjFont_SetSize( obj, 32 );
 		ObjFont_SetFaceName( obj, "Tahoma" );
+		Obj_SetAutoDelete( obj, false );
 		return obj;
 	}
 	task MenuScreen()
@@ -88,7 +92,6 @@ script_main menu
 		if( menu_created == false )
 		{
 			menu_created = true;
-			PlaySound( dir ~ "Title.wav" );
 			let obj = Obj_Create( OBJ_EFFECT );
 			SetQuadCenterScreen( obj, 640, 480 );
 			ObjEffect_SetTexture( obj, dir ~ "img/menu.jpg" );
@@ -102,21 +105,27 @@ script_main menu
 		let font_x = 50;
 		let font_y = 250;
 		let y_dis = 30;
-		let start =		CreateFontObject( font_x, font_y + y_dis * 0, "Start" );
+		let start =				CreateFontObject( font_x, font_y + y_dis * 0, "Start" );
 		let practice_start =	CreateFontObject( font_x, font_y + y_dis * 1, "Practice Start" );
 		let spell_practice =	CreateFontObject( font_x, font_y + y_dis * 2, "Spell Practice" );
-		let music_room =	CreateFontObject( font_x, font_y + y_dis * 3, "Music Room" );
-		let option =		CreateFontObject( font_x, font_y + y_dis * 4, "Option" );
-		let quit =		CreateFontObject( font_x, font_y + y_dis * 5, "Quit" );
+		let music_room =		CreateFontObject( font_x, font_y + y_dis * 3, "Music Room" );
+		let option =			CreateFontObject( font_x, font_y + y_dis * 4, "Option" );
+		let quit =				CreateFontObject( font_x, font_y + y_dis * 5, "Quit" );
 		let key_up = 38;
 		let key_down = 40;
 		let options = [ start, practice_start, spell_practice, music_room, option, quit ];
 		let option_select = 0;
+		ascent( i in 0..length( options ) )
+		{
+			let o = options[ i ];
+			Obj_SetPosition( o, font_x, font_y + y_dis * i );
+		}
 		let time = 0;
 		let red;
 		let green;
 		let blue;
-		while( true )
+		let selected = false;
+		while( !selected )
 		{
 			let t2 = time / 60;
 			red = 255 * cos( t2 );
@@ -141,9 +150,13 @@ script_main menu
 				}
 				if( option_select < 0 ){ option_select = 5; }
 				option_select = option_select % 6;
+
+				OptionEffect( options[ option_select ] );
+
 			}
 			if( KeyPressed( 90 ) )
 			{
+				selected = true;
 				PlaySound( dir ~ "se/se_ok00.wav" );
 				let select = options[ option_select ];
 				if( select == quit ){ loop( 35 ){ yield; } TerminateProgram; }
@@ -151,8 +164,103 @@ script_main menu
 			}
 			yield;
 		}
-		let i = 0;
-		while( i < 6 ){ Obj_Delete( options[ i ] ); i = i + 1;}
+		
+		//deletion of items
+		ascent( i in 0..length( options ) )
+		{
+			Obj_Delete( options[ i ] );
+		}
+	}
+	function CreateLeaf()
+	{
+		let leaf = Obj_Create( OBJ_EFFECT );
+		ObjEffect_SetLayer( leaf, 6 );
+		Obj_SetAutoDelete( leaf, false );
+		ObjEffect_CreateVertex( leaf, 4 );
+		ObjEffect_SetPrimitiveType( leaf, PRIMITIVE_TRIANGLESTRIP );
+		ObjEffect_SetTexture( leaf, dir ~ "img/etama2.png" );
+		
+		let left = 95/256;
+		let right = 130/256;
+		let top = 176/256;
+		let bottom = 209/256;
+		ObjEffect_SetVertexUV( leaf, 0, left, top );
+		ObjEffect_SetVertexUV( leaf, 1, right, top );
+		ObjEffect_SetVertexUV( leaf, 2, left, bottom );
+		ObjEffect_SetVertexUV( leaf, 3, right, bottom );
+
+		ObjEffect_SetVertexXY( leaf, 0, (left-right)*128, (top-bottom)*128 );
+		ObjEffect_SetVertexXY( leaf, 1, (right-left)*128, (top-bottom)*128 );
+		ObjEffect_SetVertexXY( leaf, 2, (left-right)*128, (bottom-top)*128 );
+		ObjEffect_SetVertexXY( leaf, 3, (right-left)*128, (bottom-top)*128 );
+
+		ascent( i in 0..4 )
+		{
+			ObjEffect_SetVertexColor( leaf, i, 255, 255, 255, 255 );
+		}
+
+		return leaf;
+	}
+	task OptionEffect( let obj )
+	{
+		let posx = Obj_GetX( obj );
+		let posy = Obj_GetY( obj );
+		let leafCount = rand_int( 5, 10 );
+		let leaves = [];
+		let y_vels = [];
+		let x_vels = [];
+		let y_accels = [];
+		let y_maxVels = [];
+		let angular_vels = [];
+
+		// create the leaves
+		ascent( i in 0..leafCount-1 )
+		{
+			let leaf = CreateLeaf();
+			ObjEffect_SetLayer( leaf, 6 );
+			Obj_SetPosition( leaf, posx + rand_int( 0, 100 ), posy + rand_int( -5, 5 ) );
+			appendArray( leaves, leaf );
+			appendArray( x_vels, rand( -1, 1 ) );
+			appendArray( y_vels, rand( -9, 0 ) );
+			appendArray( y_accels, rand( 0.2, 1.5 ) );
+			appendArray( y_maxVels, rand( 0.5, 2 ) );
+			appendArray( angular_vels, rand( -2*PI/60, 2*PI/60 ) );
+		}
+				
+		// each leaf falls down
+		loop
+		{
+			yield;
+			let allDeleted = true;
+			ascent( i in 0..length( leaves ) )
+			{
+				let leaf = leaves[ i ];
+				if( !Obj_BeDeleted( leaf ) )
+				{
+					allDeleted = false;
+					
+					Obj_SetPosition( leaf, Obj_GetX( leaf ) + x_vels[ i ], Obj_GetY( leaf ) + y_vels[ i ] );
+					if( y_vels[ i ] < y_maxVels[ i ] )
+					{
+						y_vels[ i ] = y_vels[ i ] + y_accels[ i ];
+					}
+					
+					Obj_SetAngle( leaf, Obj_GetAngle( leaf ) + angular_vels[ i ] );
+
+					if( Obj_GetY( leaf ) > 680 )
+					{
+						Obj_Delete( leaf );
+					}
+				}
+			}
+			
+			if( allDeleted )
+			{
+				break;
+			}
+		}
+
+
 	}
 	task StartStage
 	{

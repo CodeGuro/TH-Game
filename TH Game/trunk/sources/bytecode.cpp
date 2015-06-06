@@ -1,6 +1,7 @@
 #include <bytecode.hpp>
 #include <scriptengine.hpp>
 #include <iostream>
+#include <random>
 #include <assert.h>
 
 type_data::type_data() : kind( tk_invalid ), element( -1 )
@@ -214,15 +215,16 @@ void natives::_uniqueize( script_engine * eng, size_t * argv )
 }
 void natives::_rand( script_engine * eng, size_t * argv )
 {
-	float domain = eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real - eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real;
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real + fmod( (float)rand(), 1 + domain ) );
+	std::uniform_real_distribution< float > rand_real( eng->scriptdata_mgr.getRealScriptData( argv[ 0 ] ), eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ) );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( rand_real( eng->num_generator ) );
 	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
 void natives::_rand_int( script_engine * eng, size_t * argv )
 {
-	float domain = floor( eng->scriptdata_mgr.getScriptData( argv[ 1 ] ).real - eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real );
-	size_t tmp = eng->scriptdata_mgr.fetchScriptData( floor( eng->scriptdata_mgr.getScriptData( argv[ 0 ] ).real ) + fmod( (float)rand(), 1 + domain ) );
+	std::uniform_int_distribution< int > rand_int(
+		(int)eng->scriptdata_mgr.getRealScriptData( argv[ 0 ] ), (int)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ) );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( (float)rand_int( eng->num_generator ) );
 	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
@@ -591,12 +593,12 @@ void natives::_ObjFont_SetFaceName( script_engine * eng, size_t * argv )
 void natives::_ObjFont_SetAlignmentX( script_engine * eng, size_t * argv )
 {
 	if( FontObject * obj = eng->get_drawmgr()->GetFontObject( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ) ) )
-		obj->SetAlignmentX( eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ) );
+		obj->SetAlignmentX( (int)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ) );
 }
 void natives::_ObjFont_SetAlignmentY( script_engine * eng, size_t * argv )
 {
 	if( FontObject * obj = eng->get_drawmgr()->GetFontObject( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ) ) )
-		obj->SetAlignmentY( eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ) );
+		obj->SetAlignmentY( (int)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ) );
 }
 void natives::_ALPHA_BLEND( script_engine * eng, size_t * argv )
 {
@@ -641,7 +643,7 @@ void natives::_CreateShot01( script_engine * eng, size_t * argv )
 {
 	size_t tmp = eng->scriptdata_mgr.fetchScriptData( ObjShot, eng->currentRunningMachine );
 	unsigned objHandle = eng->scriptdata_mgr.getObjHandleScriptData( tmp );
-	eng->get_drawmgr()->ObjShot_SetGraphic( objHandle, eng->scriptdata_mgr.getRealScriptData( argv[ 4 ] ) );
+	eng->get_drawmgr()->ObjShot_SetGraphic( objHandle, (ULONG)eng->scriptdata_mgr.getRealScriptData( argv[ 4 ] ) );
 	Object * obj = eng->get_drawmgr()->GetObject( objHandle );
 	obj->position = D3DXVECTOR3( eng->scriptdata_mgr.getRealScriptData( argv[ 0 ] ), eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ), 0.f );
 	obj->SetSpeed( eng->scriptdata_mgr.getRealScriptData( argv[ 2 ] ) );

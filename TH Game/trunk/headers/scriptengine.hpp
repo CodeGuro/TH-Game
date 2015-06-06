@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <random>
 #include <string>
 #include "defstypedefs.hpp"
 #include "bytecode.hpp"
@@ -42,6 +43,9 @@ private:
 	size_t currentRunningMachine;
 
 	Direct3DEngine * draw_mgr;
+
+	std::default_random_engine num_generator;
+
 
 	void callSub( size_t machineIndex, script_container::sub AtSub );
 
