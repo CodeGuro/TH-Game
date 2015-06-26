@@ -893,7 +893,7 @@ void Direct3DEngine::DrawObjects()
 							}
 						}
 
-						Objmgr = L->vObjMgr.begin() + ObjMgrIdx;
+						Objmgr = L->vObjMgr.begin() + ObjMgrIdx - 1;
 						pObj = vObjects.begin() + objidx;
 						continue;
 					}

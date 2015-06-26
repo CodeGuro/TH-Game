@@ -124,14 +124,13 @@ script_main main_script
 	}
 	task fireBullets()
 	{
-		 startFire();
-		 streamFire();
-		//fireRounds();
+		// startFire();
+		// streamFire();
+		fireRounds();
 	}
 	task fireBigBullet( let dir, let speed )
 	{
 		let bullet = Create2DObj( 0, 64, 0, 64, 256, 256, dir_img ~ "etama2.png" );
-		ObjEffect_SetLayer( bullet, 4 );
 		Obj_SetAutoDelete( bullet, true );
 		let ang = rand( 0, 2*PI );
 		let ang_speed = rand( -2*PI, 2*PI ) * 0.01;
@@ -149,7 +148,11 @@ script_main main_script
 	{
 		loop
 		{
-			fireBigBullet( PI/2, 1.5 );
+			let count = 15;
+			ascent( i in 0..count )
+			{
+				fireBigBullet( i/count * 2*PI, 1.5 );
+			}
 			wait( 30 );
 		}
 	}
