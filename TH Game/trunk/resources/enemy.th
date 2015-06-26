@@ -124,9 +124,9 @@ script_main main_script
 	}
 	task fireBullets()
 	{
-		// startFire();
-		// streamFire();
-		fireRounds();
+		 startFire();
+		 streamFire();
+		//fireRounds();
 	}
 	task fireBigBullet( let dir, let speed )
 	{

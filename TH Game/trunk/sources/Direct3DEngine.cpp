@@ -892,8 +892,6 @@ void Direct3DEngine::DrawObjects()
 								break;
 							}
 						}
-						if( u == vObjHandles.size() )
-							vObjects.erase( pObj );
 
 						Objmgr = L->vObjMgr.begin() + ObjMgrIdx;
 						pObj = vObjects.begin() + objidx;
