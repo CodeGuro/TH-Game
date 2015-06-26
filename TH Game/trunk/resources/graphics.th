@@ -1,0 +1,25 @@
+function Create2DObj( let left, let right, let top, let bottom, let imgWidth, let imgHeight, let img )
+{
+	let obj = Obj_Create( OBJ_EFFECT );
+	
+	ObjEffect_SetTexture( obj, img );
+	ObjEffect_CreateVertex( obj, 4 );
+	ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLESTRIP );
+	
+	ObjEffect_SetVertexUV( obj, 0, left/imgWidth, top/imgHeight );
+	ObjEffect_SetVertexUV( obj, 1, right/imgWidth, top/imgHeight );
+	ObjEffect_SetVertexUV( obj, 2, left/imgWidth, bottom/imgWidth );
+	ObjEffect_SetVertexUV( obj, 3, right/imgWidth, bottom/imgWidth );
+	
+	ObjEffect_SetVertexXY( obj, 0, (left-right)/2, (top-bottom)/2 );
+	ObjEffect_SetVertexXY( obj, 1, (right-left)/2, (top-bottom)/2 );
+	ObjEffect_SetVertexXY( obj, 2, (left-right)/2, (bottom-top)/2 );
+	ObjEffect_SetVertexXY( obj, 3, (right-left)/2, (bottom-top)/2 );
+	
+	ascent( i in 0..4 )
+	{
+		ObjEffect_SetVertexColor( obj, i, 255, 255, 255, 255 );
+	}
+	
+	return obj;
+}

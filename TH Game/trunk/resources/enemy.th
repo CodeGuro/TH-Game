@@ -1,4 +1,5 @@
 #TouhouDanmaku[ single ]
+#include "./graphics.th"
 
 script_main main_script
 {
@@ -123,8 +124,34 @@ script_main main_script
 	}
 	task fireBullets()
 	{
-		startFire();
-		streamFire();
+		// startFire();
+		// streamFire();
+		fireRounds();
+	}
+	task fireBigBullet( let dir, let speed )
+	{
+		let bullet = Create2DObj( 0, 64, 0, 64, 256, 256, dir_img ~ "etama2.png" );
+		ObjEffect_SetLayer( bullet, 4 );
+		Obj_SetAutoDelete( bullet, true );
+		let ang = rand( 0, 2*PI );
+		let ang_speed = rand( -2*PI, 2*PI ) * 0.01;
+		Obj_SetPosition( bullet, Obj_GetX( obj ), Obj_GetY( obj ) );
+		
+		while( !Obj_BeDeleted( bullet ) )
+		{
+			Obj_SetAngle( bullet, ang );
+			ang = ang + ang_speed;
+			yield;
+			Obj_SetPosition( bullet, Obj_GetX( bullet ) + speed * cos( dir ), Obj_GetY( bullet ) + speed * sin( dir ) );
+		}
+	}
+	task fireRounds()
+	{
+		loop
+		{
+			fireBigBullet( PI/2, 1.5 );
+			wait( 30 );
+		}
 	}
 	task streamFire()
 	{
