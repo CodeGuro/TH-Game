@@ -820,9 +820,6 @@ void Direct3DEngine::DrawObjects()
 	D3DXMatrixOrthoLH( &proj, 640.f, -480.f, 0.f, 100.f );
 	D3DXMatrixLookAtLH( &view, &D3DXVECTOR3( 0, 0, -1.f ), &D3DXVECTOR3( 0, 0, 0 ), &D3DXVECTOR3( 0, 1, 0 ) );
 	D3DXMatrixTranslation( &world, -320.f - 0.5f, -240.f - 0.5f, 0.f );
-
-	D3DXMATRIX mat2;
-	D3DXMatrixTranslation( &mat2, 200.f, 100.f, -1000.f );
 	
 	for( auto L = GetLayers().begin(); L < GetLayers().end(); ++L )
 	{
@@ -959,6 +956,87 @@ void Direct3DEngine::DrawObjects()
 	}
 	GetDevice()->SetTexture( 0, 0 );
 }
+void Direct3DEngine::DrawObjects( ObjMgr const & objMgr )
+{
+	if( CheckValidIdx( Objmgr->ObjFontIdx ) )
+	{
+		FontObject & FontObj = vFontObjects[ Objmgr->ObjFontIdx ];
+		FontObj.pFont->DrawTextA( NULL, FontObj.String.c_str(), -1, &FontObj.Rect, FontObj.Format, FontObj.Color );
+	}
+
+	auto & vObjects = vvObjects[ objMgr.ObjBufferIdx ];
+	ULONG min_buffersize = vObjects.size() * objMgr.VertexCount * sizeof( Vertex );
+	if( PipelineVertexBuffer.BufferSize < min_buffersize )
+	{
+		PipelineVertexBuffer.Buffer->Release();
+		d3ddev->CreateVertexBuffer( PipelineVertexBuffer.BufferSize = min_buffersize, D3DUSAGE_WRITEONLY, 0, D3DPOOL_MANAGED, &PipelineVertexBuffer.Buffer, NULL );
+	}
+
+	Vertex * ptr = NULL;
+	PipelineVertexBuffer.Buffer->Lock( 0, min_buffersize, (void**)&ptr, 0 );
+	vector< Vertex > & vb = GetVertexBuffer( objMgr.VertexBufferIdx );
+
+	for( auto pObj = vObjects.begin(); pObj < vObjects.end(); )
+	{
+		D3DXMATRIX mat;
+		D3DXMatrixTransformation( &mat, NULL, NULL, &pObj->scale, NULL, &pObj->orient, pObj->FlagPixelPerfect( -1 ) ?
+			&D3DXVECTOR3( floor( pObj->position.x + 0.5f), floor( pObj->position.y + 0.5f), floor( pObj->position.z + 0.5f ) ) : &pObj->position );
+
+		Vertex * src = (vb.size() ? &vb[ pObj->VertexOffset ] : NULL );
+		for( ULONG v = 0; v < objMgr.VertexCount; ++v )
+		{
+			*ptr++ = *src++;
+			D3DXVec3TransformCoord( &(ptr-1)->pos, &(ptr-1)->pos, &mat );
+		}
+	}
+
+	PipelineVertexBuffer.Buffer->Unlock();
+
+	GetDevice()->SetTexture( 0, objMgr.pTexture );
+	GetDevice()->SetVertexDeclaration( objMgr.VDeclaration );
+	GetDevice()->SetVertexShader( objMgr.VShader );
+	GetDevice()->SetPixelShader( objMgr.PShader );
+	GetDevice()->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+	
+	switch( objMgr.BlendState )
+	{
+	case BlendMult:
+		GetDevice()->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR );
+		GetDevice()->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_SRCALPHA );
+		GetDevice()->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
+		break;
+
+	case BlendAdd:
+		GetDevice()->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+		GetDevice()->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_ONE );
+		GetDevice()->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
+		break;
+
+	case BlendSub:
+		GetDevice()->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+		GetDevice()->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_ONE );
+		GetDevice()->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT ); 
+		break;
+	
+	case BlendAlpha:
+		GetDevice()->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+		GetDevice()->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+		GetDevice()->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
+		break;
+
+	default:
+		abort();
+	}
+
+	GetDevice()->SetStreamSource( 0, PipelineVertexBuffer.Buffer, 0, sizeof( Vertex ) );
+	DWORD VCount = min_buffersize;
+
+	if( VCount )
+		if( D3D_OK != GetDevice()->DrawPrimitive( objMgr.PrimitiveType, 0, objMgr.PrimitiveType == D3DPT_TRIANGLELIST ? VCount / 3 :
+			objMgr.PrimitiveType == D3DPT_TRIANGLESTRIP || objMgr.PrimitiveType == D3DPT_TRIANGLEFAN ? VCount - 2 : 0 ) ) MessageBox( 0, "", "", 0 );
+
+}
+
 void Direct3DEngine::UpdateObjectCollisions()
 {
 	auto CollisionCheck = []( vector< Object > & LayerA, vector< Object > & LayerB )
