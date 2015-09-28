@@ -173,7 +173,9 @@ public:
 	void AddRefVertexBuffer( unsigned Idx );
 	void DisposeVertexBuffer( unsigned Idx );
 	void DrawObjects();
+	void DrawObjects_V2();
 	void DrawObjects( ObjMgr const & objMgr );
+	void AdvanceObjects( ObjMgr const & objMgr );
 	void UpdateObjectCollisions();
 
 	//camera

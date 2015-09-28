@@ -956,13 +956,43 @@ void Direct3DEngine::DrawObjects()
 	}
 	GetDevice()->SetTexture( 0, 0 );
 }
+void Direct3DEngine::DrawObjects_V2()
+{
+	D3DXMATRIX world, view, proj;
+	D3DXMatrixIdentity( &world );
+	D3DXMatrixOrthoLH( &proj, 640.f, -480.f, 0.f, 100.f );
+	D3DXMatrixLookAtLH( &view, &D3DXVECTOR3( 0, 0, -1.f ), &D3DXVECTOR3( 0, 0, 0 ), &D3DXVECTOR3( 0, 1, 0 ) );
+	D3DXMatrixTranslation( &world, -320.f - 0.5f, -240.f - 0.5f, 0.f );
+
+	for( auto L = GetLayers().begin(); L < GetLayers().end(); ++L )
+	{
+		/*constant buffers do not own their own constants, they use slots and the names are symbolic*/
+		if( L - GetLayers().begin() == BACKGROUND_LAYER )
+				pDefault3DConstable->SetMatrix( GetDevice(), "WorldViewProjMat", &( WorldMatrix * ViewMatrix * ProjectionMatrix ) ),
+				pDefault3DConstable->SetMatrix( GetDevice(), "WorldViewMat", &( WorldMatrix * ViewMatrix ) );
+		else
+				pDefault2DConstable->SetMatrix( GetDevice(), "WorldViewProjMat", &( world * view * proj ) );
+
+		GetDevice()->SetRenderState( D3DRS_SCISSORTESTENABLE, (L - GetLayers().begin() < ENEMY_LAYER || L - GetLayers().begin() > EFFECT_LAYER )? FALSE : TRUE );
+		GetDevice()->SetRenderState( D3DRS_ZENABLE, L - GetLayers().begin() == BACKGROUND_LAYER? TRUE : FALSE );
+
+		for( auto objMgr = L->vObjMgr.begin(); objMgr < L->vObjMgr.end(); ++objMgr )
+		{
+			DrawObjects( *objMgr );
+			AdvanceObjects( *objMgr );
+		}
+	}
+}
 void Direct3DEngine::DrawObjects( ObjMgr const & objMgr )
 {
-	if( CheckValidIdx( Objmgr->ObjFontIdx ) )
+	if( CheckValidIdx( objMgr.ObjFontIdx ) )
 	{
-		FontObject & FontObj = vFontObjects[ Objmgr->ObjFontIdx ];
+		FontObject & FontObj = vFontObjects[ objMgr.ObjFontIdx ];
 		FontObj.pFont->DrawTextA( NULL, FontObj.String.c_str(), -1, &FontObj.Rect, FontObj.Format, FontObj.Color );
 	}
+
+	if( !(CheckValidIdx( objMgr.ObjBufferIdx ) && CheckValidIdx( objMgr.VertexBufferIdx )) )
+		return;
 
 	auto & vObjects = vvObjects[ objMgr.ObjBufferIdx ];
 	ULONG min_buffersize = vObjects.size() * objMgr.VertexCount * sizeof( Vertex );
@@ -976,7 +1006,7 @@ void Direct3DEngine::DrawObjects( ObjMgr const & objMgr )
 	PipelineVertexBuffer.Buffer->Lock( 0, min_buffersize, (void**)&ptr, 0 );
 	vector< Vertex > & vb = GetVertexBuffer( objMgr.VertexBufferIdx );
 
-	for( auto pObj = vObjects.begin(); pObj < vObjects.end(); )
+	for( auto pObj = vObjects.begin(); pObj < vObjects.end(); ++pObj )
 	{
 		D3DXMATRIX mat;
 		D3DXMatrixTransformation( &mat, NULL, NULL, &pObj->scale, NULL, &pObj->orient, pObj->FlagPixelPerfect( -1 ) ?
@@ -1029,12 +1059,18 @@ void Direct3DEngine::DrawObjects( ObjMgr const & objMgr )
 	}
 
 	GetDevice()->SetStreamSource( 0, PipelineVertexBuffer.Buffer, 0, sizeof( Vertex ) );
-	DWORD VCount = min_buffersize;
+	DWORD VCount = vObjects.size() * objMgr.VertexCount;
 
 	if( VCount )
 		if( D3D_OK != GetDevice()->DrawPrimitive( objMgr.PrimitiveType, 0, objMgr.PrimitiveType == D3DPT_TRIANGLELIST ? VCount / 3 :
 			objMgr.PrimitiveType == D3DPT_TRIANGLESTRIP || objMgr.PrimitiveType == D3DPT_TRIANGLEFAN ? VCount - 2 : 0 ) ) MessageBox( 0, "", "", 0 );
 
+}
+void Direct3DEngine::AdvanceObjects( ObjMgr const & objMgr )
+{
+	auto & vObjects = vvObjects[ objMgr.ObjBufferIdx ];
+	for( auto pObj = vObjects.begin(); pObj < vObjects.end(); ++pObj )
+		pObj->Advance();
 }
 
 void Direct3DEngine::UpdateObjectCollisions()
@@ -1143,7 +1179,7 @@ void Direct3DEngine::RenderFrame( MSG const msg )
 	GetDevice()->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, ClearColor, 1.f, 0 );
 	GetDevice()->BeginScene();
 	DrawGridTerrain( 100, 100, 1.f );
-	DrawObjects();
+	DrawObjects_V2();
 	DrawFPS();
 	GetDevice()->EndScene();
 	GetDevice()->Present( NULL, NULL, NULL, NULL );
