@@ -25,7 +25,7 @@ bool isFileExistsMsg( const std::string &fpath, const std::string funcName )
 	if( !ifile )
 		MessageBoxA( NULL, (std::string( "File does not exist: " ) + sm[0].str() + "\n" 
 		"When searching for:\n"+ fpath).c_str(), (funcName + ": File does not exist").c_str(), NULL );
-	return ifile != false;
+	return (bool)ifile;
 }
 
 void CompileShaders( LPDIRECT3DDEVICE9 pdev, char const * vmainfunc, D3DSmartPtr< LPDIRECT3DVERTEXSHADER9 > & VShader, D3DSmartPtr< LPD3DXCONSTANTTABLE > & CTable, char * pmainfunc, D3DSmartPtr< LPDIRECT3DPIXELSHADER9 > & PShader )
