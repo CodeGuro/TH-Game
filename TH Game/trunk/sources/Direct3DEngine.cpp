@@ -585,7 +585,7 @@ void Direct3DEngine::CreateShotData( unsigned ID, BlendType blend, RECT const & 
 		{
 			shot_data.AnimationTime = (ULONG)AnimationData[ i ][ 0 ];
 			shot_data.Radius = (AnimationData[ i ][ 3 ] - AnimationData[ i ][ 1 ]) / 4.f;
-			RECT r2 = { (ULONG)AnimationData[ i ][ 1 ], (ULONG)AnimationData[ i ][ 2 ], (ULONG)AnimationData[ i ][ 3 ], (ULONG)AnimationData[ i ][ 4 ] };
+			RECT r2 = { (LONG)AnimationData[ i ][ 1 ], (LONG)AnimationData[ i ][ 2 ], (LONG)AnimationData[ i ][ 3 ], (LONG)AnimationData[ i ][ 4 ] };
 			r = r2;
 		}
 		else

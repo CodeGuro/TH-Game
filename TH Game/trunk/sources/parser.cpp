@@ -1400,7 +1400,7 @@ void parser::parseShotScript( std::string const & scriptPath )
 					raiseError( "\"}\" expected", error::er_syntax );
 				lexicon.advance();
 				if( !CheckValidIdx( id ) ) raiseError( "\"id\" must be provided with a real number", error::er_syntax );
-				RECT r = { (ULONG)rec[ 0 ], (ULONG)rec[ 1 ], (ULONG)rec[ 2 ], (ULONG)rec[ 3 ] };
+				RECT r = { (LONG)rec[ 0 ], (LONG)rec[ 1 ], (LONG)rec[ 2 ], (LONG)rec[ 3 ] };
 				eng->get_drawmgr()->CreateShotData( id, render, r, D3DCOLOR_RGBA( (UCHAR)col[ 0 ], (UCHAR)col[ 1 ], (UCHAR)col[ 2 ], (UCHAR)col[ 3 ] ), flags, animation_data );
 			}
 		} while( lexicon.getToken() != tk_end );

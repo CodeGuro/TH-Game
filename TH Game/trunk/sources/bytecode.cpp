@@ -566,8 +566,8 @@ void natives::_ObjFont_SetRect( script_engine * eng, size_t * argv )
 {
 	if( FontObject * obj = eng->get_drawmgr()->GetFontObject( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ) ) )
 	{
-		RECT r = { (UINT)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ), (UINT)eng->scriptdata_mgr.getRealScriptData( argv[ 2 ] ),
-			(UINT)eng->scriptdata_mgr.getRealScriptData( argv[ 3 ] ), (UINT)eng->scriptdata_mgr.getRealScriptData( argv[ 4 ] ) };
+		RECT r = { (LONG)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ), (LONG)eng->scriptdata_mgr.getRealScriptData( argv[ 2 ] ),
+			(LONG)eng->scriptdata_mgr.getRealScriptData( argv[ 3 ] ), (LONG)eng->scriptdata_mgr.getRealScriptData( argv[ 4 ] ) };
 		obj->Rect = r;
 	}
 }
