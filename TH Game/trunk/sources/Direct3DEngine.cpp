@@ -929,7 +929,6 @@ void Direct3DEngine::AdvanceObjects( ObjMgr const & objMgr )
 	for( auto pObj = vObjects.begin(); pObj < vObjects.end(); ++pObj )
 		pObj->Advance();
 }
-
 void Direct3DEngine::UpdateObjectCollisions()
 {
 	auto CollisionCheck = []( vector< Object > & LayerA, vector< Object > & LayerB )

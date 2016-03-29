@@ -541,6 +541,25 @@ void script_engine::latchScriptObjectToMachine( size_t index, size_t machineIdx 
 			break;
 		}
 }
+void script_engine::clearOutOfBoundObjects( size_t machineIdx )
+{
+	script_context & machine = *getScriptContext( machineIdx );
+	vector< size_t > & machine_objects = vvecObjects[ machine.object_vector_index ];
+	for( unsigned it = 0; it < machine_objects.size(); ++it )
+	{
+		const size_t objHandle = machine_objects[ it ];
+		if( Object *pobj = get_drawmgr()->GetObject( objHandle ) )
+		{
+			if( pobj->FlagScreenDeletable( -1 ) && (pobj->position.x < 0.f || pobj->position.x > 640.f) || (pobj->position.y < 0.f || pobj->position.y > 480.f ) )
+			{
+				get_drawmgr()->DestroyObject( objHandle );
+				get_drawmgr()->ReleaseObject( objHandle );
+				machine_objects.erase( machine_objects.begin() + it );
+				--it;
+			}
+		}
+	}
+}
 
 //script engine - other
 Object * script_engine::getObjFromScriptVector( size_t objvector, size_t Idx )
@@ -620,6 +639,7 @@ bool script_engine::run()
 						callSub( currentRunningMachine, script_container::AtHit );
 				}
 				callSub( currentRunningMachine, script_container::AtMainLoop );
+				clearOutOfBoundObjects( currentRunningMachine );
 			}
 		}
 		catch( eng_exception const & e )
