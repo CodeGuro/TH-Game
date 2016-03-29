@@ -175,7 +175,7 @@ script_main menu
 	{
 		let leaf = Obj_Create( OBJ_EFFECT );
 		ObjEffect_SetLayer( leaf, 6 );
-		Obj_SetAutoDelete( leaf, false );
+		Obj_SetAutoDelete( leaf, true );
 		ObjEffect_CreateVertex( leaf, 4 );
 		ObjEffect_SetPrimitiveType( leaf, PRIMITIVE_TRIANGLESTRIP );
 		ObjEffect_SetTexture( leaf, dir ~ "img/etama2.png" );
