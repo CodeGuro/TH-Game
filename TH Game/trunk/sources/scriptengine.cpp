@@ -735,7 +735,7 @@ bool script_engine::IsFinished()
 	return finished;
 }
 
-void script_engine::initialize_script_context( size_t script_index, size_t context_index )
+void script_engine::initialize_script_context( size_t context_index, size_t script_index )
 {
 	script_context * context = getScriptContext( context_index );
 	context->current_script_index = script_index;
