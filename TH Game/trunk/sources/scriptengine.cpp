@@ -740,12 +740,13 @@ bool script_engine::IsFinished()
 	return finished;
 }
 
-void script_engine::initialize_script_context( size_t context_index, size_t script_index )
+void script_engine::initialize_script_context( size_t context_index, size_t script_index, script_type type_script )
 {
 	script_context * context = getScriptContext( context_index );
 	context->current_script_index = script_index;
 	context->object_vector_index = fetchObjectVector();
 	context->script_object = -1;
+	context->type_script = type_script;
 	callSub( context_index, script_container::AtInitialize );
 }
 bool script_engine::advance()

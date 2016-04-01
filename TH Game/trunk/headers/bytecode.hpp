@@ -165,6 +165,11 @@ struct script_environment
 	bool hasResult;
 };
 
+enum script_type
+{
+	menu_script, stage_script, enemy_script, player_script, other_script
+};
+
 struct script_container
 {
 	enum sub
@@ -179,6 +184,7 @@ struct script_container
 	size_t HitBlock;
 	size_t ScriptDirectory;
 };
+
 
 struct natives
 {
