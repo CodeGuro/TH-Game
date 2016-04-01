@@ -237,6 +237,8 @@ private:
 	static void _PlaySound( script_engine * eng, size_t * argv );
 	static void _StopSound( script_engine * eng, size_t * argv );
 	static void _DeleteSound( script_engine * eng, size_t * argv );
+	static void _GetScore( script_engine * eng, size_t * argv );
+	static void _SetScore( script_engine * eng, size_t * argv );
 	static void _Obj_Create( script_engine * eng, size_t * argv );
 	static void _Obj_Delete( script_engine * eng, size_t * argv );
 	static void _Obj_BeDeleted( script_engine * eng, size_t * argv );

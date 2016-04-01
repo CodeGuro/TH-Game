@@ -90,6 +90,7 @@
     <ClInclude Include="trunk\headers\Direct3DEngine.hpp" />
     <ClInclude Include="trunk\headers\FatalException.hpp" />
     <ClInclude Include="trunk\headers\GameEngine.hpp" />
+    <ClInclude Include="trunk\headers\GameProperties.hpp" />
     <ClInclude Include="trunk\headers\lightweight_vector.hpp" />
     <ClInclude Include="trunk\headers\ObjMgr.hpp" />
     <ClInclude Include="trunk\headers\parser.hpp" />

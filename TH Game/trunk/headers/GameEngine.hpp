@@ -8,8 +8,9 @@ class GameEngine
 private:
 	Direct3DEngine draw_mgr;
 	script_engine script_mgr;
+	GameProperties game_properties;
 public:
-	GameEngine( HWND hWnd ) : draw_mgr( hWnd ), script_mgr( &draw_mgr )
+	GameEngine( HWND hWnd ) : draw_mgr( hWnd ), script_mgr( &draw_mgr, &game_properties )
 	{
 	}
 	bool start()

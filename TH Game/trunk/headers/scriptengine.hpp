@@ -7,6 +7,7 @@
 #include "parser.hpp"
 #include "Direct3DEngine.hpp"
 #include "FatalException.hpp"
+#include "GameProperties.hpp"
 
 class script_engine
 {
@@ -43,6 +44,7 @@ private:
 	size_t currentRunningMachine;
 
 	Direct3DEngine * draw_mgr;
+	GameProperties * game_properties;
 
 	std::default_random_engine num_generator;
 
@@ -54,7 +56,7 @@ private:
 	void clean_script_context( size_t context_index );
 
 public:
-	script_engine( Direct3DEngine * draw_mgr );
+	script_engine( Direct3DEngine * draw_mgr, GameProperties * properties );
 	void cleanEngine(); //remove all cache
 	bool start();
 	bool run(); //true if finished (i.e. no script executers left to run)
@@ -86,4 +88,5 @@ public:
 	void clearOutOfBoundObjects( size_t machineIdx );
 	unsigned getContextCount() const;
 	Direct3DEngine * get_drawmgr();
+	GameProperties * get_game_properties();
 };

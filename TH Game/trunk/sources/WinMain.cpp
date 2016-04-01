@@ -2,6 +2,7 @@
 #include <D3DX10math.h>
 #include <GameEngine.hpp>
 #include <FatalException.hpp>
+#include <GameProperties.hpp>
 
 LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
@@ -15,6 +16,8 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 
 int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd )
 {
+	GameProperties props;
+	props.set_points( 32 );
 	WNDCLASS wc;
 	wc.style = CS_HREDRAW | CS_VREDRAW;
 	wc.lpfnWndProc = &WndProc;

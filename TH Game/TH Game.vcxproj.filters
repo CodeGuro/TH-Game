@@ -45,6 +45,9 @@
     <ClInclude Include="trunk\headers\FatalException.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="trunk\headers\GameProperties.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="trunk\sources\bytecode.cpp">

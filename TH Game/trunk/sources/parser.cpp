@@ -1486,6 +1486,8 @@ void parser::registerNatives()
 		{ "PlaySound", &natives::_PlaySound, 1 },
 		{ "StopSound", &natives::_StopSound, 1 },
 		{ "DeleteSound", &natives::_DeleteSound, 1 },
+		{ "GetScore", &natives::_GetScore, 0 },
+		{ "SetScore", &natives::_SetScore, 1 },
 		{ "Obj_Create", &natives::_Obj_Create, 1 },
 		{ "Obj_Delete", &natives::_Obj_Delete, 1 },
 		{ "Obj_BeDeleted", &natives::_Obj_BeDeleted, 1 },

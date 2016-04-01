@@ -404,6 +404,16 @@ void natives::_DeleteSound( script_engine * eng, size_t * argv )
 {
 	eng->get_drawmgr()->DeleteSound( eng->scriptdata_mgr.getStringScriptData( argv[ 0 ] ) );
 }
+void natives::_GetScore( script_engine * eng, size_t *argv )
+{
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( (float)eng->get_game_properties()->get_points() );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
+	eng->scriptdata_mgr.releaseScriptData( tmp );
+}
+void natives::_SetScore( script_engine * eng, size_t * argv )
+{
+	eng->get_game_properties()->set_points( (size_t)eng->scriptdata_mgr.getRealScriptData( argv[ 0 ] ) );
+}
 void natives::_Obj_Create( script_engine * eng, size_t * argv )
 {
 	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->scriptdata_mgr.getObjTypeScriptData( argv[ 0 ] ), eng->currentRunningMachine );

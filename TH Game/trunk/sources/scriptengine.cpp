@@ -572,16 +572,21 @@ unsigned script_engine::getContextCount() const
 {
 	return vecContexts.size();
 }
+GameProperties * script_engine::get_game_properties()
+{
+	return game_properties;
+}
 
 //script engine - public functions, called from the outside
-script_engine::script_engine( Direct3DEngine * draw_mgr ) : scriptdata_mgr( draw_mgr, this ), draw_mgr( draw_mgr ), error( false ), finished( false ), currentRunningMachine( -1 )
+script_engine::script_engine( Direct3DEngine * draw_mgr, GameProperties * game_properties ) : scriptdata_mgr( draw_mgr, this ),
+	draw_mgr( draw_mgr ), game_properties( game_properties ), error( false ), finished( false ), currentRunningMachine( -1 )
 {
 }
 void script_engine::cleanEngine()
 {
 	for( unsigned u = 0; u < vecContexts.size(); ++u )
 		clean_script_context( u );
-	*this = script_engine( get_drawmgr() );
+	*this = script_engine( get_drawmgr(), game_properties );
 
 	currentRunningMachine = -1;
 	error = false;
