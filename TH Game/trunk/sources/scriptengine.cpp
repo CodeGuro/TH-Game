@@ -689,24 +689,7 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 		blockIndex = sc.FinalizeBlock;
 		break;
 	case script_container::AtMainLoop:
-		{
-			//check to see if latched object (if there is one) is valid
-			if( CheckValidIdx( getScriptContext( machineIndex )->script_object ) && 
-				CheckValidIdx( getScriptContext( machineIndex )->object_vector_index  ) )
-			{
-				Object * obj = getObjFromScriptVector( getScriptContext( machineIndex )->object_vector_index, getScriptContext( machineIndex )->script_object ); // GetObject( vvecObjects[ getScriptMachine( machineIndex ).getObjectVectorIndex() ][ getScriptMachine( machineIndex ).getLatchedObject() ] );
-				if( !obj )
-				{
-					//latched object has been deleted, terminate machine
-					callSub( machineIndex, script_container::AtFinalize );
-					clean_script_context( machineIndex );
-					releaseScriptContext( machineIndex );
-					raise_exception( eng_exception( eng_exception::finalizing_machine ) );
-					break;
-				}
-			}
-			blockIndex = sc.MainLoopBlock;
-		}
+		blockIndex = sc.MainLoopBlock;
 		break;
 	case script_container::AtBackGround:
 		blockIndex = sc.BackGroundBlock;

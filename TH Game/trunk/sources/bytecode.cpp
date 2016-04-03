@@ -377,10 +377,16 @@ void natives::_CreateEnemyFromFile( script_engine * eng, size_t * argv )
 }
 void natives::_TerminateScript( script_engine * eng, size_t * argv )
 {
+	///*
 	eng->callSub( eng->currentRunningMachine, script_container::AtFinalize );
 	eng->clean_script_context( eng->currentRunningMachine );
 	eng->releaseScriptContext( eng->currentRunningMachine );
 	eng->raise_exception( eng_exception::finalizing_machine );
+	//*/
+
+	//eng->clean_script_context( eng->currentRunningMachine );
+	//eng->releaseScriptContext( eng->currentRunningMachine );
+
 }
 void natives::_GetCurrentScriptDirectory( script_engine * eng, size_t * argv )
 {
