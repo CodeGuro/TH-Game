@@ -619,10 +619,9 @@ bool script_engine::start()
 	size_t script_index = findScriptFromFile( script_parser.getCurrentScriptPath() );
 	if( !CheckValidIdx( script_index ) ) raise_exception( FatalException( "main script does not exist" ) );
 
-	script_context * context = getScriptContext( fetchScriptContext() );
-	context->current_script_index = script_index;
-	context->object_vector_index = fetchObjectVector();
-	context->script_object = -1;
+	size_t context = fetchScriptContext();
+	initialize_script_context( context, script_index, script_type::menu_script );
+
 	return true;
 }
 bool script_engine::run()
@@ -730,7 +729,6 @@ void script_engine::initialize_script_context( size_t context_index, size_t scri
 	context->object_vector_index = fetchObjectVector();
 	context->script_object = -1;
 	context->type_script = type_script;
-	callSub( context_index, script_container::AtInitialize );
 }
 bool script_engine::advance()
 {

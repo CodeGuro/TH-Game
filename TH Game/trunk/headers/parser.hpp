@@ -98,11 +98,7 @@ private:
 	void scanCurrentScope( block::block_kind kind, vector< std::string > const & args );
 	block & getCurrentBlock(); //get the current working block
 	void pushCode( code const & val ); //on the current working block
-	void mapScriptPaths( std::string const & pathStart );
-	void registerScript( std::string const & fullPath );
 	void raiseError( std::string errmsg, error::errReason reason );
-	void importSymbolsFromFile( std::string const & filePath );
-	void importNativeSymbols(); //in the topmost scope
 	void parseDocument( std::string const & scriptPath, std::string const & scriptString );
 	void registerNatives();
 
