@@ -560,6 +560,20 @@ void script_engine::clearOutOfBoundObjects( size_t machineIdx )
 		}
 	}
 }
+void script_engine::finishAllThreads( size_t machineIdx )
+{
+	script_context * context = getScriptContext( currentRunningMachine );
+	for( size_t it = 0; it < context->threads.size(); ++it )
+	{
+		size_t current = context->threads[ it ];
+		do
+		{
+			script_environment & env = getScriptEnvironment( current );
+			env.codeIndex = getBlock( env.blockIndex ).vecCodes.size();
+			current = env.parentIndex;
+		} while( CheckValidIdx( current ) );
+	}
+}
 
 //script engine - other
 Object * script_engine::getObjFromScriptVector( size_t objvector, size_t Idx )
@@ -579,7 +593,7 @@ GameProperties * script_engine::get_game_properties()
 
 //script engine - public functions, called from the outside
 script_engine::script_engine( Direct3DEngine * draw_mgr, GameProperties * game_properties ) : scriptdata_mgr( draw_mgr, this ),
-	draw_mgr( draw_mgr ), game_properties( game_properties ), error( false ), finished( false ), currentRunningMachine( -1 )
+	draw_mgr( draw_mgr ), game_properties( game_properties ), error( false ), removing_machine( false ), finished( false ), currentRunningMachine( -1 )
 {
 }
 void script_engine::cleanEngine()
@@ -626,32 +640,45 @@ bool script_engine::start()
 }
 bool script_engine::run()
 {
-	currentRunningMachine = 0;
 	get_drawmgr()->UpdateObjectCollisions();
-	while( currentRunningMachine < vecContexts.size() )
+
+	try
 	{
-		try
+		for( currentRunningMachine = 0; currentRunningMachine < vecContexts.size(); ++currentRunningMachine )
 		{
-			for(; currentRunningMachine < vecContexts.size(); ++currentRunningMachine )
+			if( error ) return false;
+			script_context const & machine = *getScriptContext( currentRunningMachine );
+			Object * current = getObjFromScriptVector( machine.object_vector_index, machine.script_object );
+			if( current )
 			{
-				if( error ) return false;
-				script_context const & machine = *getScriptContext( currentRunningMachine );
-				Object * current = getObjFromScriptVector( machine.object_vector_index, machine.script_object );
-				if( current )
+				if( current->FlagCollision( -1 ) )
 				{
-					if( current->FlagCollision( -1 ) )
-						callSub( currentRunningMachine, script_container::AtHit );
+					callSub( script_container::AtHit );
 				}
-				callSub( currentRunningMachine, script_container::AtMainLoop );
-				clearOutOfBoundObjects( currentRunningMachine );
+			}
+
+			callSub( script_container::AtMainLoop );
+			clearOutOfBoundObjects( currentRunningMachine );
+			if( removing_machine )
+			{
+				clean_script_context( currentRunningMachine );
+				releaseScriptContext( currentRunningMachine );
+				--currentRunningMachine;
+				removing_machine = false;
+				// continue;
+			}
+			if( finished )
+			{
+				cleanEngine();
+				break;
 			}
 		}
-		catch( eng_exception const & e )
-		{
-			if( e.throw_reason != e.finalizing_machine )
-				raise_exception( FatalException( "script_engine::run" ) );
-		}
 	}
+	catch( eng_exception const & e )
+	{
+		raise_exception( FatalException( "script_engine::run" ) );
+	}
+
 	return true;
 }
 Direct3DEngine * script_engine::get_drawmgr()
@@ -659,14 +686,13 @@ Direct3DEngine * script_engine::get_drawmgr()
 	return draw_mgr;
 }
 
-void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
+void script_engine::callSub( script_container::sub AtSub )
 {
-	unsigned prevMachine = currentRunningMachine;
-	currentRunningMachine = machineIndex;
-	script_context & m = *getScriptContext( machineIndex );
+	if( removing_machine || finished )
+		return;
+	script_context & m = *getScriptContext( currentRunningMachine );
 	assert( CheckValidIdx( m.current_thread_index ) && CheckValidIdx( m.current_script_index ) );
-	size_t blockIndex = -1;
-	script_container & sc = getScript( m.current_script_index );
+	
 	//initializing
 	if( !m.threads.size() )
 	{
@@ -675,10 +701,14 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 		getScriptEnvironment( m.threads[ 0 ] ).hasResult = false;
 		m.current_thread_index = 0;
 		while( !advance() );
-		callSub( currentRunningMachine, script_container::AtInitialize );
-		currentRunningMachine = prevMachine;
-		return;
+		if( removing_machine || finished )
+			return;
+		callSub( script_container::AtInitialize );
+		if( removing_machine || finished )
+			return;
 	}
+	size_t blockIndex = -1;
+	script_container & sc = getScript( getScriptContext( currentRunningMachine )->current_script_index );
 	switch( AtSub )
 	{
 	case script_container::AtInitialize:
@@ -698,6 +728,7 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 	}
 	if( CheckValidIdx( blockIndex ) )
 	{
+		script_context & m = *getScriptContext( currentRunningMachine );
 		++getScriptEnvironment( m.threads[ m.current_thread_index ] ).refCount;
 		size_t calledEnv = fetchScriptEnvironment( blockIndex );
 		script_environment & e = getScriptEnvironment( calledEnv );
@@ -706,8 +737,6 @@ void script_engine::callSub( size_t machineIndex, script_container::sub AtSub )
 		m.threads[ m.current_thread_index ] = calledEnv;
 		while( !advance() );
 	}
-
-	currentRunningMachine = prevMachine;
 }
 void script_engine::raise_exception( eng_exception const & eng_except )
 {

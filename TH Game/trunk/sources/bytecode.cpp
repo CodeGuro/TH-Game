@@ -377,16 +377,8 @@ void natives::_CreateEnemyFromFile( script_engine * eng, size_t * argv )
 }
 void natives::_TerminateScript( script_engine * eng, size_t * argv )
 {
-	///*
-	eng->callSub( eng->currentRunningMachine, script_container::AtFinalize );
-	eng->clean_script_context( eng->currentRunningMachine );
-	eng->releaseScriptContext( eng->currentRunningMachine );
-	eng->raise_exception( eng_exception::finalizing_machine );
-	//*/
-
-	//eng->clean_script_context( eng->currentRunningMachine );
-	//eng->releaseScriptContext( eng->currentRunningMachine );
-
+	eng->removing_machine = true;
+	eng->finishAllThreads( eng->currentRunningMachine );
 }
 void natives::_GetCurrentScriptDirectory( script_engine * eng, size_t * argv )
 {
@@ -669,9 +661,9 @@ void natives::_CreateShot01( script_engine * eng, size_t * argv )
 }
 void natives::_TerminateProgram( script_engine * eng, size_t * argv )
 {
-	eng->cleanEngine();
 	eng->finished = true;
-	eng->raise_exception( eng_exception::finalizing_machine );
+	for( size_t machineIdx = 0; machineIdx < eng->vecContexts.size(); ++machineIdx )
+		eng->finishAllThreads( machineIdx );
 }
 void natives::_SetEyeView( script_engine * eng, size_t * argv )
 {

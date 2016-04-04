@@ -40,6 +40,7 @@ private:
 	std::map< std::string, size_t > mappedShotScripts;
 	
 	bool error;
+	bool removing_machine;
 	bool finished;
 	std::string errorMessage;
 	size_t currentRunningMachine;
@@ -50,7 +51,7 @@ private:
 	std::default_random_engine num_generator;
 
 
-	void callSub( size_t machineIndex, script_container::sub AtSub );
+	void callSub( script_container::sub AtSub );
 
 	bool advance(); //returns 1 when finished
 	void initialize_script_context( size_t script_index, size_t context_index, script_type type_script );
@@ -84,6 +85,7 @@ public:
 	size_t findScript( std::string const & scriptName );
 	size_t findScriptFromFile( std::string const & scriptPath );
 	size_t findScriptDirectory( std::string const & scriptPath );
+	void finishAllThreads( size_t machineIdx );
 	std::string const & getCurrentScriptDirectory( size_t machineIdx ) const;
 	Object * getObjFromScriptVector( size_t objvector, size_t Idx );
 	void clearOutOfBoundObjects( size_t machineIdx );

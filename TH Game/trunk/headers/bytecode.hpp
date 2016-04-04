@@ -185,7 +185,6 @@ struct script_container
 	size_t ScriptDirectory;
 };
 
-
 struct natives
 {
 private:
@@ -300,7 +299,7 @@ struct eng_exception
 {
 	enum Reason
 	{
-		finalizing_machine, invalid_reason
+		invalid_reason
 	};
 	Reason throw_reason;
 	std::string const Str;
