@@ -240,6 +240,7 @@ private:
 	static void _GetCurrentScriptDirectory( script_engine * eng, size_t * argv );
 	static void _LoadSound( script_engine * eng, size_t * argv );
 	static void _PlaySound( script_engine * eng, size_t * argv );
+	static void _SetSoundVolume( script_engine * eng, size_t * argv );
 	static void _StopSound( script_engine * eng, size_t * argv );
 	static void _DeleteSound( script_engine * eng, size_t * argv );
 	static void _GetScore( script_engine * eng, size_t * argv );

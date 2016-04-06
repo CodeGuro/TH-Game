@@ -494,14 +494,14 @@ void Direct3DEngine::StopSound( std::string const & pathname )
 	buffer->SetVolume( DSBVOLUME_MAX );
 	buffer->Stop();
 }
-void Direct3DEngine::PlaySound( std::string const & pathname )
+void Direct3DEngine::PlaySound( std::string const & pathname, const float volume )
 {
 	auto it = mapSoundEffects.find( pathname );
 	if( it == mapSoundEffects.end() )
 		return;
 
+	LONG vol = (LONG)( (float)DSBVOLUME_MIN + volume / 100.f * ( (float)DSBVOLUME_MAX - (float)DSBVOLUME_MIN ) );
 	LPDIRECTSOUNDBUFFER8 buffer = it->second;
-
 	buffer->SetCurrentPosition( 0 );
 	buffer->SetVolume( DSBVOLUME_MAX );
 	buffer->Play( 0, 0, 0 );

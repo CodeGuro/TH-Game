@@ -1484,6 +1484,7 @@ void parser::registerNatives()
 		{ "GetCurrentScriptDirectory", &natives::_GetCurrentScriptDirectory, 0 },
 		{ "LoadSound", &natives::_LoadSound, 1 },
 		{ "PlaySound", &natives::_PlaySound, 1 },
+		{ "SetSoundVolume", &natives::_SetSoundVolume, 1 },
 		{ "StopSound", &natives::_StopSound, 1 },
 		{ "DeleteSound", &natives::_DeleteSound, 1 },
 		{ "GetScore", &natives::_GetScore, 0 },

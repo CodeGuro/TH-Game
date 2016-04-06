@@ -392,7 +392,11 @@ void natives::_LoadSound( script_engine * eng, size_t * argv )
 }
 void natives::_PlaySound( script_engine * eng, size_t * argv )
 {
-	eng->get_drawmgr()->PlaySound( eng->scriptdata_mgr.getStringScriptData( argv[ 0 ] ) );
+	eng->get_drawmgr()->PlaySound( eng->scriptdata_mgr.getStringScriptData( argv[ 0 ] ), eng->game_properties->get_volume() );
+}
+void natives::_SetSoundVolume( script_engine * eng, size_t * argv )
+{
+	eng->game_properties->set_volume( eng->scriptdata_mgr.getRealScriptData( argv[ 0 ] ) );
 }
 void natives::_StopSound( script_engine * eng, size_t * argv )
 {
