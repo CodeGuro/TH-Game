@@ -22,6 +22,7 @@ private:
 		size_t current_thread_index;
 		size_t current_script_index;
 		size_t object_vector_index;
+		size_t argument;
 		size_t script_object;
 		script_type type_script;
 	};
@@ -54,7 +55,7 @@ private:
 	void callSub( script_container::sub AtSub );
 
 	bool advance(); //returns 1 when finished
-	void initialize_script_context( size_t script_index, size_t context_index, script_type type_script );
+	void initialize_script_context( size_t context_index, size_t script_index, script_type type_script );
 	void clean_script_context( size_t context_index );
 
 public:
