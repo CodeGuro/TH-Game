@@ -1,0 +1,115 @@
+#TouhouDanmaku[ other ]
+
+function SpawnCollectables( let enemyx, let enemyy, let playerpos_arr )
+{
+	let args = [ enemyx, enemyy, playerpos_arr ];
+	CreateEnemyFromFile( GetCurrentScriptDirectory ~ "collectables.th", args );
+}
+
+script_main collectable_script
+{
+	let img;
+	let sound;
+	
+	@Initialize
+	{
+		img = GetCurrentScriptDirectory() ~ "img/etama2.png";
+		sound = GetCurrentScriptDirectory() ~ "se/se_item00.wav";
+		LoadTexture( img );
+		LoadSound( sound );
+		run();
+	}
+	
+	@MainLoop
+	{
+		yield;
+	}
+	
+	task spawnpoint( let obj, let id )
+	{
+		let args = GetScriptArgument();
+		let enemyx = args[ 0 ];
+		let enemyy = args[ 1 ];
+		let playerpos_arr = args[ 2 ];
+		let rand_range = rand_int( 1,128 );
+		let rand_angle = rand( 0, 2*PI );
+		let myx = enemyx + rand_range * cos( rand_angle );
+		let myy = enemyy + rand_range * sin( rand_angle );
+		let speed = 2;
+		let rad = 10;
+		
+		let uvl = 16/256;
+		let uvr = 32/256;
+		let uvt = 64/256;
+		let uvb = 80/256;
+		
+		ObjEffect_SetVertexUV( obj, 6*id + 0, uvl, uvt );
+		ObjEffect_SetVertexUV( obj, 6*id + 1, uvr, uvt );
+		ObjEffect_SetVertexUV( obj, 6*id + 2, uvl, uvb );
+		ObjEffect_SetVertexUV( obj, 6*id + 3, uvr, uvt );
+		ObjEffect_SetVertexUV( obj, 6*id + 4, uvr, uvb );
+		ObjEffect_SetVertexUV( obj, 6*id + 5, uvl, uvb );
+		
+		loop
+		{
+			let playerx = playerpos_arr[ 0 ];
+			let playery = playerpos_arr[ 1 ];
+			
+			ObjEffect_SetVertexXY( obj, 6*id + 0, myx - 8, myy - 8 );
+			ObjEffect_SetVertexXY( obj, 6*id + 1, myx + 8, myy - 8 );
+			ObjEffect_SetVertexXY( obj, 6*id + 2, myx - 8, myy + 8 );
+			ObjEffect_SetVertexXY( obj, 6*id + 3, myx + 8, myy - 8 );
+			ObjEffect_SetVertexXY( obj, 6*id + 4, myx + 8, myy + 8 );
+			ObjEffect_SetVertexXY( obj, 6*id + 5, myx - 8, myy + 8 );
+			
+			let dir = atan2( playery - myy, playerx - myx );
+			myx = myx + speed * cos( dir );
+			myy = myy + speed * sin( dir );
+			speed = speed + 0.1;
+			
+			let xdiff = playerx - myx;
+			let ydiff = playery - myy;
+			if( xdiff*xdiff+ydiff*ydiff <= rad*rad )
+			{
+				ascent( i in 0..6 )
+				{
+					ObjEffect_SetVertexColor( obj, 6*id + i, 255, 255, 255, 0 );
+				}
+				
+				SetScore( GetScore() + 1020 );
+				PlaySound( sound );
+				break;
+			}
+			else
+			{
+				yield;
+			}
+		}
+	}
+	
+	task run()
+	{
+		let numpoints = 8;
+		let eff = Obj_Create( OBJ_EFFECT );
+		ObjEffect_CreateVertex( eff, 6 * numpoints );
+		ObjEffect_SetPrimitiveType( eff, PRIMITIVE_TRIANGLELIST );
+		ObjEffect_SetTexture( eff, img );
+		Obj_SetAutoDelete( eff, false );
+		Obj_SetPosition( eff, 0, 0 );
+		
+		ascent( i in 0..6*numpoints )
+		{
+			ObjEffect_SetVertexColor( eff, i, 255, 255, 255, 255 );
+		}
+		
+		ascent( i in 0..numpoints )
+		{
+			spawnpoint( eff, i );
+		}
+		
+		loop{ yield; }
+		
+		Obj_Delete( eff );
+	
+	}
+}

@@ -1,9 +1,10 @@
 #TouhouDanmaku[ single ]
 #include "./graphics.th"
+#include "./collectables.th"
 
-function CreateEnemy( let inix, let iniy, let finx, let finy )
+function CreateEnemy( let inix, let iniy, let finx, let finy, let player_arr )
 {
-	let pos = [ inix, iniy, finx, finy ];
+	let pos = [ inix, iniy, finx, finy, player_arr ];
 	CreateEnemyFromFile( GetCurrentScriptDirectory() ~ "enemy.th", pos );
 }
 
@@ -41,6 +42,8 @@ script_main enemy_script
 	@Finalize
 	{
 		SetScore( GetScore() + 30 );
+		
+		SpawnCollectables( Obj_GetX( obj ), Obj_GetY( obj ), GetScriptArgument()[4] );
 	}
 	
 	task hit_task()

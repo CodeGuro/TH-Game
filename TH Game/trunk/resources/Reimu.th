@@ -1,8 +1,8 @@
 #TouhouDanmaku[ Player ]
 
-function CreatePlayer()
+function CreatePlayer( let player_pos )
 {
-	CreateEnemyFromFile( ".\Reimu.th", 0 );
+	CreateEnemyFromFile( ".\Reimu.th", player_pos );
 }
 
 script_main Reimu_Script
@@ -26,8 +26,8 @@ script_main Reimu_Script
 		LoadTexture( border_of_life );
 		LoadSound( pchuun );
 		LoadSound( playerShotSound );
-		x = 240;
-		y = 400;
+		x = GetScriptArgument()[0];
+		y = GetScriptArgument()[1];
 		hit = false;
 		vulnerable = true;
 		PlayerGraphic();
@@ -70,6 +70,9 @@ script_main Reimu_Script
 			}
 			Obj_SetPosition( ObjPlayer, x, y );
 		}
+		let player_pos = GetScriptArgument();
+		player_pos[ 0 ] = x;
+		player_pos[ 1 ] = y;
 		yield;
 	}
 	@Hit

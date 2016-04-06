@@ -9,6 +9,8 @@ script_main main_script
 	let dir_se;
 	let dir_img;
 	let pointCount;
+	let playerx;
+	let playery;
 
 	@Initialize
 	{
@@ -16,6 +18,8 @@ script_main main_script
 		dir_se = dir ~ "se/";
 		dir_img = dir ~ "img/";
 		pointCount = 0;
+		playerx = 240;
+		playery = 400;
 
 		load_images();
 		load_sounds();
@@ -118,8 +122,9 @@ script_main main_script
 
 	task main_stage()
 	{
-		CreatePlayer();
-		CreateEnemy( 64, 64, 600, 64 );
+		let player_pos = [ playerx, playery ];
+		CreatePlayer( player_pos );
+		CreateEnemy( 64, 64, 250, 64, player_pos );
 		CreateFrame();
 	}
 
