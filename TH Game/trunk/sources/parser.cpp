@@ -1481,6 +1481,7 @@ void parser::registerNatives()
 		{ "CreateEnemyFromScript", &natives::_CreateEnemyFromScript, 2 },
 		{ "CreateEnemyFromFile", &natives::_CreateEnemyFromFile, 2 },
 		{ "TerminateScript", &natives::_TerminateScript, 0 },
+		{ "GetScriptArgument", &natives::_GetScriptArgument, 0 },
 		{ "GetCurrentScriptDirectory", &natives::_GetCurrentScriptDirectory, 0 },
 		{ "LoadSound", &natives::_LoadSound, 1 },
 		{ "PlaySound", &natives::_PlaySound, 1 },

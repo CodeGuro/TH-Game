@@ -380,6 +380,10 @@ void natives::_TerminateScript( script_engine * eng, size_t * argv )
 	eng->removing_machine = true;
 	eng->finishAllThreads( eng->currentRunningMachine );
 }
+void natives::_GetScriptArgument( script_engine * eng, size_t * argv )
+{
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], eng->vecContexts[ eng->currentRunningMachine ].argument );
+}
 void natives::_GetCurrentScriptDirectory( script_engine * eng, size_t * argv )
 {
 	size_t tmp = eng->scriptdata_mgr.fetchScriptData( eng->getCurrentScriptDirectory( eng->currentRunningMachine ) );
