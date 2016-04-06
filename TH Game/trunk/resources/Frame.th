@@ -2,7 +2,7 @@
 
 function CreateFrame()
 {
-	CreateEnemyFromFile( GetCurrentScriptDirectory ~ "Frame.th" );
+	CreateEnemyFromFile( GetCurrentScriptDirectory ~ "Frame.th", 0 );
 }
 
 script_main frame_script

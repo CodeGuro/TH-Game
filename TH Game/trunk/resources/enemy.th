@@ -1,9 +1,10 @@
 #TouhouDanmaku[ single ]
 #include "./graphics.th"
 
-function CreateEnemy()
+function CreateEnemy( let inix, let iniy, let finx, let finy )
 {
-	CreateEnemyFromFile( GetCurrentScriptDirectory() ~ "enemy.th" );
+	let pos = [ inix, iniy, finx, finy ];
+	CreateEnemyFromFile( GetCurrentScriptDirectory() ~ "enemy.th", pos );
 }
 
 script_main enemy_script
@@ -174,7 +175,8 @@ script_main enemy_script
 			ObjEffect_SetVertexColor( obj, i, 255, 255, 255, 255 );
 		}
 
-		Obj_SetPosition( obj, 100, 100 );
+		let args = GetScriptArgument();
+		Obj_SetPosition( obj, args[ 0 ], args[ 1 ] );
 
 		while( !Obj_BeDeleted( obj ) )
 		{
@@ -189,7 +191,8 @@ script_main enemy_script
 	{
 		setgraphics();
 		wait( 100 );
-		setMovePosition( 640/2, 480/2, 2, 50 );
+		let arg = GetScriptArgument();
+		setMovePosition( arg[ 2 ], arg[ 3 ], 2, 50 );
 		fireBullets();
 	}
 	task fireBullets()

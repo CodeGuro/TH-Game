@@ -119,7 +119,7 @@ script_main main_script
 	task main_stage()
 	{
 		CreatePlayer();
-		CreateEnemy();
+		CreateEnemy( 64, 64, 600, 64 );
 		CreateFrame();
 	}
 

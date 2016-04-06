@@ -2,7 +2,7 @@
 
 function CreatePlayer()
 {
-	CreateEnemyFromFile( ".\Reimu.th" );
+	CreateEnemyFromFile( ".\Reimu.th", 0 );
 }
 
 script_main Reimu_Script
