@@ -15,7 +15,7 @@ script_main enemy_script
 	let vulnerable;
 	@Initialize
 	{
-		SetSoundVolume( 50 );
+		SetSoundVolume( 75 );
 		dir = GetCurrentScriptDirectory();
 		dir_se = dir ~ "se/";
 		dir_img = dir ~ "img/";
