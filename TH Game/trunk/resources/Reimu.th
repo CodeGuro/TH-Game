@@ -1,6 +1,11 @@
 #TouhouDanmaku[ Player ]
 
-script_main main_script
+function CreatePlayer()
+{
+	CreateEnemyFromFile( ".\Reimu.th" );
+}
+
+script_main Reimu_Script
 {
 	let ObjPlayer;
 	let vulnerable;
@@ -26,8 +31,8 @@ script_main main_script
 		hit = false;
 		vulnerable = true;
 		PlayerGraphic();
-		FireShot();
-		SetFog( 0.000001, 0.9999, 255, 255, 255 )
+		ShotLoop();
+		//SetFog( 0.000001, 0.9999, 255, 255, 255 )
 	}
 	@MainLoop
 	{
@@ -81,7 +86,8 @@ script_main main_script
 	@Finalize
 	{
 	}
-	task FireShot()
+	
+	function FireShot( let posx, let posy )
 	{
 		let imgW = 256;
 		let imgH = 256;
@@ -89,31 +95,39 @@ script_main main_script
 		let _x = 0;
 		let uw = 64;
 		let uh = 16;
+		
+		let objShot = Obj_Create( OBJ_EFFECT );
+		ObjEffect_SetLayer( objShot, 3 );
+		Obj_SetAutoDelete( objShot, true );
+		Obj_SetPosition( objShot, posx, posy );
+		Obj_SetAngle( objShot, -PI/2 );
+		Obj_SetSpeed( objShot,  20 );
+		ObjEffect_SetTexture( objShot, img );
+		ObjEffect_CreateVertex( objShot, 4 );
+		ObjEffect_SetPrimitiveType( objShot, PRIMITIVE_TRIANGLESTRIP );
+		ascent( i in 0..4 )
+		{
+			ObjEffect_SetVertexColor( objShot, i, 255, 255, 255, 128 );
+		}
+		ObjEffect_SetVertexXY( objShot, 0, -uw/2, -uh/2 );
+		ObjEffect_SetVertexXY( objShot, 1, uw/2, -uh/2 );
+		ObjEffect_SetVertexXY( objShot, 2, -uw/2, uh/2 );
+		ObjEffect_SetVertexXY( objShot, 3, uw/2, uh/2 );
+		ObjEffect_SetVertexUV( objShot, 0, _x/imgW, _y/imgH );
+		ObjEffect_SetVertexUV( objShot, 1, (_x+uw)/imgW, _y/imgH );
+		ObjEffect_SetVertexUV( objShot, 2, _x/imgW, (_y+uh)/imgH );
+		ObjEffect_SetVertexUV( objShot, 3, (_x+uw)/imgW, (_y+uh)/imgH );
+	}
+	
+	task ShotLoop()
+	{
 		loop
 		{
 			if( KeyDown( 90 ) )
 			{
-				let objShot = Obj_Create( OBJ_EFFECT );
-				Obj_SetAutoDelete( objShot, true );
-				Obj_SetPosition( objShot, Obj_GetX( ObjPlayer ), Obj_GetY( ObjPlayer ) - 8);
-				Obj_SetAngle( objShot, -PI/2 );
-				Obj_SetSpeed( objShot,  15 );
-				ObjEffect_SetTexture( objShot, img );
-				ObjEffect_CreateVertex( objShot, 4 );
-				ObjEffect_SetPrimitiveType( objShot, PRIMITIVE_TRIANGLESTRIP );
-				ascent( i in 0..4 )
-				{
-					ObjEffect_SetVertexColor( objShot, i, 255, 255, 255, 255 );
-				}
-				ObjEffect_SetVertexXY( objShot, 0, -uw/2, -uh/2 );
-				ObjEffect_SetVertexXY( objShot, 1, uw/2, -uh/2 );
-				ObjEffect_SetVertexXY( objShot, 2, -uw/2, uh/2 );
-				ObjEffect_SetVertexXY( objShot, 3, uw/2, uh/2 );
-				ObjEffect_SetVertexUV( objShot, 0, _x/imgW, _y/imgH );
-				ObjEffect_SetVertexUV( objShot, 1, (_x+uw)/imgW, _y/imgH );
-				ObjEffect_SetVertexUV( objShot, 2, _x/imgW, (_y+uh)/imgH );
-				ObjEffect_SetVertexUV( objShot, 3, (_x+uw)/imgW, (_y+uh)/imgH );
-
+				let offset = 10;
+				FireShot( Obj_GetX( ObjPlayer ) - offset, Obj_GetY( ObjPlayer ) - 8 );
+				FireShot( Obj_GetX( ObjPlayer ) + offset, Obj_GetY( ObjPlayer ) - 8 );
 				loop( 4 ){ yield; }
 				PlaySound( playerShotSound );
 			}

@@ -1,15 +1,17 @@
-#TouhouDanmaku[ stage ]
-#include ".\Reimu.th"
-#include ".\Enemy.th"
-#include "./Frame.th"
+#TouhouDanmaku[ frame ]
 
-script_main main_script
+function CreateFrame()
+{
+	CreateEnemyFromFile( GetCurrentScriptDirectory ~ "Frame.th" );
+}
+
+script_main frame_script
 {
 	let dir;
 	let dir_se;
 	let dir_img;
 	let pointCount;
-
+	
 	@Initialize
 	{
 		dir = GetCurrentScriptDirectory();
@@ -18,54 +20,23 @@ script_main main_script
 		pointCount = 0;
 
 		load_images();
-		load_sounds();
-		LoadUserShotData( dir ~ "ShotData.th" );
-
-		main_stage();
-		
+		set_frame();
+		set_frame_decorators();
 	}
 	@MainLoop
 	{
 		yield;
 	}
-
 	@Finalize
 	{
 	}
-
+	
 	function load_images()
 	{
-		LoadTexture( dir_img ~ "enemy.png" );
-		LoadTexture( dir_img ~ "etama.png" );
-		LoadTexture( dir_img ~ "etama2.png" );
-		LoadTexture( dir_img ~ "etama3.png" );
-		LoadTexture( dir_img ~ "etama4.png" );
-		LoadTexture( dir_img ~ "etama5.png" );
-		LoadTexture( dir_img ~ "etama6.png" );
 		LoadTexture( dir_img ~ "DefaultSTGFrame.png" );
 	}
-
-	function load_sounds()
-	{
-		LoadSound( dir_se ~ "se_tan00.wav" );
-		LoadSound( dir_se ~ "se_tan01.wav" );
-		LoadSound( dir_se ~ "se_tan02.wav" );
-		LoadSound( dir_se ~ "se_option.wav" );
-		LoadSound( dir_se ~ "se_opshow.wav" );
-		LoadSound( dir_se ~ "se_ophide.wav" );
-		LoadSound( dir_se ~ "se_item00.wav" );
-		LoadSound( dir_se ~ "se_item01.wav" );
-		LoadSound( dir_se ~ "se_kira00.wav" );
-		LoadSound( dir_se ~ "se_kira01.wav" );
-		LoadSound( dir_se ~ "se_kira02.wav" );
-		LoadSound( dir_se ~ "se_graze.wav" );
-		LoadSound( dir_se ~ "se_slash.wav" );
-		LoadSound( dir_se ~ "se_damage00.wav" );
-		LoadSound( dir_se ~ "se_damage01.wav" );
-		LoadSound( dir_se ~ "se_invalid.wav" );
-	}
 	
-	function set_frame()
+		function set_frame()
 	{
 		let frameW = 640;
 		let frameH = 480;
@@ -109,22 +80,8 @@ script_main main_script
 		let dx = 0;
 		while( true )
 		{			
-			ObjFont_SetString( hiScoreFO, "HiScore:    " ~ ToString( pointCount ) );
-			pointCount = pointCount + rand_int(1,100);
+			ObjFont_SetString( hiScoreFO, "HiScore:    " ~ ToString( GetScore() ) );
 			yield;
 		}
-
-	}
-
-	task main_stage()
-	{
-		CreatePlayer();
-		CreateEnemy();
-		CreateFrame();
-	}
-
-	function wait( let n )
-	{
-		loop( n ){ yield; }
 	}
 }

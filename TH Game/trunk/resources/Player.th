@@ -1,6 +1,11 @@
 #TouhouDanmaku[ Player ]
 
-script_main main_script
+function CreatePlayer()
+{
+	CreateEnemyFromFile( ".\Player.th" );
+}
+
+script_main player_script
 {
 	let ObjPlayer;
 	let hit;
@@ -64,11 +69,11 @@ script_main main_script
 	task PlayerGraphic()
 	{
 		let Radius = 8;
-		LoadTexture( GetCurrentScriptDirectory ~ "etama.png" );
+		LoadTexture( GetCurrentScriptDirectory ~ "img/etama.png" );
 		ObjPlayer = Obj_Create( OBJ_EFFECT );
 		Obj_SetPosition( ObjPlayer, x, y );
 		ObjEffect_SetLayer( ObjPlayer, 3 );
-		ObjEffect_SetTexture( ObjPlayer, GetCurrentScriptDirectory ~ "etama.png" );
+		ObjEffect_SetTexture( ObjPlayer, GetCurrentScriptDirectory ~ "img/etama.png" );
 		ObjEffect_CreateVertex( ObjPlayer, 4 );
 		ObjEffect_SetPrimitiveType( ObjPlayer, PRIMITIVE_TRIANGLESTRIP );
 		ObjEffect_SetVertexXY( ObjPlayer, 0, -Radius, -Radius );

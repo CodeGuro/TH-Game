@@ -2,6 +2,7 @@
 #TouhouDanmaku[single] //preprocessor to let the parser know this script is intended for TH-DH, must be within first 512 characters
                           //optional : [single] anonymous is a script enemy, [stage] anonymous is a stage, []/void - assumed [single]
 #include ".\functions.th" //preprocessor for including external scripts
+#include ".\Reimu.th"
 
 function foo( let val )
 {
@@ -20,6 +21,7 @@ script_main main_script //main routine
 		STGFrame();
 		Task();
 		CreateEnemyFromScript( "youkai" );
+		CreatePlayer();
 		SetFog( 3, 10, 100, 30, 180 );
 	}
 	@MainLoop //routine called every frame post-Initialize

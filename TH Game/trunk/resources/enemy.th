@@ -1,12 +1,18 @@
 #TouhouDanmaku[ single ]
 #include "./graphics.th"
 
-script_main main_script
+function CreateEnemy()
+{
+	CreateEnemyFromFile( GetCurrentScriptDirectory() ~ "enemy.th" );
+}
+
+script_main enemy_script
 {
 	let dir;
 	let dir_se;
 	let dir_img;
 	let obj;
+	let vulnerable;
 	@Initialize
 	{
 		dir = GetCurrentScriptDirectory();
@@ -15,15 +21,75 @@ script_main main_script
 		load_images();
 		load_sounds();
 		LoadUserShotData( dir ~ "ShotData.th" );
+		vulnerable = true;
 		run();
 	}
 	@MainLoop
 	{
 		yield;
 	}
+	@Hit
+	{
+		if( vulnerable )
+		{
+			vulnerable = false;
+			hit_task();
+		}
+	}
 	@Finalize
 	{
+		SetScore( GetScore() + 30 );
 	}
+	
+	task hit_task()
+	{
+		PlaySound( dir_se ~ "se_enep00.wav" );
+		ascent( i in 0..4 )
+		{
+			ObjEffect_SetVertexColor( obj, i, 255, 255, 255, 0 );
+		}
+		
+		destroy_effect();
+		Finalize();
+		TerminateScript();
+		
+	}
+	
+	function destroy_effect()
+	{
+		let effect = Obj_Create( OBJ_EFFECT );
+		Obj_SetPosition( effect, Obj_GetX( obj ), Obj_GetY( obj ) );
+		ObjEffect_CreateVertex( effect, 4 );
+		ObjEffect_SetPrimitiveType( effect, PRIMITIVE_TRIANGLESTRIP );
+		ObjEffect_SetTexture( effect, dir_img ~ "etama2.png" );
+		ascent( i in 0..4 )
+		{
+			ObjEffect_SetVertexColor( effect, i, 255, 255, 255, 255 );
+		}
+		ObjEffect_SetVertexUV( effect, 0, 192/256, 176/256 );
+		ObjEffect_SetVertexUV( effect, 1, (192+64)/256, 176/256 );
+		ObjEffect_SetVertexUV( effect, 2, 192/256, (176+64)/256 );
+		ObjEffect_SetVertexUV( effect, 3, (192+64)/256, (176+64)/256 );
+		
+		ObjEffect_SetVertexXY( effect, 0, -32, -32 );
+		ObjEffect_SetVertexXY( effect, 1,  32, -32 );
+		ObjEffect_SetVertexXY( effect, 2, -32,  32 );
+		ObjEffect_SetVertexXY( effect, 3,  32,  32 );
+		
+		let sca = 1;
+		let time = 15;
+		ascent( j in 0..time )
+		{
+			ascent( i in 0..4 )
+			{
+				ObjEffect_SetVertexColor( effect, i, 255, 255, 255, (time-j)/time*255 );
+			}
+			ObjEffect_SetScale( effect, sca, sca );
+			sca = sca + 0.075;
+			yield;
+		}
+	}
+	
 	function load_images()
 	{
 		LoadTexture( dir_img ~ "enemy.png" );
@@ -52,6 +118,7 @@ script_main main_script
 		LoadSound( dir_se ~ "se_damage00.wav" );
 		LoadSound( dir_se ~ "se_damage01.wav" );
 		LoadSound( dir_se ~ "se_invalid.wav" );
+		LoadSound( dir_se ~ "se_enep00.wav" );
 	}
 	task setMovePosition( let posx, let posy, let maxSpeed, let weight )
 	{
@@ -96,6 +163,8 @@ script_main main_script
 	task setgraphics()
 	{
 		obj = Obj_Create( OBJ_EFFECT );
+		Obj_ScriptLatch( obj );
+		ObjEffect_SetLayer( obj, 2 );
 		ObjEffect_CreateVertex( obj, 4 );
 		ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLESTRIP );
 		ObjEffect_SetTexture( obj, dir_img ~ "enemy.png" );
@@ -126,11 +195,13 @@ script_main main_script
 	{
 		// startFire();
 		// streamFire();
-		fireRounds();
+		 fireRounds();
 	}
 	task fireBigBullet( let dir, let speed )
 	{
 		let bullet = Create2DObj( 0, 64, 0, 64, 256, 256, dir_img ~ "etama2.png" );
+		ObjEffect_SetLayer( bullet, 4 );
+		ObjEffect_SetRenderState( bullet, ALPHA_BLEND );
 		Obj_SetAutoDelete( bullet, true );
 		let ang = rand( 0, 2*PI );
 		let ang_speed = rand( -2*PI, 2*PI ) * 0.01;
@@ -153,6 +224,7 @@ script_main main_script
 			{
 				fireBigBullet( i/count * 2*PI, 1.5 );
 			}
+			PlaySound( dir_se ~ "se_tan01.wav" );
 			wait( 30 );
 		}
 	}
