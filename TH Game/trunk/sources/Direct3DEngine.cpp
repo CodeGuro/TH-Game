@@ -503,7 +503,7 @@ void Direct3DEngine::PlaySound( std::string const & pathname, const float volume
 	LONG vol = (LONG)( (float)DSBVOLUME_MIN + volume / 100.f * ( (float)DSBVOLUME_MAX - (float)DSBVOLUME_MIN ) );
 	LPDIRECTSOUNDBUFFER8 buffer = it->second;
 	buffer->SetCurrentPosition( 0 );
-	buffer->SetVolume( DSBVOLUME_MAX );
+	buffer->SetVolume( vol );
 	buffer->Play( 0, 0, 0 );
 }
 void Direct3DEngine::DeleteSound( std::string const & pathname )
