@@ -634,7 +634,7 @@ bool script_engine::start()
 	if( !CheckValidIdx( script_index ) ) raise_exception( FatalException( "main script does not exist" ) );
 
 	size_t context = fetchScriptContext();
-	initialize_script_context( context, script_index, script_type::menu_script );
+	initialize_script_context( context, script_index, script_type::menu_script, -1 );
 
 	return true;
 }
@@ -751,13 +751,15 @@ bool script_engine::IsFinished()
 	return finished;
 }
 
-void script_engine::initialize_script_context( size_t context_index, size_t script_index, script_type type_script )
+void script_engine::initialize_script_context( size_t context_index, size_t script_index, script_type type_script, size_t arg )
 {
 	script_context * context = getScriptContext( context_index );
 	context->current_script_index = script_index;
 	context->object_vector_index = fetchObjectVector();
 	context->script_object = -1;
 	context->type_script = type_script;
+	context->argument = arg;
+	scriptdata_mgr.addRefScriptData( arg );
 }
 bool script_engine::advance()
 {
@@ -996,5 +998,7 @@ void script_engine::clean_script_context( size_t context_index )
 	current_context->current_thread_index = -1;
 	current_context->object_vector_index = -1;
 	current_context->script_object = -1;
+	scriptdata_mgr.releaseScriptData( current_context->argument );
+	current_context->argument = -1;
 	assert( !current_context->threads.size() );
 }

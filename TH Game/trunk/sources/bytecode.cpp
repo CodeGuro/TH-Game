@@ -360,7 +360,7 @@ void natives::_CreateEnemyFromScript( script_engine * eng, size_t * argv )
 	if( CheckValidIdx( scriptIndex ) )
 	{
 		size_t new_machine = eng->fetchScriptContext();
-		eng->initialize_script_context( new_machine, scriptIndex, script_type::enemy_script );
+		eng->initialize_script_context( new_machine, scriptIndex, script_type::enemy_script, argv[ 1 ] );
 	}
 }
 void natives::_CreateEnemyFromFile( script_engine * eng, size_t * argv )
@@ -372,7 +372,7 @@ void natives::_CreateEnemyFromFile( script_engine * eng, size_t * argv )
 	if( CheckValidIdx( (scriptIndex = eng->findScriptFromFile( scriptPath )) ) )
 	{
 		size_t new_machine = eng->fetchScriptContext();
-		eng->initialize_script_context( new_machine, scriptIndex, script_type::enemy_script );
+		eng->initialize_script_context( new_machine, scriptIndex, script_type::enemy_script, argv[ 1 ] );
 	}
 }
 void natives::_TerminateScript( script_engine * eng, size_t * argv )

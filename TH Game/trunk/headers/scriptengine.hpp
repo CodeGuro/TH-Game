@@ -55,7 +55,7 @@ private:
 	void callSub( script_container::sub AtSub );
 
 	bool advance(); //returns 1 when finished
-	void initialize_script_context( size_t context_index, size_t script_index, script_type type_script );
+	void initialize_script_context( size_t context_index, size_t script_index, script_type type_script, size_t arg );
 	void clean_script_context( size_t context_index );
 
 public:
