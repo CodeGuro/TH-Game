@@ -10,11 +10,13 @@ script_main collectable_script
 {
 	let img;
 	let sound;
+	let item_count;
 	
 	@Initialize
 	{
 		img = GetCurrentScriptDirectory() ~ "img/etama2.png";
 		sound = GetCurrentScriptDirectory() ~ "se/se_item00.wav";
+		item_count = 0;
 		LoadTexture( img );
 		LoadSound( sound );
 		run();
@@ -31,12 +33,12 @@ script_main collectable_script
 		let enemyx = args[ 0 ];
 		let enemyy = args[ 1 ];
 		let playerpos_arr = args[ 2 ];
-		let rand_range = rand_int( 1,128 );
+		let rand_range = rand_int( 1,64 );
 		let rand_angle = rand( 0, 2*PI );
 		let myx = enemyx + rand_range * cos( rand_angle );
 		let myy = enemyy + rand_range * sin( rand_angle );
 		let speed = 2;
-		let rad = 10;
+		let rad = 12;
 		
 		let uvl = 16/256;
 		let uvr = 32/256;
@@ -55,17 +57,20 @@ script_main collectable_script
 			let playerx = playerpos_arr[ 0 ];
 			let playery = playerpos_arr[ 1 ];
 			
-			ObjEffect_SetVertexXY( obj, 6*id + 0, myx - 8, myy - 8 );
-			ObjEffect_SetVertexXY( obj, 6*id + 1, myx + 8, myy - 8 );
-			ObjEffect_SetVertexXY( obj, 6*id + 2, myx - 8, myy + 8 );
-			ObjEffect_SetVertexXY( obj, 6*id + 3, myx + 8, myy - 8 );
-			ObjEffect_SetVertexXY( obj, 6*id + 4, myx + 8, myy + 8 );
-			ObjEffect_SetVertexXY( obj, 6*id + 5, myx - 8, myy + 8 );
+			ObjEffect_SetVertexXY( obj, 6*id + 0, floor(myx - 8), floor(myy - 8) );
+			ObjEffect_SetVertexXY( obj, 6*id + 1, floor(myx + 8), floor(myy - 8) );
+			ObjEffect_SetVertexXY( obj, 6*id + 2, floor(myx - 8), floor(myy + 8) );
+			ObjEffect_SetVertexXY( obj, 6*id + 3, floor(myx + 8), floor(myy - 8) );
+			ObjEffect_SetVertexXY( obj, 6*id + 4, floor(myx + 8), floor(myy + 8) );
+			ObjEffect_SetVertexXY( obj, 6*id + 5, floor(myx - 8), floor(myy + 8) );
 			
 			let dir = atan2( playery - myy, playerx - myx );
-			myx = myx + speed * cos( dir );
-			myy = myy + speed * sin( dir );
-			speed = speed + 0.1;
+			myx = myx + speed * cos( -PI/2 );
+			myy = myy + speed * sin( -PI/2 );
+			if( speed > -2 )
+			{
+				speed = speed - 0.1;
+			}
 			
 			let xdiff = playerx - myx;
 			let ydiff = playery - myy;
@@ -78,6 +83,7 @@ script_main collectable_script
 				
 				SetScore( GetScore() + 1020 );
 				PlaySound( sound );
+				item_count = item_count - 1;
 				break;
 			}
 			else
@@ -90,6 +96,7 @@ script_main collectable_script
 	task run()
 	{
 		let numpoints = 8;
+		item_count = numpoints;
 		let eff = Obj_Create( OBJ_EFFECT );
 		ObjEffect_CreateVertex( eff, 6 * numpoints );
 		ObjEffect_SetPrimitiveType( eff, PRIMITIVE_TRIANGLELIST );
@@ -107,9 +114,13 @@ script_main collectable_script
 			spawnpoint( eff, i );
 		}
 		
-		loop{ yield; }
+		while( item_count > 0 )
+		{
+			yield; 
+		}
 		
 		Obj_Delete( eff );
+		TerminateScript();
 	
 	}
 }

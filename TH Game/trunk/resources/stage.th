@@ -123,9 +123,15 @@ script_main main_script
 	task main_stage()
 	{
 		let player_pos = [ playerx, playery ];
+		CreateFrame();
 		CreatePlayer( player_pos );
 		CreateEnemy( 64, 64, 250, 64, player_pos );
-		CreateFrame();
+		wait( 120 );
+		CreateEnemy( 300, 64, 64, 64, player_pos );
+		wait( 120 );
+		CreateEnemy( 32, 64, 250, 180, player_pos );
+		wait( 120 );
+		CreateEnemy( 250, 64, 64, 180, player_pos );
 	}
 
 	function wait( let n )

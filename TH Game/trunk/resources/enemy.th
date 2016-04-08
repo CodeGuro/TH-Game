@@ -56,12 +56,13 @@ script_main enemy_script
 		
 		destroy_effect();
 		Finalize();
+		wait( 400 );
 		TerminateScript();
 		
 	}
 	
-	function destroy_effect()
-	{
+	task destroy_effect()
+	{	
 		let effect = Obj_Create( OBJ_EFFECT );
 		Obj_SetPosition( effect, Obj_GetX( obj ), Obj_GetY( obj ) );
 		ObjEffect_CreateVertex( effect, 4 );
@@ -83,7 +84,7 @@ script_main enemy_script
 		
 		let sca = 1;
 		let time = 15;
-		ascent( j in 0..time )
+		ascent( j in 0..time+1 )
 		{
 			ascent( i in 0..4 )
 			{
@@ -129,6 +130,10 @@ script_main enemy_script
 	{
 		loop
 		{
+			if( !vulnerable )
+			{
+				break;
+			}
 			let dx = posx - Obj_GetX( obj );
 			let dy = posy - Obj_GetY( obj );
 			let dist = (dx*dx + dy*dy)^0.5;
@@ -226,6 +231,10 @@ script_main enemy_script
 	{
 		loop
 		{
+			if( !vulnerable )
+			{
+				break;
+			}
 			let count = 15;
 			ascent( i in 0..count )
 			{
