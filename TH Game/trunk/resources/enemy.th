@@ -42,17 +42,13 @@ script_main enemy_script
 	@Finalize
 	{
 		SetScore( GetScore() + 30 );
-		
 		SpawnCollectables( Obj_GetX( obj ), Obj_GetY( obj ), GetScriptArgument()[4] );
+		Obj_Delete( obj );
 	}
 	
 	task hit_task()
 	{
 		PlaySound( dir_se ~ "se_enep00.wav" );
-		ascent( i in 0..4 )
-		{
-			ObjEffect_SetVertexColor( obj, i, 255, 255, 255, 0 );
-		}
 		
 		destroy_effect();
 		Finalize();

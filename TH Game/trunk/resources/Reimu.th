@@ -36,8 +36,17 @@ script_main Reimu_Script
 	}
 	@MainLoop
 	{
-		let dx = 2;
-		let dy = 2;
+		let sp;
+		if( KeyDown( 16 ) )
+		{
+			sp = 1.5;
+		}
+		else
+		{
+			sp = 3;
+		}
+		let dx = sp;
+		let dy = sp;
 		if( !hit )
 		{
 			if( KeyDown( 38 ) )//up
@@ -208,6 +217,69 @@ script_main Reimu_Script
 				}
 			}
 		}
+		task focus()
+		{
+			let tex = GetCurrentScriptDirectory() ~ "/img/etama2.png";
+			LoadTexture( tex );
+			let focusObj = Obj_Create( OBJ_EFFECT );
+			ObjEffect_SetLayer( focusObj, 3 );
+			ObjEffect_CreateVertex( focusObj, 4 );
+			ObjEffect_SetPrimitiveType( focusObj, PRIMITIVE_TRIANGLESTRIP );
+			ObjEffect_SetTexture( focusObj, tex );
+			
+			let vstep = 2;
+			let hstep = 0;
+			let size = 64;
+			
+			ObjEffect_SetVertexUV( focusObj, 0,  hstep*size/256,       112/256 );
+			ObjEffect_SetVertexUV( focusObj, 1, (1+hstep)*size/256,    112/256 );
+			ObjEffect_SetVertexUV( focusObj, 2,  hstep*size/256,    (64+112)/256 );
+			ObjEffect_SetVertexUV( focusObj, 3, (1+hstep)*size/256, (64+112)/256 );
+			
+			ObjEffect_SetVertexXY( focusObj, 0, -size/2, -size/2 );
+			ObjEffect_SetVertexXY( focusObj, 1,  size/2, -size/2 );
+			ObjEffect_SetVertexXY( focusObj, 2, -size/2,  size/2 );
+			ObjEffect_SetVertexXY( focusObj, 3,  size/2,  size/2 );
+			let ang = 0;
+			let alpha = 0;
+			
+			loop
+			{
+				Obj_SetPosition( focusObj, Obj_GetX( ObjPlayer ), Obj_GetY( ObjPlayer ) );
+				let focused = KeyDown( 16 );
+				Obj_SetAngle( focusObj, ang );
+				ang = ang + PI/(3*60);
+				let ti = 30;
+				
+				if( focused )
+				{
+					alpha = alpha + (255/ti);
+					if( alpha > 255 )
+					{
+						alpha = 255;
+					}
+				}
+				else
+				{
+					alpha = alpha - (255/ti);
+					if( alpha < 0 )
+					{
+						alpha = 0;
+					}
+				}
+				
+				
+				ascent( i in 0..4 )
+				{
+					ObjEffect_SetVertexColor( focusObj, i, 255, 255, 255, alpha );
+				}
+				
+				yield;
+			}
+			
+			
+		}
+		
 		let Radius = 8;
 		ObjPlayer = Obj_Create( OBJ_EFFECT );
 		Obj_SetPosition( ObjPlayer, x, y );
@@ -221,6 +293,7 @@ script_main Reimu_Script
 			ObjEffect_SetVertexColor( ObjPlayer, i, 255, 255, 255, 255 );
 		}
 		let animation = -1;
+		focus();
 		while( !Obj_BeDeleted( ObjPlayer ) )
 		{
 			if( KeyDown( 37 ) ) //left
