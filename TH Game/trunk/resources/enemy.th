@@ -8,6 +8,15 @@ function CreateEnemy( let inix, let iniy, let finx, let finy, let player_arr )
 	CreateEnemyFromFile( GetCurrentScriptDirectory() ~ "enemy.th", pos );
 }
 
+function GetPlayerX()
+{
+	return GetScriptArgument()[4][0];
+}
+function GetPlayerY()
+{
+	return GetScriptArgument()[4][1];
+}
+
 script_main enemy_script
 {
 	let dir;
@@ -223,8 +232,14 @@ script_main enemy_script
 			Obj_SetPosition( bullet, Obj_GetX( bullet ) + speed * cos( dir ), Obj_GetY( bullet ) + speed * sin( dir ) );
 		}
 	}
+	function testshot( let dir, let id )
+	{
+		//let dir = atan2( GetPlayerY() - Obj_GetY( obj ), GetPlayerX() - Obj_GetX( obj ) );
+		CreateShot01( Obj_GetX( obj ), Obj_GetY( obj ), 4, dir, id );
+	}
 	task fireRounds()
 	{
+		let id = 0;
 		loop
 		{
 			if( !vulnerable )
@@ -234,10 +249,12 @@ script_main enemy_script
 			let count = 15;
 			ascent( i in 0..count )
 			{
-				fireBigBullet( i/count * 2*PI, 1.5 );
+				//fireBigBullet( i/count * 2*PI, 1.5 );
+				testshot( i/count * 2*PI, id );
 			}
 			PlaySound( dir_se ~ "se_tan01.wav" );
 			wait( 30 );
+			id = (id+1) % 96;
 		}
 	}
 	task streamFire()
