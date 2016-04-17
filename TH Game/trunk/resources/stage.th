@@ -11,6 +11,8 @@ script_main main_script
 	let pointCount;
 	let playerx;
 	let playery;
+	let img = GetCurrentScriptDirectory ~ "img\bg1.PNG";
+	LoadTexture( img );
 
 	@Initialize
 	{
@@ -35,6 +37,29 @@ script_main main_script
 
 	@Finalize
 	{
+	}
+	
+	function set_floor()
+	{
+		let size = 3;
+		let obj = Obj_Create( OBJ_EFFECT );
+		ObjEffect_SetLayer( obj, 0 );
+		ObjEffect_CreateVertex( obj, 4 );
+		ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLESTRIP );
+		ObjEffect_SetRenderState( obj, ALPHA_BLEND );
+		ascent( i in 0..4 ){ ObjEffect_SetVertexColor( obj, i, 255, 255, 255, 255 ); }
+		let tex = GetCurrentScriptDirectory() ~ "img/bg2.png";
+		LoadTexture( tex );
+		ObjEffect_SetTexture( obj, tex );
+		ObjEffect_SetVertexUV( obj, 0, 000/256, 000/256 );
+		ObjEffect_SetVertexUV( obj, 1, 128/256, 000/256 );
+		ObjEffect_SetVertexUV( obj, 2, 000/256, 128/256 );
+		ObjEffect_SetVertexUV( obj, 3, 128/256, 128/256 );
+		ObjEffect_SetVertexXYZ( obj, 0, -size, 0, -size );
+		ObjEffect_SetVertexXYZ( obj, 1, size, 0, -size );
+		ObjEffect_SetVertexXYZ( obj, 2, -size, 0, size );
+		ObjEffect_SetVertexXYZ( obj, 3, size, 0, size );
+		Obj_SetPosition3D( obj, 0, 0, 0 );
 	}
 
 	function load_images()
@@ -122,6 +147,8 @@ script_main main_script
 
 	task main_stage()
 	{
+		set_floor();
+		Motion();
 		let player_pos = [ playerx, playery ];
 		CreateFrame();
 		CreatePlayer( player_pos );
@@ -132,6 +159,26 @@ script_main main_script
 		CreateEnemy( 32, 64, 250, 180, player_pos );
 		wait( 120 );
 		CreateEnemy( 250, 64, 64, 180, player_pos );
+	}
+	
+	task Motion()
+	{
+		let eyey = 1;
+		let viewx = 0;
+		let viewy = 0;
+		let viewz = 0;
+		let rad1 = 5;
+		let rad2 = 2;
+		let time = 0;
+		
+		loop
+		{
+			let eyex = rad1 * cos( 3*time/360 );
+			let eyez = rad2 * sin( 3*time/360 );
+			SetEyeView( eyex, eyey, eyez, viewx, viewy, viewz );
+			time = time + 1;
+			yield;
+		}
 	}
 
 	function wait( let n )
