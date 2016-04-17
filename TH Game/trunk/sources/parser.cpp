@@ -1480,6 +1480,8 @@ void parser::registerNatives()
 		{ "KeyPressed", &natives::_KeyPressed, 1 },
 		{ "CreateEnemyFromScript", &natives::_CreateEnemyFromScript, 2 },
 		{ "CreateEnemyFromFile", &natives::_CreateEnemyFromFile, 2 },
+		{ "LaunchScriptFromName", &natives::_CreateEnemyFromScript, 2 },
+		{ "LaunchScriptFromFile", &natives::_CreateEnemyFromFile, 2 },
 		{ "TerminateScript", &natives::_TerminateScript, 0 },
 		{ "GetScriptArgument", &natives::_GetScriptArgument, 0 },
 		{ "GetCurrentScriptDirectory", &natives::_GetCurrentScriptDirectory, 0 },

@@ -7,7 +7,7 @@ script_main menu
 	let musicPlaying = false;
 	@Initialize
 	{
-
+		SetSoundVolume( 100 );
 		LoadSound( dir ~ "Title.wav" );
 		LoadSound( dir ~ "se/se_select00.wav" );
 		LoadSound( dir ~ "se/se_ok00.wav" );
@@ -221,7 +221,7 @@ script_main menu
 			Obj_SetPosition( leaf, posx + rand_int( 0, 100 ), posy + rand_int( -5, 5 ) );
 			appendArray( leaves, leaf );
 			appendArray( x_vels, rand( -1, 1 ) );
-			appendArray( y_vels, rand( -9, 0 ) );
+			appendArray( y_vels, rand( -13, -6 ) );
 			appendArray( y_accels, rand( 0.2, 1.5 ) );
 			appendArray( y_maxVels, rand( 0.5, 2 ) );
 			appendArray( angular_vels, rand( -2*PI/60, 2*PI/60 ) );
@@ -265,7 +265,7 @@ script_main menu
 	task StartStage
 	{
 		StopSound( dir ~ "Title.wav" );
-		CreateEnemyFromFile( dir ~ "stage.th" );
+		CreateEnemyFromFile( dir ~ "stage.th", 0 );
 		TerminateScript();
 	}
 }

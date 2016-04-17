@@ -375,6 +375,27 @@ void natives::_CreateEnemyFromFile( script_engine * eng, size_t * argv )
 		eng->initialize_script_context( new_machine, scriptIndex, script_type::enemy_script, argv[ 1 ] );
 	}
 }
+void natives::_LaunchScriptFromName( script_engine * eng, size_t *argv )
+{
+	size_t scriptIndex = eng->findScript( eng->scriptdata_mgr.getStringScriptData( argv[ 0 ] ) );
+	if( CheckValidIdx( scriptIndex ) )
+	{
+		size_t new_machine = eng->fetchScriptContext();
+		eng->initialize_script_context( new_machine, scriptIndex, script_type::other_script, argv[ 1 ] );
+	}
+}
+void natives::_LaunchScriptFromFile( script_engine * eng, size_t *argv )
+{
+	std::string scriptPath = eng->scriptdata_mgr.getStringScriptData( argv[ 0 ] );
+	parser p( eng );
+	p.parseScript( scriptPath );
+	size_t scriptIndex;
+	if( CheckValidIdx( ( scriptIndex = eng->findScriptFromFile( scriptPath ) ) ) )
+	{
+		size_t new_machine = eng->fetchScriptContext();
+		eng->initialize_script_context( new_machine, scriptIndex, script_type::other_script, argv[ 1 ] );
+	}
+}
 void natives::_TerminateScript( script_engine * eng, size_t * argv )
 {
 	eng->removing_machine = true;

@@ -236,6 +236,8 @@ private:
 	static void _KeyPressed( script_engine * eng, size_t * argv );
 	static void _CreateEnemyFromScript( script_engine * eng, size_t * argv );
 	static void _CreateEnemyFromFile( script_engine * eng, size_t * argv );
+	static void _LaunchScriptFromName( script_engine * eng, size_t * argv );
+	static void _LaunchScriptFromFile( script_engine * eng, size_t * argv );
 	static void _TerminateScript( script_engine * eng, size_t * argv );
 	static void _GetScriptArgument( script_engine * eng, size_t * argv );
 	static void _GetCurrentScriptDirectory( script_engine * eng, size_t * argv );

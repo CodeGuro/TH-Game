@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 class GameProperties
 {
 private:
