@@ -52,7 +52,7 @@ script_main collectable_script
 		ObjEffect_SetVertexUV( obj, 6*id + 4, uvr, uvb );
 		ObjEffect_SetVertexUV( obj, 6*id + 5, uvl, uvb );
 		
-		loop
+		while( !Obj_BeDeleted( obj ) )
 		{
 			let playerx = playerpos_arr[ 0 ];
 			let playery = playerpos_arr[ 1 ];
@@ -85,6 +85,10 @@ script_main collectable_script
 				PlaySound( sound );
 				item_count = item_count - 1;
 				break;
+			}
+			else if( myy > 480 )
+			{
+				Obj_Delete( obj );
 			}
 			else
 			{

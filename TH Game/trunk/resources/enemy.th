@@ -254,7 +254,7 @@ script_main enemy_script
 			}
 			PlaySound( dir_se ~ "se_tan01.wav" );
 			wait( 30 );
-			id = (id+1) % 96;
+			id = (id+1) % 120;
 		}
 	}
 	task streamFire()
