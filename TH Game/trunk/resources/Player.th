@@ -2,7 +2,7 @@
 
 function CreatePlayer()
 {
-	CreateEnemyFromFile( ".\Player.th" );
+	LaunchScriptFromName( ".\Player.th", 0 );
 }
 
 script_main player_script

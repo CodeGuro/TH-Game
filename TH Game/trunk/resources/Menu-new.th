@@ -265,7 +265,7 @@ script_main menu
 	task StartStage
 	{
 		StopSound( dir ~ "Title.wav" );
-		CreateEnemyFromFile( dir ~ "stage.th", 0 );
+		LaunchScriptFromFile( dir ~ "stage.th", 0 );
 		TerminateScript();
 	}
 }

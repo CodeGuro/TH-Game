@@ -2,7 +2,7 @@
 
 function CreatePlayer( let player_pos )
 {
-	CreateEnemyFromFile( ".\Reimu.th", player_pos );
+	LaunchScriptFromFile( ".\Reimu.th", player_pos );
 }
 
 script_main Reimu_Script

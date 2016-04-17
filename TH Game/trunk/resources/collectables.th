@@ -3,7 +3,7 @@
 function SpawnCollectables( let enemyx, let enemyy, let playerpos_arr )
 {
 	let args = [ enemyx, enemyy, playerpos_arr ];
-	CreateEnemyFromFile( GetCurrentScriptDirectory ~ "collectables.th", args );
+	LaunchScriptFromFile( GetCurrentScriptDirectory ~ "collectables.th", args );
 }
 
 script_main collectable_script
