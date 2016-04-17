@@ -266,6 +266,7 @@ private:
 	static void _Obj_GetAngle( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetTexture( script_engine * eng, size_t * argv );
 	static void _ObjEffect_CreateVertex( script_engine * eng, size_t * argv );
+	static void _ObjEffect_GetVertexCount( script_engine *eng, size_t * argv );
 	static void _ObjEffect_SetPrimitiveType( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetRenderState( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetVertexUV( script_engine * eng, size_t * argv );

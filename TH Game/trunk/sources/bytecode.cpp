@@ -552,6 +552,12 @@ void natives::_ObjEffect_CreateVertex( script_engine * eng, size_t * argv )
 {
 	eng->get_drawmgr()->ObjEffect_CreateVertex( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ) );
 }
+void natives::_ObjEffect_GetVertexCount( script_engine *eng, size_t * argv )
+{
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( (float)eng->get_drawmgr()->ObjEffect_GetVertexCount( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 1 ] ) ) );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
+	eng->scriptdata_mgr.releaseScriptData( tmp );
+}
 void natives::_ObjEffect_SetPrimitiveType( script_engine * eng, size_t * argv )
 {
 	eng->get_drawmgr()->ObjEffect_SetPrimitiveType( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ), eng->scriptdata_mgr.getPrimitiveTypeScriptData( argv[ 1 ] ) );

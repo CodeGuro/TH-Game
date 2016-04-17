@@ -1510,6 +1510,7 @@ void parser::registerNatives()
 		{ "Obj_GetAngle", &natives::_Obj_GetAngle, 1 },
 		{ "ObjEffect_SetTexture", &natives::_ObjEffect_SetTexture, 2 },
 		{ "ObjEffect_CreateVertex", &natives::_ObjEffect_CreateVertex, 2 },
+		{ "ObjEffect_GetVertexCount", &natives::_ObjEffect_GetVertexCount , 1 },
 		{ "ObjEffect_SetPrimitiveType", &natives::_ObjEffect_SetPrimitiveType, 2 },
 		{ "ObjEffect_SetRenderState", &natives::_ObjEffect_SetRenderState, 2 },
 		{ "ObjEffect_SetVertexUV", &natives::_ObjEffect_SetVertexUV, 4 },

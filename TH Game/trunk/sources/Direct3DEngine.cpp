@@ -627,6 +627,15 @@ void Direct3DEngine::ObjEffect_CreateVertex( unsigned HandleIdx, ULONG VertexCou
 		}
 	}
 }
+unsigned Direct3DEngine::ObjEffect_GetVertexCount( unsigned HandleIdx )
+{
+	if( CheckValidIdx( HandleIdx ) )
+	{
+		ObjHandle & handle = vObjHandles[ HandleIdx ];
+		return GetLayers()[ handle.Layer ].vObjMgr[ handle.MgrIdx ].VertexCount;
+	}
+	return -1;
+}
 void Direct3DEngine::ObjEffect_SetVertexXYZ( unsigned HandleIdx, ULONG VIndex,  D3DXVECTOR3 Posxyz )
 {
 	if( CheckValidIdx( HandleIdx ) )
