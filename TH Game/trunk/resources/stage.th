@@ -146,6 +146,7 @@ script_main main_script
 
 	task main_stage()
 	{
+		SetFog( 3, 10, 100, 30, 180 );
 		set_floor();
 		Motion();
 		let player_pos = [ playerx, playery ];
