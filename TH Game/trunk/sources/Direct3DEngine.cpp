@@ -697,7 +697,7 @@ void Direct3DEngine::ObjEffect_SetLayer( unsigned HandleIdx, ULONG Layer )
 					--(it->MgrIdx);
 			handle.Layer = (USHORT)Layer;
 			handle.MgrIdx = mgrIdx;
-			if( Layer == BACKGROUND_LAYER )
+			if( Layer == THREED_LAYER )
 			{
 				GetLayers()[ Layer ].vObjMgr.back().PShader = GetDefault3DPShader();
 				GetLayers()[ Layer ].vObjMgr.back().VShader = GetDefault3DVShader();

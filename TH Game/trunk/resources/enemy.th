@@ -69,26 +69,6 @@ script_main enemy_script
 	
 	task destroy_effect()
 	{	
-		/*
-		let effect = Obj_Create( OBJ_EFFECT );
-		Obj_SetPosition( effect, Obj_GetX( obj ), Obj_GetY( obj ) );
-		ObjEffect_CreateVertex( effect, 4 );
-		ObjEffect_SetPrimitiveType( effect, PRIMITIVE_TRIANGLESTRIP );
-		ObjEffect_SetTexture( effect, dir_img ~ "etama2.png" );
-		ascent( i in 0..4 )
-		{
-			ObjEffect_SetVertexColor( effect, i, 255, 255, 255, 255 );
-		}
-		ObjEffect_SetVertexUV( effect, 0, 192/256, 176/256 );
-		ObjEffect_SetVertexUV( effect, 1, (192+64)/256, 176/256 );
-		ObjEffect_SetVertexUV( effect, 2, 192/256, (176+64)/256 );
-		ObjEffect_SetVertexUV( effect, 3, (192+64)/256, (176+64)/256 );
-		
-		ObjEffect_SetVertexXY( effect, 0, -32, -32 );
-		ObjEffect_SetVertexXY( effect, 1,  32, -32 );
-		ObjEffect_SetVertexXY( effect, 2, -32,  32 );
-		ObjEffect_SetVertexXY( effect, 3,  32,  32 );
-		*/
 		let width = 64;
 		let height = 64;
 		let imgw = 256;

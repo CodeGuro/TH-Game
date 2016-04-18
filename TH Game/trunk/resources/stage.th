@@ -1,7 +1,7 @@
 #TouhouDanmaku[ stage ]
 #include ".\Reimu.th"
 #include ".\Enemy.th"
-#include "./Frame.th"
+#include ".\Frame.th"
 
 script_main main_script
 {
@@ -11,8 +11,6 @@ script_main main_script
 	let pointCount;
 	let playerx;
 	let playery;
-	let img = GetCurrentScriptDirectory ~ "img\bg1.PNG";
-	LoadTexture( img );
 
 	@Initialize
 	{
@@ -41,25 +39,26 @@ script_main main_script
 	
 	function set_floor()
 	{
-		let size = 3;
-		let obj = Obj_Create( OBJ_EFFECT );
-		ObjEffect_SetLayer( obj, 1 );
-		ObjEffect_CreateVertex( obj, 4 );
-		ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLESTRIP );
-		ObjEffect_SetRenderState( obj, ALPHA_BLEND );
-		ascent( i in 0..4 ){ ObjEffect_SetVertexColor( obj, i, 255, 255, 255, 255 ); }
-		let tex = GetCurrentScriptDirectory() ~ "img/bg2.png";
+		let size = 5;
+		let uvscale = 15;
+		let obj_floor = Obj_Create( OBJ_EFFECT );
+		ObjEffect_SetLayer( obj_floor, 1 );
+		ObjEffect_CreateVertex( obj_floor, 4 );
+		ObjEffect_SetPrimitiveType( obj_floor, PRIMITIVE_TRIANGLESTRIP );
+		ObjEffect_SetRenderState( obj_floor, ALPHA_BLEND );
+		ascent( i in 0..4 ){ ObjEffect_SetVertexColor( obj_floor, i, 255, 255, 255, 255 ); }
+		let tex = GetCurrentScriptDirectory() ~ "img/world00.png";
 		LoadTexture( tex );
-		ObjEffect_SetTexture( obj, tex );
-		ObjEffect_SetVertexUV( obj, 0, 000/256, 000/256 );
-		ObjEffect_SetVertexUV( obj, 1, 128/256, 000/256 );
-		ObjEffect_SetVertexUV( obj, 2, 000/256, 128/256 );
-		ObjEffect_SetVertexUV( obj, 3, 128/256, 128/256 );
-		ObjEffect_SetVertexXYZ( obj, 0, -size, 0, -size );
-		ObjEffect_SetVertexXYZ( obj, 1, size, 0, -size );
-		ObjEffect_SetVertexXYZ( obj, 2, -size, 0, size );
-		ObjEffect_SetVertexXYZ( obj, 3, size, 0, size );
-		Obj_SetPosition3D( obj, 0, 0, 0 );
+		ObjEffect_SetTexture( obj_floor, tex );
+		ObjEffect_SetVertexUV( obj_floor, 0, uvscale*000/256, uvscale*000/256 );
+		ObjEffect_SetVertexUV( obj_floor, 1, uvscale*128/256, uvscale*000/256 );
+		ObjEffect_SetVertexUV( obj_floor, 2, uvscale*000/256, uvscale*128/256 );
+		ObjEffect_SetVertexUV( obj_floor, 3, uvscale*128/256, uvscale*128/256 );
+		ObjEffect_SetVertexXYZ( obj_floor, 0, -size, 0, -size );
+		ObjEffect_SetVertexXYZ( obj_floor, 1, size, 0, -size );
+		ObjEffect_SetVertexXYZ( obj_floor, 2, -size, 0, size );
+		ObjEffect_SetVertexXYZ( obj_floor, 3, size, 0, size );
+		Obj_SetPosition3D( obj_floor, 0, 0, 0 );		
 	}
 
 	function load_images()
@@ -152,13 +151,16 @@ script_main main_script
 		let player_pos = [ playerx, playery ];
 		CreateFrame();
 		CreatePlayer( player_pos );
-		CreateEnemy( 64, 64, 250, 64, player_pos );
+		
+		/*CreateEnemy( 64, 64, 250, 64, player_pos );
 		wait( 120 );
 		CreateEnemy( 300, 64, 64, 64, player_pos );
 		wait( 120 );
 		CreateEnemy( 32, 64, 250, 180, player_pos );
 		wait( 120 );
 		CreateEnemy( 250, 64, 64, 180, player_pos );
+		*/
+		
 	}
 	
 	task Motion()
