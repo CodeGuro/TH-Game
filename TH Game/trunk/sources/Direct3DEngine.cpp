@@ -832,15 +832,33 @@ void Direct3DEngine::DrawObjects_V2()
 
 	for( auto L = GetLayers().begin(); L < GetLayers().end(); ++L )
 	{
+		D3DVIEWPORT9 vp;
+		vp.MinZ = 0.0;
+		vp.MaxZ = 1.0;
+
 		/*constant buffers do not own their own constants, they use slots and the names are symbolic*/
 		if( L - GetLayers().begin() == BACKGROUND_LAYER )
-				pDefault3DConstable->SetMatrix( GetDevice(), "WorldViewProjMat", &( WorldMatrix * ViewMatrix * ProjectionMatrix ) ),
+		{
+			pDefault3DConstable->SetMatrix( GetDevice(), "WorldViewProjMat", &( WorldMatrix * ViewMatrix * ProjectionMatrix ) ),
 				pDefault3DConstable->SetMatrix( GetDevice(), "WorldViewMat", &( WorldMatrix * ViewMatrix ) );
+			vp.X = 32;
+			vp.Y = 18;
+			vp.Width = 384;
+			vp.Height = 448;
+		}
 		else
-				pDefault2DConstable->SetMatrix( GetDevice(), "WorldViewProjMat", &( world * view * proj ) );
+		{
+			pDefault2DConstable->SetMatrix( GetDevice(), "WorldViewProjMat", &( world * view * proj ) );
+			vp.X = 0;
+			vp.Y = 0;
+			vp.Width = 640;
+			vp.Height = 480;
+		}
 
 		GetDevice()->SetRenderState( D3DRS_SCISSORTESTENABLE, (L - GetLayers().begin() < ENEMY_LAYER || L - GetLayers().begin() > EFFECT_LAYER )? FALSE : TRUE );
 		GetDevice()->SetRenderState( D3DRS_ZENABLE, L - GetLayers().begin() == BACKGROUND_LAYER? TRUE : FALSE );
+		GetDevice()->SetViewport( &vp );
+
 
 		for( auto objMgr = L->vObjMgr.begin(); objMgr < L->vObjMgr.end(); ++objMgr )
 		{
@@ -1083,6 +1101,14 @@ void Direct3DEngine::DrawGridTerrain( unsigned Rows, unsigned Columns, float Spa
 	static float S = -1;
 	if( !( R == Rows || C == Columns || S == Spacing) )
 		GenerateGridTerrain( R = Rows, C = Columns, S = Spacing );
+	D3DVIEWPORT9 vp;
+	vp.MinZ = 0.0;
+	vp.MaxZ = 1.0;
+	vp.X = 32;
+	vp.Y = 18;
+	vp.Width = 384;
+	vp.Height = 448;
+	GetDevice()->SetViewport( &vp );
 	D3DXMATRIX mat;
 	D3DXMatrixIdentity( &mat );
 	GetDevice()->SetVertexDeclaration( GetDefaultVDeclaration() );
