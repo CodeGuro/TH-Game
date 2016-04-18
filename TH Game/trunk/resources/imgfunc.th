@@ -1,0 +1,29 @@
+function Obj_CreateEffect( let tex, let width, let height, let uvl, let uvt, let imgw, let imgh )
+{
+	let obj = Obj_Create( OBJ_EFFECT );
+	Obj_SetParams( obj, tex, width, height, uvl/imgw, uvt/imgh, (uvl+width)/imgw, (uvt+height)/imgh );
+	return obj;
+}
+
+function Obj_SetParams( let obj, let tex, let width, let height, let left, let top, let right, let bottom )
+{
+	ObjEffect_SetTexture( obj, tex );
+	
+	ObjEffect_CreateVertex( obj, 4 );
+	ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLESTRIP );
+	
+	ascent( i in 0..ObjEffect_GetVertexCount( obj ) )
+	{
+		ObjEffect_SetVertexColor( obj, i, 255, 255, 255, 255 );
+	}
+	
+	ObjEffect_SetVertexUV( obj, 0, left, top );
+	ObjEffect_SetVertexUV( obj, 1, right, top );
+	ObjEffect_SetVertexUV( obj, 2, left, bottom );
+	ObjEffect_SetVertexUV( obj, 3, right, bottom );
+	
+	ObjEffect_SetVertexXY( obj, 0, -width/2, -height/2 );
+	ObjEffect_SetVertexXY( obj, 1, width/2, -height/2 );
+	ObjEffect_SetVertexXY( obj, 2, -width/2, height/2 );
+	ObjEffect_SetVertexXY( obj, 3, width/2, height/2 );
+}

@@ -1,6 +1,7 @@
 #TouhouDanmaku[ single ]
 #include "./graphics.th"
 #include "./collectables.th"
+#include "./imgfunc.th"
 
 function CreateEnemy( let inix, let iniy, let finx, let finy, let player_arr )
 {
@@ -68,6 +69,7 @@ script_main enemy_script
 	
 	task destroy_effect()
 	{	
+		/*
 		let effect = Obj_Create( OBJ_EFFECT );
 		Obj_SetPosition( effect, Obj_GetX( obj ), Obj_GetY( obj ) );
 		ObjEffect_CreateVertex( effect, 4 );
@@ -86,6 +88,16 @@ script_main enemy_script
 		ObjEffect_SetVertexXY( effect, 1,  32, -32 );
 		ObjEffect_SetVertexXY( effect, 2, -32,  32 );
 		ObjEffect_SetVertexXY( effect, 3,  32,  32 );
+		*/
+		let width = 64;
+		let height = 64;
+		let imgw = 256;
+		let imgh = 256;
+		let uvl = 192;
+		let uvt = 176;
+		let effect = Obj_CreateEffect( dir_img ~ "etama2.png", width, height, uvl, uvt, imgw, imgh );
+		
+		Obj_SetPosition( effect, Obj_GetX( obj ), Obj_GetY( obj ) );
 		
 		let sca = 1;
 		let time = 15;
