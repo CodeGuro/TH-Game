@@ -1223,7 +1223,7 @@ ShotData
 	render = ALPHA_BLEND
 	angular_velocity = 00
 	pixel_perfect = FALSE
-	rect = ( 56, 240, 6, 248 )
+	rect = ( 56, 240, 64, 248 )
 	color = ( 255, 255, 255, 255 )
 }
 ShotData
@@ -1295,7 +1295,7 @@ ShotData
 	render = ALPHA_BLEND
 	angular_velocity = 00
 	pixel_perfect = FALSE
-	rect = ( 56, 248, 6, 256 )
+	rect = ( 56, 248, 64, 256 )
 	color = ( 255, 255, 255, 255 )
 }
 ShotData
@@ -1474,7 +1474,7 @@ ShotData
 	id = 164
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 272, 34, 288, 50 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1483,7 +1483,7 @@ ShotData
 	id = 165
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 288, 34, 304, 50 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1492,7 +1492,7 @@ ShotData
 	id = 166
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 304, 34, 320, 50 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1501,7 +1501,7 @@ ShotData
 	id = 167
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 320, 34, 336, 50 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1510,7 +1510,7 @@ ShotData
 	id = 168
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 336, 34, 352, 50 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1519,7 +1519,7 @@ ShotData
 	id = 169
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 352, 34, 368, 50 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1528,7 +1528,7 @@ ShotData
 	id = 170
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 368, 34, 384, 50 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1537,7 +1537,7 @@ ShotData
 	id = 171
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 384, 34, 400, 50 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1546,7 +1546,7 @@ ShotData
 	id = 172
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 400, 34, 416, 50 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1555,7 +1555,7 @@ ShotData
 	id = 173
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 416, 34, 432, 50 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1564,7 +1564,7 @@ ShotData
 	id = 174
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 432, 34, 448, 50 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1573,7 +1573,7 @@ ShotData
 	id = 175
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 448, 34, 464, 50 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1582,7 +1582,7 @@ ShotData
 	id = 176
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 464, 34, 480, 50 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1591,7 +1591,7 @@ ShotData
 	id = 177
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 480, 34, 496, 50 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1600,7 +1600,7 @@ ShotData
 	id = 178
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 496, 34, 512, 50 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1618,7 +1618,7 @@ ShotData
 	id = 180
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 272, 65, 288, 81 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1627,7 +1627,7 @@ ShotData
 	id = 181
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 288, 65, 304, 81 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1636,7 +1636,7 @@ ShotData
 	id = 182
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 304, 65, 320, 81 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1645,7 +1645,7 @@ ShotData
 	id = 183
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 320, 65, 336, 81 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1654,7 +1654,7 @@ ShotData
 	id = 184
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 336, 65, 352, 81 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1663,7 +1663,7 @@ ShotData
 	id = 185
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 352, 65, 368, 81 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1672,7 +1672,7 @@ ShotData
 	id = 186
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 368, 65, 384, 81 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1681,7 +1681,7 @@ ShotData
 	id = 187
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 384, 65, 400, 81 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1690,7 +1690,7 @@ ShotData
 	id = 188
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 400, 65, 416, 81 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1699,7 +1699,7 @@ ShotData
 	id = 189
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 416, 65, 432, 81 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1708,7 +1708,7 @@ ShotData
 	id = 190
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 432, 65, 448, 81 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1717,7 +1717,7 @@ ShotData
 	id = 191
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 448, 65, 464, 81 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1726,7 +1726,7 @@ ShotData
 	id = 192
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 464, 65, 480, 81 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1735,7 +1735,7 @@ ShotData
 	id = 193
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 480, 65, 496, 81 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1744,7 +1744,7 @@ ShotData
 	id = 194
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 496, 65, 512, 81 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1762,7 +1762,7 @@ ShotData
 	id = 196
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 272, 97, 288, 113 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1771,7 +1771,7 @@ ShotData
 	id = 197
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 288, 97, 304, 113 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1780,7 +1780,7 @@ ShotData
 	id = 198
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 304, 97, 320, 113 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1789,7 +1789,7 @@ ShotData
 	id = 199
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 320, 97, 336, 113 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1798,7 +1798,7 @@ ShotData
 	id = 200
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 336, 97, 352, 113 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1807,7 +1807,7 @@ ShotData
 	id = 201
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 352, 97, 368, 113 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1816,7 +1816,7 @@ ShotData
 	id = 202
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 368, 97, 384, 113 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1825,7 +1825,7 @@ ShotData
 	id = 203
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 384, 97, 400, 113 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1834,7 +1834,7 @@ ShotData
 	id = 204
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 400, 97, 416, 113 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1843,7 +1843,7 @@ ShotData
 	id = 205
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 416, 97, 432, 113 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1852,7 +1852,7 @@ ShotData
 	id = 206
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 432, 97, 448, 113 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1861,7 +1861,7 @@ ShotData
 	id = 207
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 448, 97, 464, 113 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1870,7 +1870,7 @@ ShotData
 	id = 208
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 464, 97, 480, 113 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1879,7 +1879,7 @@ ShotData
 	id = 209
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 480, 97, 496, 113 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -1888,7 +1888,7 @@ ShotData
 	id = 210
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 496, 97, 512, 113 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -2062,7 +2062,7 @@ ShotData
 	id = 229
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 272, 241, 288, 257 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -2071,7 +2071,7 @@ ShotData
 	id = 230
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 288, 241, 304, 257 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -2080,7 +2080,7 @@ ShotData
 	id = 231
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 304, 241, 320, 257 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -2089,7 +2089,7 @@ ShotData
 	id = 232
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 320, 241, 336, 257 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -2098,7 +2098,7 @@ ShotData
 	id = 233
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 336, 241, 352, 257 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -2107,7 +2107,7 @@ ShotData
 	id = 234
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 352, 241, 368, 257 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -2116,7 +2116,7 @@ ShotData
 	id = 235
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 368, 241, 384, 257 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -2125,7 +2125,7 @@ ShotData
 	id = 236
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 384, 241, 400, 257 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -2134,7 +2134,7 @@ ShotData
 	id = 237
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 400, 241, 416, 257 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -2143,7 +2143,7 @@ ShotData
 	id = 238
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 416, 241, 432, 257 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -2152,7 +2152,7 @@ ShotData
 	id = 239
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 432, 241, 448, 257 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -2161,7 +2161,7 @@ ShotData
 	id = 240
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 448, 241, 464, 257 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -2170,7 +2170,7 @@ ShotData
 	id = 241
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 464, 241, 480, 257 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -2179,7 +2179,7 @@ ShotData
 	id = 242
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 480, 241, 496, 257 )
 	color = ( 255, 255, 255, 255 )
 }
@@ -2188,7 +2188,7 @@ ShotData
 	id = 243
 	render = ALPHA_BLEND
 	angular_velocity = 0
-	pixel_perfect = TRUE
+	pixel_perfect = FALSE
 	rect = ( 496, 241, 512, 257 )
 	color = ( 255, 255, 255, 255 )
 }

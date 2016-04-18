@@ -1,4 +1,4 @@
 Implement a default system menu
-Remove scriptlatch nonsense
-Implement a way to pass arguments across scripts during spawn
 Implement ObjEffect Factory (set vertices in factory, create objects individually, spawn multiple copies using verts)
+Implement animation_data traversing
+Implement function parsing for shotdata script
