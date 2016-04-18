@@ -43,7 +43,7 @@ script_main main_script
 	{
 		let size = 3;
 		let obj = Obj_Create( OBJ_EFFECT );
-		ObjEffect_SetLayer( obj, 0 );
+		ObjEffect_SetLayer( obj, 1 );
 		ObjEffect_CreateVertex( obj, 4 );
 		ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLESTRIP );
 		ObjEffect_SetRenderState( obj, ALPHA_BLEND );

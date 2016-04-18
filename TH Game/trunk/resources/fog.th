@@ -20,7 +20,7 @@ script_main main_script
 	{
 		let vertices = 6;
 		let obj = Obj_Create( OBJ_EFFECT );
-		ObjEffect_SetLayer( obj, 0 );
+		ObjEffect_SetLayer( obj, 1 );
 		ObjEffect_SetTexture( obj, img );
 		ObjEffect_CreateVertex( obj, vertices );
 		ObjEffect_SetVertexUV( obj, 0, 0, 0 );

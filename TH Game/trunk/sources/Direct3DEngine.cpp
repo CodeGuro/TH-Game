@@ -837,7 +837,7 @@ void Direct3DEngine::DrawObjects_V2()
 		vp.MaxZ = 1.0;
 
 		/*constant buffers do not own their own constants, they use slots and the names are symbolic*/
-		if( L - GetLayers().begin() == BACKGROUND_LAYER )
+		if( L - GetLayers().begin() == THREED_LAYER )
 		{
 			pDefault3DConstable->SetMatrix( GetDevice(), "WorldViewProjMat", &( WorldMatrix * ViewMatrix * ProjectionMatrix ) ),
 				pDefault3DConstable->SetMatrix( GetDevice(), "WorldViewMat", &( WorldMatrix * ViewMatrix ) );
