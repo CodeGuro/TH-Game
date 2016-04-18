@@ -8,7 +8,7 @@ private:
 	float volume; // 0 - 100
 
 public:
-	GameProperties() : points( 0 ), lives( 0 ), volume( 0.f )
+	GameProperties() : points( 0 ), lives( 0 ), volume( 100.f )
 	{
 	}
 
