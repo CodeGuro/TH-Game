@@ -87,7 +87,7 @@ script_main main_script
 		let uvt = 0;
 		
 		Obj3D_SetErectTileObj3D_SetFloorTile( obj_trees, 0, 0, 0, 0,
-			width, height, uvl, uvt, imgw, imgh, PI/4 );
+			width, height, uvl, uvt, imgw, imgh, PI/12);
 		
 	}
 

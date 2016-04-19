@@ -67,11 +67,15 @@ function Obj3D_SetErectTileObj3D_SetFloorTile( let obj, let id, let posx, let po
 	ObjEffect_SetVertexUV( obj, id + 4, (uvl+width)/imgw, (uvt+height)/imgh );
 	ObjEffect_SetVertexUV( obj, id + 5, uvl/imgw, (uvt+height)/imgh );
 	
-	ObjEffect_SetVertexXYZ( obj, id + 0, posx - width/2, posy - height/2, posz );
-	ObjEffect_SetVertexXYZ( obj, id + 1, posx + width/2, posy - height/2, posz );
-	ObjEffect_SetVertexXYZ( obj, id + 2, posx - width/2, posy + height/2, posz );
-	ObjEffect_SetVertexXYZ( obj, id + 3, posx + width/2, posy - height/2, posz );
-	ObjEffect_SetVertexXYZ( obj, id + 4, posx + width/2, posy + height/2, posz );
-	ObjEffect_SetVertexXYZ( obj, id + 5, posx - width/2, posy + height/2, posz );
+	let wd2 = width/2;
+	let hd2 = height/2;
+	
+	// use rotation matrix technique
+	ObjEffect_SetVertexXYZ( obj, id + 0, posx + cos(ang)*-wd2 - sin(ang)*-hd2, posy + sin(ang)*-wd2 + cos(ang)*-hd2, posz );
+	ObjEffect_SetVertexXYZ( obj, id + 1, posx + cos(ang)*wd2 - sin(ang)*-hd2, posy + sin(ang)*wd2 + cos(ang)*-hd2, posz );
+	ObjEffect_SetVertexXYZ( obj, id + 2, posx + cos(ang)*-wd2 - sin(ang)*hd2, posy + sin(ang)*-wd2 + cos(ang)*hd2, posz );
+	ObjEffect_SetVertexXYZ( obj, id + 3, posx + cos(ang)*wd2 - sin(ang)*-hd2, posy + sin(ang)*wd2 + cos(ang)*-hd2, posz );
+	ObjEffect_SetVertexXYZ( obj, id + 4, posx + cos(ang)*wd2 - sin(ang)*hd2, posy + sin(ang)*wd2 + cos(ang)*hd2, posz );
+	ObjEffect_SetVertexXYZ( obj, id + 5, posx + cos(ang)*-wd2 - sin(ang)*hd2, posy + sin(ang)*-wd2 + cos(ang)*hd2, posz );
 	
 }
