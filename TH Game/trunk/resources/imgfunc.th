@@ -51,3 +51,27 @@ function Obj3D_SetFloorTile( let obj, let id, let posx, let posy, let posz, let 
 	ObjEffect_SetVertexXYZ( obj, id + 5, posx - width/2, posy, posz + height/2 );
 	
 }
+
+function Obj3D_SetErectTileObj3D_SetFloorTile( let obj, let id, let posx, let posy, let posz, let width, let height, let uvl, let uvt, let imgw, let imgh, let ang )
+{
+	id = id * 6;
+	ascent( i in id..id + 6 )
+	{
+		ObjEffect_SetVertexColor( obj, i, 255, 255, 255, 255 );
+	}
+	
+	ObjEffect_SetVertexUV( obj, id + 0, uvl/imgw, uvt/imgh );
+	ObjEffect_SetVertexUV( obj, id + 1, (uvl+width)/imgw, uvt/imgh );
+	ObjEffect_SetVertexUV( obj, id + 2, uvl/imgw, (uvt+height)/imgh );
+	ObjEffect_SetVertexUV( obj, id + 3, (uvl+width)/imgw, uvt/imgh );
+	ObjEffect_SetVertexUV( obj, id + 4, (uvl+width)/imgw, (uvt+height)/imgh );
+	ObjEffect_SetVertexUV( obj, id + 5, uvl/imgw, (uvt+height)/imgh );
+	
+	ObjEffect_SetVertexXYZ( obj, id + 0, posx - width/2, posy - height/2, posz );
+	ObjEffect_SetVertexXYZ( obj, id + 1, posx + width/2, posy - height/2, posz );
+	ObjEffect_SetVertexXYZ( obj, id + 2, posx - width/2, posy + height/2, posz );
+	ObjEffect_SetVertexXYZ( obj, id + 3, posx + width/2, posy - height/2, posz );
+	ObjEffect_SetVertexXYZ( obj, id + 4, posx + width/2, posy + height/2, posz );
+	ObjEffect_SetVertexXYZ( obj, id + 5, posx - width/2, posy + height/2, posz );
+	
+}

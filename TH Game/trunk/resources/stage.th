@@ -63,6 +63,33 @@ script_main main_script
 		}
 		ObjEffect_SetScale3D( obj_floor, 3/256, 3/256, 3/256 );
 	}
+	
+	function set_forest()
+	{
+		let treecount = 1;
+		let obj_trees = Obj_Create( OBJ_EFFECT );
+		ObjEffect_SetLayer( obj_trees, 1 );
+		ObjEffect_CreateVertex( obj_trees, 6 * treecount );
+		ObjEffect_SetPrimitiveType( obj_trees, PRIMITIVE_TRIANGLELIST );
+		ObjEffect_SetRenderState( obj_trees, ALPHA_BLEND );
+		let tex = GetCurrentScriptDirectory() ~ "img/world01.png";
+		LoadTexture( tex );
+		ObjEffect_SetTexture( obj_trees, tex );
+		Obj_SetPosition3D( obj_trees, 0, 0, 0 );
+		let imgw = 256;
+		let imgh = 256;
+		let scale = 3/256;
+		ObjEffect_SetScale3D( obj_trees, 3/imgw, 3/imgh, 3/imgw );
+		
+		let width = 12;
+		let height = imgh;
+		let uvl = imgw-width;
+		let uvt = 0;
+		
+		Obj3D_SetErectTileObj3D_SetFloorTile( obj_trees, 0, 0, 0, 0,
+			width, height, uvl, uvt, imgw, imgh, PI/4 );
+		
+	}
 
 	function load_images()
 	{
@@ -151,6 +178,7 @@ script_main main_script
 	{
 		SetFog( 3, 10, 128, 160, 192 );
 		set_floor();
+		set_forest();
 		Motion();
 		let player_pos = [ playerx, playery ];
 		CreateFrame();
