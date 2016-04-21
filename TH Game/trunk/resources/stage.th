@@ -36,60 +36,6 @@ script_main main_script
 	@Finalize
 	{
 	}
-	
-	function set_floor()
-	{
-		let rows = 24;
-		let cols = 24;
-		let tilecount = rows*cols;
-		let obj_floor = Obj_Create( OBJ_EFFECT );
-		ObjEffect_SetLayer( obj_floor, 1 );
-		ObjEffect_CreateVertex( obj_floor, 6 * tilecount );
-		ObjEffect_SetPrimitiveType( obj_floor, PRIMITIVE_TRIANGLELIST );
-		ObjEffect_SetRenderState( obj_floor, ALPHA_BLEND );
-		let tex = GetCurrentScriptDirectory() ~ "img/world00.png";
-		LoadTexture( tex );
-		ObjEffect_SetTexture( obj_floor, tex );
-		Obj_SetPosition3D( obj_floor, 0, 0, 0 );
-		let imgw = 256;
-		let imgh = 256;
-		let scale = 3/256;
-		ascent( j in 0..cols )
-		{
-			ascent( i in 0..rows )
-			{
-				Obj3D_SetFloorTile( obj_floor, i*rows+j, i*imgw + (-imgw*rows/2), 0, j*imgh + (-imgh*cols/2), imgw, imgh, 0, 0, imgw, 256 );
-			}
-		}
-		ObjEffect_SetScale3D( obj_floor, 3/256, 3/256, 3/256 );
-	}
-	
-	function set_forest()
-	{
-		let treecount = 1;
-		let obj_trees = Obj_Create( OBJ_EFFECT );
-		ObjEffect_SetLayer( obj_trees, 1 );
-		ObjEffect_CreateVertex( obj_trees, 6 * treecount );
-		ObjEffect_SetPrimitiveType( obj_trees, PRIMITIVE_TRIANGLELIST );
-		ObjEffect_SetRenderState( obj_trees, ALPHA_BLEND );
-		let tex = GetCurrentScriptDirectory() ~ "img/world01.png";
-		LoadTexture( tex );
-		ObjEffect_SetTexture( obj_trees, tex );
-		Obj_SetPosition3D( obj_trees, 0, 0, 0 );
-		let imgw = 256;
-		let imgh = 256;
-		let scale = 3/256;
-		ObjEffect_SetScale3D( obj_trees, 3/imgw, 3/imgh, 3/imgw );
-		
-		let width = 12;
-		let height = imgh;
-		let uvl = imgw-width;
-		let uvt = 0;
-		
-		Obj3D_SetErectTileObj3D_SetFloorTile( obj_trees, 0, 0, 0, 0,
-			width, height, uvl, uvt, imgw, imgh, PI/12);
-		
-	}
 
 	function load_images()
 	{
@@ -172,6 +118,63 @@ script_main main_script
 			yield;
 		}
 
+	}
+	
+	function set_floor()
+	{
+		let rows = 24;
+		let cols = 24;
+		let tilecount = rows*cols;
+		let obj_floor = Obj_Create( OBJ_EFFECT );
+		ObjEffect_SetLayer( obj_floor, 1 );
+		ObjEffect_CreateVertex( obj_floor, 6 * tilecount );
+		ObjEffect_SetPrimitiveType( obj_floor, PRIMITIVE_TRIANGLELIST );
+		ObjEffect_SetRenderState( obj_floor, ALPHA_BLEND );
+		let tex = GetCurrentScriptDirectory() ~ "img/world00.png";
+		LoadTexture( tex );
+		ObjEffect_SetTexture( obj_floor, tex );
+		Obj_SetPosition3D( obj_floor, 0, 0, 0 );
+		let imgw = 256;
+		let imgh = 256;
+		let scale = 3/256;
+		ascent( j in 0..cols )
+		{
+			ascent( i in 0..rows )
+			{
+				Obj3D_SetFloorTile( obj_floor, i*rows+j, i*imgw + (-imgw*rows/2), 0, j*imgh + (-imgh*cols/2), imgw, imgh, 0, 0, imgw, 256 );
+			}
+		}
+		ObjEffect_SetScale3D( obj_floor, 3/256, 3/256, 3/256 );
+	}
+	
+	function set_forest()
+	{
+		let treecount = 1;
+		let obj_trees = Obj_Create( OBJ_EFFECT );
+		ObjEffect_SetLayer( obj_trees, 1 );
+		ObjEffect_CreateVertex( obj_trees, 6 * treecount );
+		ObjEffect_SetPrimitiveType( obj_trees, PRIMITIVE_TRIANGLELIST );
+		ObjEffect_SetRenderState( obj_trees, ALPHA_BLEND );
+		let tex = GetCurrentScriptDirectory() ~ "img/world01.png";
+		LoadTexture( tex );
+		ObjEffect_SetTexture( obj_trees, tex );
+		Obj_SetPosition3D( obj_trees, 0, 0, 0 );
+		let imgw = 512;
+		let imgh = 512;
+		let scale = 3/512;
+		ObjEffect_SetScale3D( obj_trees, 3/imgw, 3/imgh, 3/imgw );
+		
+		let width = 18;
+		let height = imgh;
+		let uvl = imgw-width;
+		let uvt = 0;
+		
+		let posx = 0;
+		let posy = 120;
+		let posz = 0;
+		
+		Obj3D_SetErectTileObj3D_SetFloorTile( obj_trees, 0, posx, posy, posz,
+			width, height, uvl, uvt, imgw, imgh, rand(-PI/12,PI/12) );
 	}
 
 	task main_stage()

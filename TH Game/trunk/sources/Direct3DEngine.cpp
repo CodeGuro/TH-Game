@@ -845,6 +845,7 @@ void Direct3DEngine::DrawObjects_V2()
 			vp.Y = 18;
 			vp.Width = 384;
 			vp.Height = 448;
+
 		}
 		else
 		{
@@ -856,7 +857,7 @@ void Direct3DEngine::DrawObjects_V2()
 		}
 
 		GetDevice()->SetRenderState( D3DRS_SCISSORTESTENABLE, (L - GetLayers().begin() < ENEMY_LAYER || L - GetLayers().begin() > EFFECT_LAYER )? FALSE : TRUE );
-		GetDevice()->SetRenderState( D3DRS_ZENABLE, L - GetLayers().begin() == BACKGROUND_LAYER? TRUE : FALSE );
+		GetDevice()->SetRenderState( D3DRS_ZENABLE, L - GetLayers().begin() == THREED_LAYER? TRUE : FALSE );
 		GetDevice()->SetViewport( &vp );
 
 
