@@ -86,7 +86,7 @@ Direct3DEngine::Direct3DEngine( HWND const hWnd )
 		
 	D3DXMatrixIdentity( &WorldMatrix );
 	D3DXMatrixLookAtLH( &ViewMatrix, &D3DXVECTOR3(0, 1,-10), &D3DXVECTOR3(0,1,0), &D3DXVECTOR3(0,1,0) );
-	D3DXMatrixPerspectiveFovLH( &ProjectionMatrix, D3DXToRadian(45), 640.f/480.f, 1.0f, 100.0f );
+	D3DXMatrixPerspectiveFovLH( &ProjectionMatrix, D3DXToRadian(45), 640.f/480.f, 1.0f, 1000.0f );
 		
 	GetDevice()->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
 	GetDevice()->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
@@ -842,7 +842,7 @@ void Direct3DEngine::DrawObjects_V2()
 			pDefault3DConstable->SetMatrix( GetDevice(), "WorldViewProjMat", &( WorldMatrix * ViewMatrix * ProjectionMatrix ) ),
 				pDefault3DConstable->SetMatrix( GetDevice(), "WorldViewMat", &( WorldMatrix * ViewMatrix ) );
 			vp.X = 32;
-			vp.Y = 18;
+			vp.Y = 16;
 			vp.Width = 384;
 			vp.Height = 448;
 
