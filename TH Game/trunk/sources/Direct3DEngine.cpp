@@ -645,6 +645,17 @@ void Direct3DEngine::ObjEffect_SetVertexXYZ( unsigned HandleIdx, ULONG VIndex,  
 			GetVertexBuffer( handle.VertexBuffer )[ VIndex ].pos = Posxyz;
 	}
 }
+D3DXVECTOR3 Direct3DEngine::ObjEffect_GetVertexXYZ( unsigned HandleIdx, ULONG VIndex )
+{
+	if( CheckValidIdx( HandleIdx ) )
+	{
+		ObjHandle & handle = vObjHandles[ HandleIdx ];
+		if( CheckValidIdx( handle.VertexBuffer ) )
+			return GetVertexBuffer( handle.VertexBuffer )[ VIndex ].pos;
+	}
+
+	return D3DXVECTOR3( NAN, NAN, NAN );
+}
 void Direct3DEngine::ObjEffect_SetVertexUV( unsigned HandleIdx, ULONG VIndex, D3DXVECTOR2 Posuv )
 {
 	if( CheckValidIdx( HandleIdx ) )

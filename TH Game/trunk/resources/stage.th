@@ -11,7 +11,8 @@ script_main main_script
 	let pointCount;
 	let playerx;
 	let playery;
-
+	
+	
 	@Initialize
 	{
 		dir = GetCurrentScriptDirectory();
@@ -120,10 +121,10 @@ script_main main_script
 
 	}
 	
-	function set_floor()
+	function set_floor( let floorx, let floory, let floorz )
 	{
-		let rows = 24;
-		let cols = 24;
+		let rows = 9;
+		let cols = 9;
 		let tilecount = rows*cols;
 		let obj_floor = Obj_Create( OBJ_EFFECT );
 		ObjEffect_SetLayer( obj_floor, 1 );
@@ -133,23 +134,35 @@ script_main main_script
 		let tex = GetCurrentScriptDirectory() ~ "img/world00.png";
 		LoadTexture( tex );
 		ObjEffect_SetTexture( obj_floor, tex );
-		Obj_SetPosition3D( obj_floor, 0, 0, 0 );
+		Obj_SetPosition3D( obj_floor, floorx, floory, floorz );
 		let imgw = 256;
 		let imgh = 256;
-		let scale = 3/256;
 		ascent( j in 0..cols )
 		{
 			ascent( i in 0..rows )
 			{
-				Obj3D_SetFloorTile( obj_floor, i*rows+j, i*imgw + (-imgw*rows/2), 0, j*imgh + (-imgh*cols/2), imgw, imgh, 0, 0, imgw, 256 );
+				Obj3D_SetFloorTile( obj_floor, i*rows+j, -imgw/2*(rows-1)+i*imgw, 0, -imgh/2*(cols-1)+j*imgh, imgw, imgh, 0, 0, imgw, imgh );
 			}
 		}
-		ObjEffect_SetScale3D( obj_floor, 3/256, 3/256, 3/256 );
+		
+		let div = 3;
+		let blueprint = set_forest( floorx, floory, floorz, imgw*rows, imgh*cols/div );
+		
+		ascent( i in 0.. div ) // div
+		{
+			let trees = set_forest( floorx, floory, floorz - imgh*cols/2 +(imgh*cols/div)/2 + imgh*cols/div*i, imgw*rows, imgh*cols/div );
+			ascent( j in 0..ObjEffect_GetVertexCount( blueprint ) )
+			{
+				let xyz = ObjEffect_GetVertexXYZ( blueprint, j );
+				ObjEffect_SetVertexXYZ( trees, j, xyz[0], xyz[1], xyz[2] );
+			}
+		}
+		Obj_Delete( blueprint );
 	}
 	
-	function set_forest()
+	function set_forest( let floorx, let floory, let floorz, let floorwidth, let floorlength )
 	{
-		let treecount = 1;
+		let treecount = 164;
 		let obj_trees = Obj_Create( OBJ_EFFECT );
 		ObjEffect_SetLayer( obj_trees, 1 );
 		ObjEffect_CreateVertex( obj_trees, 6 * treecount );
@@ -158,11 +171,9 @@ script_main main_script
 		let tex = GetCurrentScriptDirectory() ~ "img/world01.png";
 		LoadTexture( tex );
 		ObjEffect_SetTexture( obj_trees, tex );
-		Obj_SetPosition3D( obj_trees, 0, 0, 0 );
+		Obj_SetPosition3D( obj_trees, floorx, floory, floorz );
 		let imgw = 512;
 		let imgh = 512;
-		let scale = 3/512;
-		ObjEffect_SetScale3D( obj_trees, 3/imgw, 3/imgh, 3/imgw );
 		
 		let width = 18;
 		let height = imgh;
@@ -170,24 +181,43 @@ script_main main_script
 		let uvt = 0;
 		
 		let posx = 0;
-		let posy = 120;
+		let posy = 240;
 		let posz = 0;
 		
-		Obj3D_SetErectTileObj3D_SetFloorTile( obj_trees, 0, posx, posy, posz,
-			width, height, uvl, uvt, imgw, imgh, rand(-PI/12,PI/12) );
+		ascent( i in 0.. treecount )
+		{
+			let k;
+			if( i % 2 == 0 )
+			{
+				k = 1;
+			}
+			else
+			{
+				k = -1;
+			}
+			
+			let space = 82;
+			posz = rand_int( -floorlength/2, floorlength/2 );
+			let posx = k * rand_int( space, floorwidth/2 );
+			let ang_rand = rand(-PI/12,PI/12);
+
+			Obj3D_SetErectTileObj3D_SetFloorTile( obj_trees, i, posx, posy, posz,
+				width, height, uvl, uvt, imgw, imgh, ang_rand );
+		}
+		return obj_trees
 	}
 
 	task main_stage()
 	{
-		SetFog( 3, 10, 128, 160, 192 );
-		set_floor();
-		set_forest();
+		SetFog( 200, 750, 128, 160, 192 );
+		set_floor( 0, 0, 0 );
 		Motion();
 		let player_pos = [ playerx, playery ];
 		CreateFrame();
 		CreatePlayer( player_pos );
 		
-		/*CreateEnemy( 64, 64, 250, 64, player_pos );
+		/*
+		CreateEnemy( 64, 64, 250, 64, player_pos );
 		wait( 120 );
 		CreateEnemy( 300, 64, 64, 64, player_pos );
 		wait( 120 );
@@ -196,24 +226,40 @@ script_main main_script
 		CreateEnemy( 250, 64, 64, 180, player_pos );
 		*/
 		
+		
 	}
 	
 	task Motion()
 	{
-		let eyey = 1;
+		let eyex = 0;
+		let eyey = 400;
+		let eyez = -2056;
 		let viewx = 0;
 		let viewy = 0;
 		let viewz = 0;
-		let rad1 = 5;
-		let rad2 = 2;
 		let time = 0;
 		
 		loop
 		{
-			let eyex = rad1 * cos( 3*time/360 );
-			let eyez = rad2 * sin( 3*time/360 );
-			SetEyeView( eyex, eyey, eyez, viewx, viewy, viewz );
+			if( KeyDown( 33 ) )
+			{
+				eyey = eyey + 1;
+			}
+			else if( KeyDown( 34 ) )
+			{
+				eyey = eyey - 1;
+			}
+			
+			eyez = eyez + 2;
+			SetScore( eyez );
+			viewz = eyez + 400;
+			eyex = (1/2)*sin( 2*PI*(time/(6*60)) );
 			time = time + 1;
+			SetEyeView( eyex, eyey, eyez, viewx, viewy, viewz );
+			if( eyez >= 0 )
+			{
+				eyez = -256*9/2 +256*9/3/2+eyez;
+			}
 			yield;
 		}
 	}

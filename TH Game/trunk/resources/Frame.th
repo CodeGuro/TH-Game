@@ -79,7 +79,7 @@ script_main frame_script
 
 		let dx = 0;
 		while( true )
-		{			
+		{
 			ObjFont_SetString( hiScoreFO, "HiScore:    " ~ ToString( GetScore() ) );
 			yield;
 		}

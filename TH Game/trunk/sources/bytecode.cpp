@@ -222,8 +222,7 @@ void natives::_rand( script_engine * eng, size_t * argv )
 }
 void natives::_rand_int( script_engine * eng, size_t * argv )
 {
-	std::uniform_int_distribution< int > rand_int(
-		(int)eng->scriptdata_mgr.getRealScriptData( argv[ 0 ] ), (int)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ) );
+	std::uniform_int_distribution< int > rand_int((int)eng->scriptdata_mgr.getRealScriptData( argv[ 0 ] ), (int)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ) );
 	size_t tmp = eng->scriptdata_mgr.fetchScriptData( (float)rand_int( eng->num_generator ) );
 	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
@@ -577,6 +576,22 @@ void natives::_ObjEffect_SetVertexXY( script_engine * eng, size_t * argv )
 void natives::_ObjEffect_SetVertexXYZ( script_engine * eng, size_t * argv )
 {
 	eng->get_drawmgr()->ObjEffect_SetVertexXYZ( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ), D3DXVECTOR3( eng->scriptdata_mgr.getRealScriptData( argv[ 2 ] ), eng->scriptdata_mgr.getRealScriptData( argv[ 3 ] ), eng->scriptdata_mgr.getRealScriptData( argv[ 4 ] ) ) );
+}
+void natives::_ObjEffect_GetVertexXYZ( script_engine * eng, size_t * argv )
+{
+	D3DXVECTOR3 vec3 = eng->get_drawmgr()->ObjEffect_GetVertexXYZ( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ) );
+	size_t x = eng->scriptdata_mgr.fetchScriptData( vec3.x );
+	size_t y = eng->scriptdata_mgr.fetchScriptData( vec3.y );
+	size_t z = eng->scriptdata_mgr.fetchScriptData( vec3.z );
+
+	size_t arr = eng->scriptdata_mgr.fetchScriptData();
+	eng->scriptdata_mgr.getScriptData( arr ).type = eng->scriptdata_mgr.type_mgr.getArrayType();
+	eng->scriptdata_mgr.getScriptData( arr ).vec.push_back( x );
+	eng->scriptdata_mgr.getScriptData( arr ).vec.push_back( y );
+	eng->scriptdata_mgr.getScriptData( arr ).vec.push_back( z );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], arr );
+
+	eng->scriptdata_mgr.releaseScriptData( arr );
 }
 void natives::_ObjEffect_SetVertexColor( script_engine * eng, size_t * argv )
 {
