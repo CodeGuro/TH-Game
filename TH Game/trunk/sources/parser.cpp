@@ -1514,6 +1514,7 @@ void parser::registerNatives()
 		{ "ObjEffect_SetPrimitiveType", &natives::_ObjEffect_SetPrimitiveType, 2 },
 		{ "ObjEffect_SetRenderState", &natives::_ObjEffect_SetRenderState, 2 },
 		{ "ObjEffect_SetVertexUV", &natives::_ObjEffect_SetVertexUV, 4 },
+		{ "ObjEffect_GetVertexUV", &natives::_ObjEffect_GetVertexUV, 2 },
 		{ "ObjEffect_SetVertexXY", &natives::_ObjEffect_SetVertexXY, 4 },
 		{ "ObjEffect_SetVertexXYZ", &natives::_ObjEffect_SetVertexXYZ, 5 },
 		{ "ObjEffect_GetVertexXYZ", &natives::_ObjEffect_GetVertexXYZ, 2 },

@@ -157,6 +157,7 @@ public:
 	void ObjEffect_SetVertexXYZ( unsigned HandleIdx, ULONG VIndex,  D3DXVECTOR3 Posxyz );
 	D3DXVECTOR3 ObjEffect_GetVertexXYZ( unsigned HandleIdx, ULONG VIndex );
 	void ObjEffect_SetVertexUV( unsigned HandleIdx, ULONG VIndex, D3DXVECTOR2 Posuv );
+	D3DXVECTOR2 ObjEffect_GetVertexUV( unsigned HandleIdx, ULONG VIndex );
 	void ObjEffect_SetVertexColor( unsigned HandleIdx, ULONG VIndex, D3DCOLOR Color );
 	void ObjEffect_SetRenderState( unsigned HandleIdx, BlendType BlendState );
 	void ObjEffect_SetPrimitiveType( unsigned HandleIdx, D3DPRIMITIVETYPE PrimitiveType );

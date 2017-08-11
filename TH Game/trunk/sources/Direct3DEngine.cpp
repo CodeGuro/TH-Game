@@ -665,6 +665,19 @@ void Direct3DEngine::ObjEffect_SetVertexUV( unsigned HandleIdx, ULONG VIndex, D3
 			GetVertexBuffer( handle.VertexBuffer )[ VIndex ].tex = Posuv;
 	}
 }
+D3DXVECTOR2 Direct3DEngine::ObjEffect_GetVertexUV( unsigned HandleIdx, ULONG VIndex )
+{
+	if( CheckValidIdx( HandleIdx ) )
+	{
+		ObjHandle & handle = vObjHandles[ HandleIdx ];
+		if( CheckValidIdx( handle.VertexBuffer ) )
+		{
+			return GetVertexBuffer( handle.VertexBuffer )[ VIndex ].tex;
+		}
+	}
+
+	return D3DXVECTOR2( NAN, NAN );
+}
 void Direct3DEngine::ObjEffect_SetVertexColor( unsigned HandleIdx, ULONG VIndex, D3DCOLOR Color )
 {
 	if( CheckValidIdx( HandleIdx ) )

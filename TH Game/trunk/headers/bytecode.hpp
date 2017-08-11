@@ -270,6 +270,7 @@ private:
 	static void _ObjEffect_SetPrimitiveType( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetRenderState( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetVertexUV( script_engine * eng, size_t * argv );
+	static void _ObjEffect_GetVertexUV( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetVertexXY( script_engine * eng, size_t * argv );
 	static void _ObjEffect_SetVertexXYZ( script_engine * eng, size_t * argv );
 	static void _ObjEffect_GetVertexXYZ( script_engine * eng, size_t * argv );

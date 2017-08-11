@@ -145,24 +145,36 @@ script_main main_script
 			}
 		}
 		
+		let treecount = 164;
 		let div = 3;
-		let blueprint = set_forest( floorx, floory, floorz, imgw*rows, imgh*cols/div );
+		let blueprint = set_forest( treecount, floorx, floory, floorz, imgw*rows, imgh*cols/div );
+		
+		let obj_trees = Obj_Create( OBJ_EFFECT );
+		ObjEffect_SetLayer( obj_trees, 1 );
+		ObjEffect_CreateVertex( obj_trees, 6 * treecount * div );
+		ObjEffect_SetPrimitiveType( obj_trees, PRIMITIVE_TRIANGLELIST );
+		ObjEffect_SetRenderState( obj_trees, ALPHA_BLEND );
+		let tex2 = GetCurrentScriptDirectory() ~ "img/world01.png";
+		LoadTexture( tex2 );
+		ObjEffect_SetTexture( obj_trees, tex2 );
+		Obj_SetPosition3D( obj_trees, floorx, floory, floorz );
+		
 		
 		ascent( i in 0.. div ) // div
 		{
-			let trees = set_forest( floorx, floory, floorz - imgh*cols/2 +(imgh*cols/div)/2 + imgh*cols/div*i, imgw*rows, imgh*cols/div );
 			ascent( j in 0..ObjEffect_GetVertexCount( blueprint ) )
 			{
 				let xyz = ObjEffect_GetVertexXYZ( blueprint, j );
-				ObjEffect_SetVertexXYZ( trees, j, xyz[0], xyz[1], xyz[2] );
+				let uv = ObjEffect_GetVertexUV( blueprint, j );
+				ObjEffect_SetVertexXYZ( obj_trees, div*treecount + j, xyz[0], xyz[1], xyz[2] );
+				ObjEffect_SetVertexUV( obj_trees, div*treecount + j, uv[ 0 ], uv[ 1 ] );
 			}
 		}
 		Obj_Delete( blueprint );
 	}
 	
-	function set_forest( let floorx, let floory, let floorz, let floorwidth, let floorlength )
+	function set_forest( let treecount, let floorx, let floory, let floorz, let floorwidth, let floorlength )
 	{
-		let treecount = 164;
 		let obj_trees = Obj_Create( OBJ_EFFECT );
 		ObjEffect_SetLayer( obj_trees, 1 );
 		ObjEffect_CreateVertex( obj_trees, 6 * treecount );

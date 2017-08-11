@@ -14,6 +14,7 @@
     <ProjectGuid>{92E2A517-16EB-4DBB-B88E-ED656983577F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>THGame</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

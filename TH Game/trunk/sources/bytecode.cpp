@@ -569,6 +569,20 @@ void natives::_ObjEffect_SetVertexUV( script_engine * eng, size_t * argv )
 {
 	eng->get_drawmgr()->ObjEffect_SetVertexUV( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ), D3DXVECTOR2( eng->scriptdata_mgr.getRealScriptData( argv[ 2 ] ), eng->scriptdata_mgr.getRealScriptData( argv[ 3 ] ) ) );
 }
+void natives::_ObjEffect_GetVertexUV( script_engine * eng, size_t * argv )
+{
+	D3DXVECTOR2 vec2 = eng->get_drawmgr()->ObjEffect_GetVertexUV( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ) );
+	size_t u = eng->scriptdata_mgr.fetchScriptData( vec2.x );
+	size_t v = eng->scriptdata_mgr.fetchScriptData( vec2.y );
+
+	size_t arr = eng->scriptdata_mgr.fetchScriptData();
+	eng->scriptdata_mgr.getScriptData( arr ).type = eng->scriptdata_mgr.type_mgr.getArrayType();
+	eng->scriptdata_mgr.getScriptData( arr ).vec.push_back( u );
+	eng->scriptdata_mgr.getScriptData( arr ).vec.push_back( v );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], arr );
+
+	eng->scriptdata_mgr.releaseScriptData( arr );
+}
 void natives::_ObjEffect_SetVertexXY( script_engine * eng, size_t * argv )
 {
 	eng->get_drawmgr()->ObjEffect_SetVertexXYZ( eng->scriptdata_mgr.getObjHandleScriptData( argv[ 0 ] ), (ULONG)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ), D3DXVECTOR3( eng->scriptdata_mgr.getRealScriptData( argv[ 2 ] ), eng->scriptdata_mgr.getRealScriptData( argv[ 3 ] ), 0.f ) );
