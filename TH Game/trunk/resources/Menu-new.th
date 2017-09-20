@@ -135,12 +135,14 @@ script_main menu
 			blue = 255 * cos( PI + t2 );
 			if( blue < 0 ){ blue = -blue; }
 			time = time + 1;
-			ObjFont_SetColor( options[ option_select ], red, green, blue, 255 );			
-			if( KeyPressed( key_up ) || KeyPressed( key_down ) )
+			ObjFont_SetColor( options[ option_select ], red, green, blue, 255 );
+			let down_pressed = KeyPressed( key_down );
+			let up_pressed = KeyPressed( key_up );
+			if( down_pressed || up_pressed )
 			{
 				PlaySound( dir ~ "se/se_select00.wav" );
 				ObjFont_SetColor( options[ option_select ], 255, 255, 255, 255 );	
-				if( KeyDown( key_down ) )
+				if( down_pressed )
 				{
 					option_select = option_select + 1;
 				}
