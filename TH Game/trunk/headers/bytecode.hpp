@@ -213,6 +213,7 @@ private:
 	static void _appendArray( script_engine * eng, size_t * argv );
 	static void _uniqueize( script_engine * eng, size_t * argv );
 	static void _rand( script_engine * eng, size_t * argv );
+	static void _rand_norm( script_engine * eng, size_t * argv );
 	static void _rand_int( script_engine * eng, size_t * argv );
 	static void _print( script_engine * eng, size_t * argv );
 	static void _true( script_engine * eng, size_t * argv );

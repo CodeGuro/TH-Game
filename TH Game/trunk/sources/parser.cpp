@@ -1457,6 +1457,7 @@ void parser::registerNatives()
 		{ "appendArray", &natives::_appendArray, 2 },
 		{ "uniqueize", &natives::_uniqueize, 1 },
 		{ "rand", &natives::_rand, 2 },
+		{ "rand_norm", &natives::_rand_norm, 2 },
 		{ "rand_int", &natives::_rand_int, 2 },
 		{ "print", &natives::_print, 1 },
 		{ "true", &natives::_true, 0 },

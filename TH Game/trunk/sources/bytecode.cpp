@@ -220,6 +220,13 @@ void natives::_rand( script_engine * eng, size_t * argv )
 	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
+void natives::_rand_norm( script_engine * eng, size_t * argv )
+{
+	std::normal_distribution<float> rand_real( eng->scriptdata_mgr.getRealScriptData( argv[ 0 ] ), eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ) );
+	size_t tmp = eng->scriptdata_mgr.fetchScriptData( rand_real( eng->num_generator ) );
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
+	eng->scriptdata_mgr.releaseScriptData( tmp );
+}
 void natives::_rand_int( script_engine * eng, size_t * argv )
 {
 	std::uniform_int_distribution< int > rand_int((int)eng->scriptdata_mgr.getRealScriptData( argv[ 0 ] ), (int)eng->scriptdata_mgr.getRealScriptData( argv[ 1 ] ) );

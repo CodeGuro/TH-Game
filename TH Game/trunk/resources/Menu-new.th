@@ -222,10 +222,10 @@ script_main menu
 			ObjEffect_SetLayer( leaf, 6 );
 			Obj_SetPosition( leaf, posx + rand_int( 0, 100 ), posy + rand_int( -5, 5 ) );
 			appendArray( leaves, leaf );
-			appendArray( x_vels, rand( -1, 1 ) );
+			appendArray( x_vels, rand_norm( 0, 1 ) );
 			appendArray( y_vels, rand( -13, -6 ) );
 			appendArray( y_accels, rand( 0.2, 1.5 ) );
-			appendArray( y_maxVels, rand( 0.5, 2 ) );
+			appendArray( y_maxVels, rand_norm( 2, 0.5 ) );
 			appendArray( angular_vels, rand( -2*PI/60, 2*PI/60 ) );
 		}
 				
