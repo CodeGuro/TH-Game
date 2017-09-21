@@ -222,9 +222,10 @@ script_main main_script
 			posz = rand_int( -floorlength/2, floorlength/2 );
 			let posx = k * rand_int( space, floorwidth/2 );
 			let ang_rand = rand(-PI/12,PI/12);
-
-			Obj3D_SetErectTileObj3D_SetFloorTile( obj_trees, i, posx, posy, posz,
-				width, height, uvl, uvt, imgw, imgh, ang_rand );
+			let posxyz = [ posx, posy, posz ];
+			let prerot = [ 0, 0, 0 ];
+			let axis = [ 0, 0, 1 ];
+			Obj3D_SetRect( obj_trees, i, prerot, axis, ang_rand, posxyz, width, height, uvl, uvt, imgw, imgh );
 		}
 		return obj_trees
 	}

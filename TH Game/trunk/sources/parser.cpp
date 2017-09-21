@@ -1476,6 +1476,7 @@ void parser::registerNatives()
 		{ "atan", &natives::_atan, 1 },
 		{ "atan2", &natives::_atan2, 2 },
 		{ "length", &natives::_length, 1 },
+		{ "rotatePoint", &natives::_rotatePoint, 3 },
 		{ "KeyDown", &natives::_KeyDown, 1 },
 		{ "KeyToggled", &natives::_KeyToggled, 1 },
 		{ "KeyPressed", &natives::_KeyPressed, 1 },

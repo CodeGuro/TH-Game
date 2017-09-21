@@ -232,6 +232,7 @@ private:
 	static void _atan( script_engine * eng, size_t * argv );
 	static void _atan2( script_engine * eng, size_t * argv );
 	static void _length( script_engine * eng, size_t * argv );
+	static void _rotatePoint( script_engine * eng, size_t * argv );
 	static void _KeyDown( script_engine * eng, size_t * argv );
 	static void _KeyToggled( script_engine * eng, size_t * argv );
 	static void _KeyPressed( script_engine * eng, size_t * argv );

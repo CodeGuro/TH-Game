@@ -342,6 +342,32 @@ void natives::_length( script_engine * eng, size_t * argv )
 	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], tmp );
 	eng->scriptdata_mgr.releaseScriptData( tmp );
 }
+void natives::_rotatePoint( script_engine * eng, size_t * argv )
+{
+	script_data & data_vec = eng->scriptdata_mgr.getScriptData( argv[ 0 ] );
+	D3DXVECTOR3 vec3 = D3DXVECTOR3( eng->scriptdata_mgr.getRealScriptData( data_vec.vec[ 0 ] ),
+		eng->scriptdata_mgr.getRealScriptData( data_vec.vec[ 1 ] ),
+		eng->scriptdata_mgr.getRealScriptData( data_vec.vec[ 2 ] ) );
+
+	script_data & data_axi = eng->scriptdata_mgr.getScriptData( argv[ 1 ] );
+	D3DXVECTOR3 axis = D3DXVECTOR3( eng->scriptdata_mgr.getRealScriptData( data_axi.vec[ 0 ] ),
+		eng->scriptdata_mgr.getRealScriptData( data_axi.vec[ 1 ] ),
+		eng->scriptdata_mgr.getRealScriptData( data_axi.vec[ 2 ] ) );
+	float angle = eng->scriptdata_mgr.getRealScriptData( argv[ 2 ] );
+	D3DXMATRIX mat;
+	D3DXMatrixRotationAxis( &mat, &axis, angle );
+	D3DXVec3TransformCoord( &vec3, &vec3, &mat );
+
+	size_t res = eng->scriptdata_mgr.fetchScriptData();
+	eng->scriptdata_mgr.getScriptData( res ).type = eng->scriptdata_mgr.type_mgr.getArrayType( eng->scriptdata_mgr.type_mgr.getRealType().get_kind() );
+	for( int idx = 0; idx < 3; ++idx )
+	{
+		size_t val = eng->scriptdata_mgr.fetchScriptData( vec3[ idx ] );
+		eng->scriptdata_mgr.getScriptData( res ).vec.push_back( val );
+	}
+	eng->scriptdata_mgr.scriptDataAssign( argv[ 0 ], res );
+	eng->scriptdata_mgr.releaseScriptData( res );
+}
 void natives::_KeyDown( script_engine * eng, size_t * argv )
 {
 	size_t tmp = eng->scriptdata_mgr.fetchScriptData( (GetKeyState( (int)eng->scriptdata_mgr.getRealScriptData( argv[ 0 ] )) & 0x8000 ) != 0 );
