@@ -95,3 +95,97 @@ function Obj3D_SetRect( let obj, let idx, let pos_prerot, let axis, let ang, let
 	*/
 	
 }
+
+function sort_farthest_to_closest( let obj, let idx_l, let inst_count, let vcount_per_inst )
+{
+	if( inst_count < 2 )
+	{
+		return;
+	}
+	
+	let reals_per_vert = 3;
+	let inst_count_l = floor( inst_count / 2 );
+	let inst_count_r = inst_count - inst_count_l;
+	
+	sort_farthest_to_closest( obj, idx_l                               , inst_count_l, vcount_per_inst );
+	sort_farthest_to_closest( obj, idx_l + vcount_per_inst*inst_count_l, inst_count_r, vcount_per_inst );
+	
+	let inst_counter_l = 0;
+	let inst_counter_r = 0;
+	
+	let tmp = [];
+	
+	while( inst_counter_l < inst_count_l && inst_counter_r < inst_count_r )
+	{
+		let vtx_offset_l = idx_l + vcount_per_inst * inst_counter_l;
+		let vtx_offset_r = idx_l + vcount_per_inst * (inst_count_l + inst_counter_r);
+		let posxyz_l = ObjEffect_GetVertexXYZ( obj, vtx_offset_l );
+		let posxyz_r = ObjEffect_GetVertexXYZ( obj, vtx_offset_r );
+		
+		// comparison
+		if( posxyz_l[ 2 ] > posxyz_r[ 2 ] )
+		{
+			ascent( v in 0 .. vcount_per_inst )
+			{
+				let posxyz = ObjEffect_GetVertexXYZ( obj, vtx_offset_l + v );
+				ascent( r in 0 .. reals_per_vert )
+				{
+					appendArray( tmp, posxyz[ r ] );
+				}
+			}
+			inst_counter_l++;
+		}
+		else
+		{
+			ascent( v in 0 .. vcount_per_inst )
+			{
+				let posxyz = ObjEffect_GetVertexXYZ( obj, vtx_offset_r + v );
+				ascent( r in 0 .. reals_per_vert )
+				{
+					appendArray( tmp, posxyz[ r ] );
+				}
+			}
+			inst_counter_r++;
+		}
+	}
+	
+	while( inst_counter_l < inst_count_l )
+	{
+		let vtx_offset_l = idx_l + vcount_per_inst * inst_counter_l;
+		ascent( v in 0 .. vcount_per_inst )
+		{
+			let posxyz = ObjEffect_GetVertexXYZ( obj, vtx_offset_l + v );
+			ascent( r in 0 .. reals_per_vert )
+			{
+				appendArray( tmp, posxyz[ r ] );
+			}
+		}
+		inst_counter_l++;
+	}
+	while( inst_counter_r < inst_count_r )
+	{
+		let vtx_offset_r = idx_l + vcount_per_inst * (inst_count_l + inst_counter_r);
+		ascent( v in 0 .. vcount_per_inst )
+		{
+			let posxyz = ObjEffect_GetVertexXYZ( obj, vtx_offset_r + v );
+			ascent( r in 0 .. reals_per_vert )
+			{
+				appendArray( tmp, posxyz[ r ] );
+			}
+		}
+		inst_counter_r++;
+	}
+	
+	ascent( i in 0 .. inst_count )
+	{
+		ascent( v in 0 .. vcount_per_inst )
+		{
+			let vtx_idx = i*vcount_per_inst + v;
+			let posx = tmp[ vtx_idx * reals_per_vert + 0 ];
+			let posy = tmp[ vtx_idx * reals_per_vert + 1 ];
+			let posz = tmp[ vtx_idx * reals_per_vert + 2 ];
+			ObjEffect_SetVertexXYZ( obj, idx_l + vtx_idx, posx, posy, posz );
+		}
+	}
+	
+}

@@ -169,13 +169,15 @@ script_main main_script
 			{
 				let xyz = ObjEffect_GetVertexXYZ( blueprint, i  );
 				let uv = ObjEffect_GetVertexUV( blueprint, i );
-				ObjEffect_SetVertexXYZ( obj_trees, j*treecount*6 + i, xyz[0], xyz[1], xyz[2] + floor_back + j*increms);
-				ObjEffect_SetVertexUV( obj_trees, j*treecount*6 + i, uv[0], uv[1] );
-				ObjEffect_SetVertexColor( obj_trees, j*treecount*6 + i, 255, 255, 255, 255 );
+				ObjEffect_SetVertexXYZ( obj_trees, j*treecount*6*3 + i, xyz[0], xyz[1], xyz[2] + floor_back + j*increms);
+				ObjEffect_SetVertexUV( obj_trees, j*treecount*6*3 + i, uv[0], uv[1] );
+				ObjEffect_SetVertexColor( obj_trees, j*treecount*6*3 + i, 255, 255, 255, 255 );
 			}
 		}
 
 		Obj_Delete( blueprint );
+		
+		 sort_farthest_to_closest( obj_trees, 0, treecount * div, 6*3 );
 	}
 	
 	function set_forest( let treecount, let floorx, let floory, let floorz, let floorwidth, let floorlength )
@@ -227,7 +229,8 @@ script_main main_script
 			let axis = [ 0, 0, 1 ];
 			Obj3D_SetRect( obj_trees, i*6*3 + 00, prerot, axis, ang_rand, posxyz, width, height, uvl, uvt, imgw, imgh );
 			Obj3D_SetRect( obj_trees, i*6*3 + 06, [128+8, 0, 0], axis, ang_rand, posxyz, 256, 256, 0, 256, imgw, imgh );
-			// Obj3D_SetRect( obj_trees, i*6 + 12, prerot, axis, ang_rand, posxyz, width, height, uvl, uvt, imgw, imgh );
+			Obj3D_SetRect( obj_trees, i*6*3 + 12, prerot, axis, ang_rand, posxyz, width, height, uvl, uvt, imgw, imgh );
+			
 		}
 		return obj_trees
 	}
