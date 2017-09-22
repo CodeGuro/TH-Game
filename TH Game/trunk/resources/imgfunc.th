@@ -121,59 +121,51 @@ function sort_farthest_to_closest( let obj, let idx_l, let inst_count, let vcoun
 		let vtx_offset_r = idx_l + vcount_per_inst * (inst_count_l + inst_counter_r);
 		let posxyz_l = ObjEffect_GetVertexXYZ( obj, vtx_offset_l );
 		let posxyz_r = ObjEffect_GetVertexXYZ( obj, vtx_offset_r );
+		let vtx_offset;
 		
 		// comparison
 		if( posxyz_l[ 2 ] > posxyz_r[ 2 ] )
 		{
-			ascent( v in 0 .. vcount_per_inst )
-			{
-				let posxyz = ObjEffect_GetVertexXYZ( obj, vtx_offset_l + v );
-				ascent( r in 0 .. reals_per_vert )
-				{
-					appendArray( tmp, posxyz[ r ] );
-				}
-			}
+			vtx_offset = vtx_offset_l;
 			inst_counter_l++;
 		}
 		else
 		{
-			ascent( v in 0 .. vcount_per_inst )
-			{
-				let posxyz = ObjEffect_GetVertexXYZ( obj, vtx_offset_r + v );
-				ascent( r in 0 .. reals_per_vert )
-				{
-					appendArray( tmp, posxyz[ r ] );
-				}
-			}
+			vtx_offset = vtx_offset_r;
 			inst_counter_r++;
+		}
+		
+		ascent( v in 0 .. vcount_per_inst )
+		{
+			let posxyz = ObjEffect_GetVertexXYZ( obj, vtx_offset + v );
+			ascent( r in 0 .. reals_per_vert )
+			{
+				appendArray( tmp, posxyz[ r ] );
+			}
 		}
 	}
 	
-	while( inst_counter_l < inst_count_l )
+	while( inst_counter_l < inst_count_l || inst_counter_r < inst_count_r )
 	{
-		let vtx_offset_l = idx_l + vcount_per_inst * inst_counter_l;
+		let vtx_offset;
+		if( inst_counter_l < inst_count_l )
+		{
+			vtx_offset = idx_l + vcount_per_inst * inst_counter_l;
+			inst_counter_l++;
+		}
+		else
+		{
+			vtx_offset = idx_l + vcount_per_inst * (inst_count_l + inst_counter_r);
+			inst_counter_r++;
+		}
 		ascent( v in 0 .. vcount_per_inst )
 		{
-			let posxyz = ObjEffect_GetVertexXYZ( obj, vtx_offset_l + v );
+			let posxyz = ObjEffect_GetVertexXYZ( obj, vtx_offset + v );
 			ascent( r in 0 .. reals_per_vert )
 			{
 				appendArray( tmp, posxyz[ r ] );
 			}
 		}
-		inst_counter_l++;
-	}
-	while( inst_counter_r < inst_count_r )
-	{
-		let vtx_offset_r = idx_l + vcount_per_inst * (inst_count_l + inst_counter_r);
-		ascent( v in 0 .. vcount_per_inst )
-		{
-			let posxyz = ObjEffect_GetVertexXYZ( obj, vtx_offset_r + v );
-			ascent( r in 0 .. reals_per_vert )
-			{
-				appendArray( tmp, posxyz[ r ] );
-			}
-		}
-		inst_counter_r++;
 	}
 	
 	ascent( i in 0 .. inst_count )
