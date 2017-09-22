@@ -1,7 +1,7 @@
 #include <string>
 
-extern std::string const DefaultShader = 
-	"																\n\
+extern std::string const DefaultShader =
+"																\n\
 	//Default shaders												\n\
 																	\n\
 	sampler texsampler;												\n\
@@ -31,7 +31,7 @@ extern std::string const DefaultShader =
 	{																\n\
 		float4 finalcolor =											\n\
 			tex2D( texsampler, data.tposition.xy );	\n\
-			finalcolor = data.color * (data.fogfac * finalcolor +  (1.0 - data.fogfac) * data.fogcol);\n\
+			finalcolor.rgb = data.color.rgb * (data.fogfac * finalcolor.rgb +  (1.0 - data.fogfac) * data.fogcol.rgb);\n\
 		return finalcolor;											\n\
 	}																\n\
 																	\n\
