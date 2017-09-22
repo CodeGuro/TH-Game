@@ -52,37 +52,36 @@ function Obj3D_SetFloorTile( let obj, let id, let posx, let posy, let posz, let 
 	
 }
 
-function Obj3D_SetRect( let obj, let id, let pos_prerot, let axis, let ang, let pos_postrot, let width, let height, let uvl, let uvt, let imgw, let imgh )
+function Obj3D_SetRect( let obj, let idx, let pos_prerot, let axis, let ang, let pos_postrot, let width, let height, let uvl, let uvt, let imgw, let imgh )
 {
-	id = id * 6;
-	ascent( i in id..id + 6 )
+	ascent( i in idx..idx + 6 )
 	{
 		ObjEffect_SetVertexColor( obj, i, 255, 255, 255, 255 );
 	}
 	
-	ObjEffect_SetVertexUV( obj, id + 0, uvl/imgw, uvt/imgh );
-	ObjEffect_SetVertexUV( obj, id + 1, (uvl+width)/imgw, uvt/imgh );
-	ObjEffect_SetVertexUV( obj, id + 2, uvl/imgw, (uvt+height)/imgh );
-	ObjEffect_SetVertexUV( obj, id + 3, (uvl+width)/imgw, uvt/imgh );
-	ObjEffect_SetVertexUV( obj, id + 4, (uvl+width)/imgw, (uvt+height)/imgh );
-	ObjEffect_SetVertexUV( obj, id + 5, uvl/imgw, (uvt+height)/imgh );
+	ObjEffect_SetVertexUV( obj, idx + 0, uvl/imgw, uvt/imgh );
+	ObjEffect_SetVertexUV( obj, idx + 1, (uvl+width)/imgw, uvt/imgh );
+	ObjEffect_SetVertexUV( obj, idx + 2, uvl/imgw, (uvt+height)/imgh );
+	ObjEffect_SetVertexUV( obj, idx + 3, (uvl+width)/imgw, uvt/imgh );
+	ObjEffect_SetVertexUV( obj, idx + 4, (uvl+width)/imgw, (uvt+height)/imgh );
+	ObjEffect_SetVertexUV( obj, idx + 5, uvl/imgw, (uvt+height)/imgh );
 	
 	let wd2 = width/2;
 	let hd2 = height/2;
 	
-	ObjEffect_SetVertexXYZ( obj, id + 0, -wd2, -hd2, 0 );
-	ObjEffect_SetVertexXYZ( obj, id + 1,  wd2, -hd2, 0 );
-	ObjEffect_SetVertexXYZ( obj, id + 2, -wd2,  hd2, 0 );
-	ObjEffect_SetVertexXYZ( obj, id + 3,  wd2, -hd2, 0 );
-	ObjEffect_SetVertexXYZ( obj, id + 4,  wd2,  hd2, 0 );
-	ObjEffect_SetVertexXYZ( obj, id + 5, -wd2,  hd2, 0 );
+	ObjEffect_SetVertexXYZ( obj, idx + 0, -wd2, -hd2, 0 );
+	ObjEffect_SetVertexXYZ( obj, idx + 1,  wd2, -hd2, 0 );
+	ObjEffect_SetVertexXYZ( obj, idx + 2, -wd2,  hd2, 0 );
+	ObjEffect_SetVertexXYZ( obj, idx + 3,  wd2, -hd2, 0 );
+	ObjEffect_SetVertexXYZ( obj, idx + 4,  wd2,  hd2, 0 );
+	ObjEffect_SetVertexXYZ( obj, idx + 5, -wd2,  hd2, 0 );
 	
 	ascent( i in 0 .. 6 )
 	{
-		let vect = ObjEffect_GetVertexXYZ( obj, id + i );
+		let vect = ObjEffect_GetVertexXYZ( obj, idx + i );
 		vect = [ pos_prerot[0] + vect[0], pos_prerot[1] + vect[1], pos_prerot[2] + vect[2] ];
 		vect = rotatePoint( vect, axis, ang );
-		ObjEffect_SetVertexXYZ( obj, id + i, pos_postrot[0] + vect[0], pos_postrot[1] + vect[1], pos_postrot[2] + vect[2] );
+		ObjEffect_SetVertexXYZ( obj, idx + i, pos_postrot[0] + vect[0], pos_postrot[1] + vect[1], pos_postrot[2] + vect[2] );
 	}
 	
 	// use rotation matrix technique

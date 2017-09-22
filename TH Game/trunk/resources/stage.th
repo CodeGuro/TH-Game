@@ -151,7 +151,7 @@ script_main main_script
 		
 		let obj_trees = Obj_Create( OBJ_EFFECT );
 		ObjEffect_SetLayer( obj_trees, 1 );
-		ObjEffect_CreateVertex( obj_trees, 6 * treecount * div );
+		ObjEffect_CreateVertex( obj_trees, 6 * 3*treecount * div );
 		ObjEffect_SetPrimitiveType( obj_trees, PRIMITIVE_TRIANGLELIST );
 		ObjEffect_SetRenderState( obj_trees, ALPHA_BLEND );
 		let tex2 = GetCurrentScriptDirectory() ~ "img/world01.png";
@@ -182,7 +182,7 @@ script_main main_script
 	{
 		let obj_trees = Obj_Create( OBJ_EFFECT );
 		ObjEffect_SetLayer( obj_trees, 1 );
-		ObjEffect_CreateVertex( obj_trees, 6 * treecount );
+		ObjEffect_CreateVertex( obj_trees, 6 * 3*treecount );
 		ObjEffect_SetPrimitiveType( obj_trees, PRIMITIVE_TRIANGLELIST );
 		ObjEffect_SetRenderState( obj_trees, ALPHA_BLEND );
 		let tex = GetCurrentScriptDirectory() ~ "img/world01.png";
@@ -225,7 +225,9 @@ script_main main_script
 			let posxyz = [ posx, posy, posz ];
 			let prerot = [ 0, 0, 0 ];
 			let axis = [ 0, 0, 1 ];
-			Obj3D_SetRect( obj_trees, i, prerot, axis, ang_rand, posxyz, width, height, uvl, uvt, imgw, imgh );
+			Obj3D_SetRect( obj_trees, i*6*3 + 00, prerot, axis, ang_rand, posxyz, width, height, uvl, uvt, imgw, imgh );
+			Obj3D_SetRect( obj_trees, i*6*3 + 06, [128+8, 0, 0], axis, ang_rand, posxyz, 256, 256, 0, 256, imgw, imgh );
+			// Obj3D_SetRect( obj_trees, i*6 + 12, prerot, axis, ang_rand, posxyz, width, height, uvl, uvt, imgw, imgh );
 		}
 		return obj_trees
 	}
