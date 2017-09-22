@@ -490,7 +490,7 @@ void parser::parseSuffix()
 	{
 		token tok = lexicon.getToken();
 		lexicon.advance();
-		parseSuffix();
+		parseExpression();
 		writeOperation( std::string( tok == tk_caret ? "power" : "index" ) );
 		if( tok == tk_openbra )
 			lexicon.getToken() != tk_closebra ? raiseError( "\"]\" is missing for array indexing", error::er_syntax ) : lexicon.advance();
