@@ -227,8 +227,10 @@ script_main main_script
 			let posxyz = [ posx, posy, posz ];
 			let prerot = [ 0, 0, 0 ];
 			let axis = [ 0, 0, 1 ];
+			let fac = 0;
+			if( posx < 1 ){ fac = 1;} else{ fac = -1; }
 			Obj3D_SetRect( obj_trees, i*6*3 + 00, prerot, axis, ang_rand, posxyz, width, height, uvl, uvt, imgw, imgh );
-			Obj3D_SetRect( obj_trees, i*6*3 + 06, [128+8, 0, 0], axis, ang_rand, posxyz, 256, 256, 0, 256, imgw, imgh );
+			Obj3D_SetRect( obj_trees, i*6*3 + 06, [fac * (150+8), 0, 0], axis, ang_rand, posxyz, fac*300, 255, 0, 256, imgw, imgh );
 			Obj3D_SetRect( obj_trees, i*6*3 + 12, prerot, axis, ang_rand, posxyz, width, height, uvl, uvt, imgw, imgh );
 			
 		}
@@ -261,11 +263,16 @@ script_main main_script
 	{
 		let eyex = 0;
 		let eyey = 400;
-		let eyez = -2056;
+		let eyez = 0;
 		let viewx = 0;
 		let viewy = 0;
 		let viewz = 0;
 		let time = 0;
+		let k = PI / 6;
+		let ang = PI / 2;
+		let sway_x = 50;
+		let sway_y = 120;
+		eyey = eyey - sway_y;
 		
 		loop
 		{
@@ -281,9 +288,10 @@ script_main main_script
 			eyez = eyez + 2;
 			SetScore( time );
 			viewz = eyez + 400;
-			eyex = (1/2)*sin( 2*PI*(time/(6*60)) );
+			eyex = sway_x * cos( 2 * PI * time / (60*6));
+			let eye_y = eyey + sway_y * sin( PI / 2 + PI/4 * sin(PI / 2 + 2*PI * time / (60*6)) ) ;
 			time = time + 1;
-			SetEyeView( eyex, eyey, eyez, viewx, viewy, viewz );
+			SetEyeView( eyex, eye_y, eyez, viewx, viewy, viewz );
 			let increm = 256*9/3;
 			if( eyez >= 0 )
 			{
